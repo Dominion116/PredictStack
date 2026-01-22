@@ -1,24 +1,38 @@
-
 {
-  "name": "PredictStack-tests",
+  "name": "predictstack",
   "version": "1.0.0",
-  "description": "Run unit tests on this project.",
+  "description": "A peer-to-peer prediction market platform on Stacks blockchain using USDCx",
   "type": "module",
   "private": true,
   "scripts": {
     "test": "vitest run",
     "test:report": "vitest run -- --coverage --costs",
-    "test:watch": "chokidar \"tests/**/*.ts\" \"contracts/**/*.clar\" -c \"npm run test:report\""
+    "test:watch": "chokidar \"tests/**/*.ts\" \"contracts/**/*.clar\" -c \"npm run test:report\"",
+    "bridge": "npx ts-node scripts/bridge-cli.ts",
+    "bridge:deposit": "npx ts-node scripts/bridge-cli.ts deposit",
+    "bridge:withdraw": "npx ts-node scripts/bridge-cli.ts withdraw",
+    "bridge:balance": "npx ts-node scripts/bridge-cli.ts balance",
+    "deploy:testnet": "clarinet deployment generate --testnet && clarinet deployment apply --testnet",
+    "deploy:mainnet": "clarinet deployment generate --mainnet && clarinet deployment apply --mainnet",
+    "check": "clarinet check",
+    "console": "clarinet console"
   },
   "author": "",
-  "license": "ISC",
+  "license": "MIT",
   "dependencies": {
     "@hirosystems/clarinet-sdk": "^3.0.0",
     "@stacks/transactions": "^7.0.5",
+    "c32check": "^2.0.0",
     "chokidar-cli": "^3.0.0",
+    "dotenv": "^16.4.0",
+    "ts-node": "^10.9.0",
     "typescript": "^5.6.0",
+    "viem": "^2.21.0",
     "vite": "^6.1.0",
     "vitest": "^3.0.0",
     "vitest-environment-clarinet": "^2.3.0"
+  },
+  "engines": {
+    "node": ">=18.0.0"
   }
 }
