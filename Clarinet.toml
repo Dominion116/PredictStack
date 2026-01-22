@@ -9,10 +9,7 @@ cache_dir = "./.cache"
 [contracts.sip010-trait]
 path = "contracts/sip010-trait.clar"
 
-# Mock USDCx Token for Testing
-[contracts.mock-usdcx]
-path = "contracts/mock-usdcx.clar"
-depends_on = ["sip010-trait"]
+
 
 # Main Prediction Market Contract
 [contracts.prediction-market]
