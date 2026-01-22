@@ -34,8 +34,7 @@ coverage/
 
 # Environment & Documentation
 .env
+.env
 .env.*
+!.env.example
 *.md
-
-
-.toml
