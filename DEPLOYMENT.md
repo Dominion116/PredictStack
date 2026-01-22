@@ -151,12 +151,56 @@ Before mainnet deployment:
 
 ### 2. USDCx Integration
 
-Update the contract calls to use the real USDCx contract:
+PredictStack uses real USDCx tokens from Circle's xReserve bridge. Use the official contract addresses:
 
+**Testnet:**
 ```clarity
-;; Mainnet USDCx (example - verify actual address)
-'SP2XD7417HGPRTREMKF748VNEQPDRR0RMANB7X1NK.token-usdcx
+;; USDCx Token
+'ST1PQHQKV0RJXZFY1DGX8MNSNYVE3VGZJSRTPGZGM.usdcx
+
+;; USDCx Bridge (for withdrawals)
+'ST1PQHQKV0RJXZFY1DGX8MNSNYVE3VGZJSRTPGZGM.usdcx-v1
 ```
+
+**Mainnet:**
+```clarity
+;; USDCx Token
+'SP120SBRBQJ00MCWS7TM5R8WJNTTKD5K0HFRC2CNE.usdcx
+
+;; USDCx Bridge (for withdrawals)
+'SP120SBRBQJ00MCWS7TM5R8WJNTTKD5K0HFRC2CNE.usdcx-v1
+```
+
+#### Bridging USDC to USDCx
+
+Users need to bridge USDC from Ethereum to get USDCx on Stacks:
+
+1. **Get testnet tokens:**
+   - ETH: https://cloud.google.com/application/web3/faucet/ethereum/sepolia
+   - USDC: https://faucet.circle.com/
+
+2. **Bridge using CLI:**
+   ```bash
+   # Copy .env.example to .env and add your private keys
+   cp .env.example .env
+   
+   # Install dependencies
+   npm install
+   
+   # Bridge USDC to USDCx
+   npm run bridge:deposit -- --amount 10 --recipient YOUR_STACKS_ADDRESS
+   
+   # Check balances
+   npm run bridge:balance -- --stacks YOUR_STACKS_ADDRESS
+   ```
+
+3. **Bridging timing:**
+   - Deposit (ETH → STX): ~15 minutes
+   - Withdrawal (STX → ETH): ~25 min (testnet), ~60 min (mainnet)
+   - Minimum deposit: 1 USDC (testnet), 10 USDC (mainnet)
+   - Minimum withdrawal: 4.80 USDCx
+
+For detailed bridging documentation: https://docs.stacks.co/more-guides/bridging-usdcx
 
 ### 3. Configure Mainnet
 
