@@ -1,7 +1,7 @@
 
 'use client';
 
-import { useState } from 'react';
+import { useState, useEffect } from 'react';
 import { Navbar } from "@/components/navbar";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
 import { Button } from '@/components/ui/button';
@@ -23,6 +23,27 @@ import { toast } from 'sonner';
 import { Loader2 } from 'lucide-react';
 
 export default function CreateMarketPage() {
+    const [mounted, setMounted] = useState(false);
+
+    useEffect(() => {
+        setMounted(true);
+    }, []);
+
+    if (!mounted) {
+        return (
+            <main className="min-h-screen flex flex-col bg-background">
+                <Navbar />
+                <div className="container py-12 flex-1 flex flex-col items-center">
+                    <Loader2 className="h-8 w-8 animate-spin text-muted-foreground" />
+                </div>
+            </main>
+        );
+    }
+
+    return <CreateMarketContent />;
+}
+
+function CreateMarketContent() {
     const { doContractCall } = useConnect();
     const [isSubmitting, setIsSubmitting] = useState(false);
     
@@ -142,3 +163,4 @@ export default function CreateMarketPage() {
         </main>
     );
 }
+

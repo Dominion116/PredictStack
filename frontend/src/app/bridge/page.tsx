@@ -20,6 +20,27 @@ const CURRENT_NETWORK = 'testnet';
 const CONFIG = BRIDGE_CONFIG[CURRENT_NETWORK];
 
 export default function BridgePage() {
+    const [mounted, setMounted] = useState(false);
+
+    useEffect(() => {
+        setMounted(true);
+    }, []);
+
+    if (!mounted) {
+        return (
+            <main className="min-h-screen flex flex-col bg-background">
+                <Navbar />
+                <div className="container py-12 flex-1 flex flex-col items-center justify-center">
+                    <Loader2 className="h-8 w-8 animate-spin text-muted-foreground" />
+                </div>
+            </main>
+        );
+    }
+
+    return <BridgeContent />;
+}
+
+function BridgeContent() {
   // Stacks State
   const { doContractCall } = useConnect();
   const [stacksAddress, setStacksAddress] = useState<string | null>(null);
@@ -345,3 +366,4 @@ export default function BridgePage() {
     </main>
   );
 }
+

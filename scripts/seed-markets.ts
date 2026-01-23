@@ -11,8 +11,7 @@ import {
   uintCV,
   contractPrincipalCV
 } from '@stacks/transactions';
-import network from '@stacks/network';
-const { StacksTestnet, StacksMainnet } = network as any;
+import { STACKS_TESTNET, STACKS_MAINNET, createNetwork } from '@stacks/network';
 import 'dotenv/config';
 
 // Constants
@@ -37,7 +36,7 @@ if (!PRIVATE_KEY && !DRY_RUN) {
 }
 
 // Helpers
-const getNetwork = () => NETWORK_ENV === 'mainnet' ? new StacksMainnet() : new StacksTestnet();
+const getNetwork = () => createNetwork(NETWORK_ENV === 'mainnet' ? STACKS_MAINNET : STACKS_TESTNET);
 
 // Block time estimation (Testnet Nakamoto ~5s, Mainnet ~10m)
 // We need to convert End Date (Timestamp) -> Block Height

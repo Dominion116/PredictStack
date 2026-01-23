@@ -1,22 +1,25 @@
 
 import { 
-    callReadOnlyFunction, 
+    fetchCallReadOnlyFunction, 
     cvToJSON, 
-    uintCV, 
-    standardPrincipalCV 
+    uintCV
 } from '@stacks/transactions';
-import { StacksTestnet, StacksMainnet } from '@stacks/network';
+import { 
+    STACKS_TESTNET,
+    STACKS_MAINNET,
+    createNetwork
+} from '@stacks/network';
 import { getContractConfig, NETWORK_ENV } from './constants';
 
 const config = getContractConfig();
-const network = NETWORK_ENV === 'mainnet' ? new StacksMainnet() : new StacksTestnet();
+const network = createNetwork(NETWORK_ENV === 'mainnet' ? STACKS_MAINNET : STACKS_TESTNET);
 
 /**
  * Fetches a single market's details from the Stacks contract.
  */
 export async function getMarket(marketId: number) {
     try {
-        const result = await callReadOnlyFunction({
+        const response = await fetchCallReadOnlyFunction({
             contractAddress: config.deployer,
             contractName: config.predictionMarket,
             functionName: 'get-market',
@@ -25,8 +28,8 @@ export async function getMarket(marketId: number) {
             senderAddress: config.deployer,
         });
         
-        const json = cvToJSON(result);
-        if (json.success && json.value) {
+        const json: any = cvToJSON(response);
+        if (json.success && json.value && json.value.value) {
             return json.value.value;
         }
         return null;
@@ -41,7 +44,7 @@ export async function getMarket(marketId: number) {
  */
 export async function getPlatformStats() {
     try {
-        const result = await callReadOnlyFunction({
+        const response = await fetchCallReadOnlyFunction({
             contractAddress: config.deployer,
             contractName: config.predictionMarket,
             functionName: 'get-platform-stats',
@@ -50,8 +53,11 @@ export async function getPlatformStats() {
             senderAddress: config.deployer,
         });
         
-        const json = cvToJSON(result);
-        return json.success ? json.value : null;
+        const json: any = cvToJSON(response);
+        if (json.success && json.value) {
+            return json.value.value;
+        }
+        return null;
     } catch (error) {
         console.error("Error fetching platform stats:", error);
         return null;
@@ -60,14 +66,17 @@ export async function getPlatformStats() {
 
 /**
  * Helper to get multiple markets. 
- * Note: For a production app, you might want to implementation 
- * a way to fetch all active market IDs first.
  */
-export async function getRecentMarkets(limit: number = 10) {
+export async function getRecentMarkets(limit: number = 6) {
     const stats = await getPlatformStats();
     if (!stats) return [];
     
-    const totalMarkets = Number(stats['total-markets'].value);
+    // stats['total-markets'] is a uintCV result
+    const totalMarketsValue = stats['total-markets']?.value;
+    const totalMarkets = totalMarketsValue ? Number(totalMarketsValue) : 0;
+    
+    if (totalMarkets === 0) return [];
+
     const markets = [];
     
     // Fetch in reverse order (newest first)
