@@ -111,6 +111,7 @@ function BridgeContent() {
       
       if (value < BigInt(CONFIG.minDeposit)) {
         toast.error(`Minimum deposit is ${formatUnits(BigInt(CONFIG.minDeposit), 6)} USDC`);
+        setIsProcessing(false);
         return;
       }
 
@@ -137,6 +138,9 @@ function BridgeContent() {
       toast.info('Confirm deposit transaction...');
       const remoteRecipient = encodeStacksAddressToBytes32(stacksAddress);
       
+      // hookData must be empty bytes, not string
+      const hookData: Hex = '0x';
+      
       const { request: depositRequest } = await publicClient.simulateContract({
         address: CONFIG.xReserveContract as Hex,
         abi: X_RESERVE_ABI,
@@ -147,19 +151,19 @@ function BridgeContent() {
             remoteRecipient, 
             CONFIG.ethUsdcContract as Hex, 
             BigInt(0), // maxFee
-            '0x' // hookData
+            hookData
         ],
         account: ethAddress as Hex,
       });
       const depositHash = await ethClient.writeContract(depositRequest);
       
-      toast.success('Deposit submitted!');
+      toast.success(`Deposit submitted! Tx: ${depositHash.slice(0, 10)}...`);
       toast.info('It takes ~15 mins for USDCx to arrive on Stacks.');
       setAmount('');
       
     } catch (error: any) {
       console.error(error);
-      toast.error(error.message || 'Deposit failed');
+      toast.error(error.shortMessage || error.message || 'Deposit failed');
     } finally {
       setIsProcessing(false);
     }
@@ -176,6 +180,7 @@ function BridgeContent() {
       
       if (value < BigInt(CONFIG.minWithdraw)) {
         toast.error(`Minimum withdrawal is ${formatUnits(BigInt(CONFIG.minWithdraw), 6)} USDCx`);
+        setIsProcessing(false);
         return;
       }
 
@@ -184,8 +189,10 @@ function BridgeContent() {
       const recipientBuffer = encodeEthAddressToBytes32(ethAddress);
 
       // Post-condition: User transfers exactly 'value' of USDCx
+      // Convert BigInt to Number for Pc helper (safe for amounts < 2^53)
+      const valueAsNumber = Number(value);
       const postCondition = Pc.principal(stacksAddress)
-        .willSendEq(value) // Using integer value directly as helper expects number/bigint
+        .willSendEq(valueAsNumber)
         .ft(`${tokenAddr}.${tokenName}`, 'usdcx');
 
       await doContractCall({
@@ -194,10 +201,9 @@ function BridgeContent() {
         functionName: 'burn',
         functionArgs: [
             Cl.uint(value),
-            Cl.uint(BigInt(0)), // Ethereum Domain ID is 0
+            Cl.uint(0), // Ethereum Domain ID is 0
             Cl.buffer(recipientBuffer)
         ],
-        network: CURRENT_NETWORK,
         postConditions: [postCondition],
         postConditionMode: PostConditionMode.Deny,
         anchorMode: AnchorMode.Any,
