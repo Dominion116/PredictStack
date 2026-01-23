@@ -12,7 +12,7 @@ import {
   contractPrincipalCV
 } from '@stacks/transactions';
 import network from '@stacks/network';
-const { StacksTestnet, StacksMainnet } = network;
+const { StacksTestnet, StacksMainnet } = network as any;
 import 'dotenv/config';
 
 // Constants
