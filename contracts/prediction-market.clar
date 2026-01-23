@@ -92,7 +92,8 @@
     total-bets: uint,
     status: uint,
     winning-outcome: (optional bool),
-    resolved-at: (optional uint)
+    resolved-at: (optional uint),
+    external-id: (optional (string-ascii 128))
   }
 )
 
@@ -376,6 +377,7 @@
   (question (string-ascii 256))
   (description (optional (string-ascii 512)))
   (resolve-date uint)
+  (external-id (optional (string-ascii 128)))
   (token-contract <sip010-trait>)
 )
   (let
@@ -403,7 +405,8 @@
         total-bets: u0,
         status: STATUS-ACTIVE,
         winning-outcome: none,
-        resolved-at: none
+        resolved-at: none,
+        external-id: external-id
       }
     )
     
@@ -418,6 +421,7 @@
       question: question,
       creator: tx-sender,
       resolve-date: resolve-date,
+      external-id: external-id,
       block-height: block-height
     })
     

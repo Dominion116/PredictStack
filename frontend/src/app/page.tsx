@@ -3,6 +3,7 @@ import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import Link from "next/link";
 import { ArrowRight, Trophy, Zap, Shield } from "lucide-react";
+import { MarketsList } from "@/components/markets-list";
 
 export default function Home() {
   return (
@@ -35,41 +36,56 @@ export default function Home() {
         </div>
       </section>
 
-      {/* Feature Grid */}
-      <section className="container py-12 md:py-24 grid gap-6 md:grid-cols-3">
-          <Card className="bg-card/50 backdrop-blur border-muted/60">
-              <CardHeader>
-                  <CardTitle className="flex items-center gap-2">
-                      <Zap className="h-5 w-5 text-yellow-500" /> Instant Settlement
-                  </CardTitle>
-              </CardHeader>
-              <CardContent className="text-muted-foreground">
-                  Markets resolve automatically via trusted oracles, sending funds directly to your wallet without intermediaries.
-              </CardContent>
-          </Card>
-          
-          <Card className="bg-card/50 backdrop-blur border-muted/60">
-              <CardHeader>
-                  <CardTitle className="flex items-center gap-2">
-                       <Trophy className="h-5 w-5 text-orange-500" /> USDCx Betting
-                  </CardTitle>
-              </CardHeader>
-              <CardContent className="text-muted-foreground">
-                  Use stablecoins for low volatility betting. Bridge your USDC from Ethereum seamlessly with our integrated bridge.
-              </CardContent>
-          </Card>
-          
-           <Card className="bg-card/50 backdrop-blur border-muted/60">
-              <CardHeader>
-                  <CardTitle className="flex items-center gap-2">
-                      <Shield className="h-5 w-5 text-blue-500" /> Bitcoin Security
-                  </CardTitle>
-              </CardHeader>
-              <CardContent className="text-muted-foreground">
-                  Secured by Proof-of-Transfer. Your predictions are recorded on the Stacks layer, anchoring to Bitcoin.
-              </CardContent>
-          </Card>
+      {/* Featured Markets */}
+      <section className="container py-12 md:py-24">
+          <div className="flex flex-col md:flex-row justify-between items-end mb-10 gap-4">
+              <div className="space-y-2">
+                  <h2 className="text-3xl font-bold tracking-tighter sm:text-4xl">Trending Markets</h2>
+                  <p className="text-muted-foreground">The most active predictions right now on PredictStack.</p>
+              </div>
+              <Button variant="ghost" className="hidden md:flex">
+                  View all markets <ArrowRight className="ml-2 h-4 w-4" />
+              </Button>
+          </div>
+
+          <MarketsList />
       </section>
+
+      {/* Feature Grid */}
+      <section className="container py-12 md:py-24 border-t">
+          <div className="grid gap-8 md:grid-cols-3">
+              <Card className="bg-card/30 border-none shadow-none">
+                  <CardHeader>
+                      <Zap className="h-10 w-10 text-yellow-500 mb-4" />
+                      <CardTitle>Instant Settlement</CardTitle>
+                  </CardHeader>
+                  <CardContent className="text-muted-foreground">
+                      Markets resolve automatically via trusted oracles, sending funds directly to your wallet.
+                  </CardContent>
+              </Card>
+              
+              <Card className="bg-card/30 border-none shadow-none">
+                  <CardHeader>
+                       <Trophy className="h-10 w-10 text-orange-500 mb-4" />
+                      <CardTitle>USDCx Betting</CardTitle>
+                  </CardHeader>
+                  <CardContent className="text-muted-foreground">
+                      Use stablecoins for low volatility. Bridge your USDC from Ethereum seamlessly.
+                  </CardContent>
+              </Card>
+              
+               <Card className="bg-card/30 border-none shadow-none">
+                  <CardHeader>
+                      <Shield className="h-10 w-10 text-blue-500 mb-4" />
+                      <CardTitle>Bitcoin Security</CardTitle>
+                  </CardHeader>
+                  <CardContent className="text-muted-foreground">
+                      Secured by Proof-of-Transfer. Your predictions are recorded on Stacks, anchored to Bitcoin.
+                  </CardContent>
+              </Card>
+          </div>
+      </section>
+
     </main>
   );
 }

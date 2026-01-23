@@ -117,6 +117,7 @@ async function createStacksMarket(market: PolymarketMarket, currentBlockHeight: 
             stringAsciiCV(question),
             someCV(stringAsciiCV(description)),
             uintCV(resolveBlock),
+            someCV(stringAsciiCV(market.condition_id)),
             contractPrincipalCV(tokenAddress, tokenName)
         ],
         senderKey: PRIVATE_KEY,
