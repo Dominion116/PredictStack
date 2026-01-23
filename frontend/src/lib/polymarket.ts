@@ -1,6 +1,4 @@
 
-import axios from 'axios';
-
 export interface PolymarketMetadata {
     question: string;
     description: string;
@@ -23,27 +21,49 @@ const CLOB_API_BASE = 'https://clob.polymarket.com';
  */
 export async function fetchPolymarketMetadata(conditionId: string): Promise<PolymarketMetadata | null> {
     try {
-        // Fetch market details from Polymarket CLOB
-        const response = await axios.get(`${CLOB_API_BASE}/markets/${conditionId}`);
-        const data = response.data;
-
+        // Use native fetch instead of axios for Next.js compatibility
+        const response = await fetch(`${CLOB_API_BASE}/markets/${conditionId}`, {
+            method: 'GET',
+            headers: {
+                'Accept': 'application/json',
+            },
+            // Allow cross-origin requests
+            mode: 'cors',
+        });
+        
+        if (!response.ok) {
+            console.error(`Polymarket API error: ${response.status}`);
+            return null;
+        }
+        
+        const data = await response.json();
         if (!data) return null;
 
-        // Extract odds if available
-        let liveOdds;
-        if (data.tokens && data.tokens.length === 2) {
-            // Note: In a real app, you'd fetch the actual orderbook or mid-price.
-            // For now, we'll look for the 'price' field if Polymarket provides it in this summary.
-            // If not, we could hit the 'price' endpoint.
+        // Extract outcomes and odds from tokens array
+        let outcomes: string[] = ['Yes', 'No'];
+        let liveOdds: { yes: number; no: number } | undefined;
+        
+        if (data.tokens && Array.isArray(data.tokens) && data.tokens.length >= 2) {
+            outcomes = data.tokens.map((t: any) => t.outcome || 'Unknown');
+            
+            // Get prices from tokens (they represent odds)
+            const token0Price = data.tokens[0]?.price ?? 0.5;
+            const token1Price = data.tokens[1]?.price ?? 0.5;
+            
+            // Typically first token is "Yes" equivalent, second is "No"
+            liveOdds = {
+                yes: token0Price,
+                no: token1Price
+            };
         }
 
         return {
-            question: data.question,
-            description: data.description,
+            question: data.question || '',
+            description: data.description || '',
             image: data.image || '',
             icon: data.icon || '',
-            category: data.category || 'General',
-            outcomes: data.outcomes || ['Yes', 'No'],
+            category: data.tags?.[0] || 'General',
+            outcomes,
             liveOdds
         };
     } catch (error) {
@@ -60,3 +80,4 @@ export async function fetchBulkPolymarketPrices(conditionIds: string[]) {
     // Implement if needed for list views
     return {};
 }
+
