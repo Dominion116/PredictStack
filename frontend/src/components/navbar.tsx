@@ -33,9 +33,15 @@ function NavbarContent() {
   const [address, setAddress] = useState<string | null>(null);
 
   useEffect(() => {
-    if (userSession.isUserSignedIn()) {
-      setIsSignedIn(true);
-      setAddress(userSession.loadUserData().profile.stxAddress.testnet);
+    try {
+      if (userSession.isUserSignedIn()) {
+        setIsSignedIn(true);
+        setAddress(userSession.loadUserData().profile.stxAddress.testnet);
+      }
+    } catch (error) {
+      console.error("Session data corrupted, clearing...", error);
+      // Clear localStorage to fix the corrupted state
+      userSession.signUserOut();
     }
   }, []);
 

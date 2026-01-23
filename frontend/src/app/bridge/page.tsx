@@ -56,8 +56,13 @@ function BridgeContent() {
 
   // Load Stacks User
   useEffect(() => {
-    if (userSession.isUserSignedIn()) {
-      setStacksAddress(userSession.loadUserData().profile.stxAddress.testnet);
+    try {
+      if (userSession.isUserSignedIn()) {
+        setStacksAddress(userSession.loadUserData().profile.stxAddress.testnet);
+      }
+    } catch (error) {
+      console.error("Bridge session error:", error);
+      userSession.signUserOut();
     }
   }, []);
 
@@ -141,7 +146,7 @@ function BridgeContent() {
             CONFIG.stacksDomain, 
             remoteRecipient, 
             CONFIG.ethUsdcContract as Hex, 
-            0n, // maxFee
+            BigInt(0), // maxFee
             '0x' // hookData
         ],
         account: ethAddress as Hex,
@@ -189,7 +194,7 @@ function BridgeContent() {
         functionName: 'burn',
         functionArgs: [
             Cl.uint(value),
-            Cl.uint(0), // Ethereum Domain ID is 0
+            Cl.uint(BigInt(0)), // Ethereum Domain ID is 0
             Cl.buffer(recipientBuffer)
         ],
         network: CURRENT_NETWORK,
