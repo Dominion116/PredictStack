@@ -126,7 +126,7 @@ async function createStacksMarket(market: PolymarketMarket, currentBlockHeight: 
 
     try {
         const transaction = await makeContractCall(txOptions);
-        const broadcastResponse = await broadcastTransaction(transaction, getNetwork());
+        const broadcastResponse = await broadcastTransaction({ transaction, network: getNetwork() });
         
         if ('error' in broadcastResponse) {
             console.error('   ❌ Transaction failed:', broadcastResponse.error);
