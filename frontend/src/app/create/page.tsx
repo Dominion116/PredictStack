@@ -1,7 +1,7 @@
 
 'use client';
 
-import { useState, useEffect } from 'react';
+import { useState, useEffect, useMemo } from 'react';
 import { Navbar } from "@/components/navbar";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
 import { Button } from '@/components/ui/button';
@@ -75,11 +75,26 @@ function CreateMarketContent() {
     // Form State
     const [question, setQuestion] = useState('');
     const [description, setDescription] = useState('');
-    const [resolveBlock, setResolveBlock] = useState('');
+    const [resolveDate, setResolveDate] = useState('');
     const [category, setCategory] = useState('Crypto');
     const [imageUrl, setImageUrl] = useState('');
     const [isUploading, setIsUploading] = useState(false);
     const [previewUrl, setPreviewUrl] = useState<string | null>(null);
+
+    // Current block height (approximate - Stacks testnet)
+    // In production, you'd fetch this from the API
+    const CURRENT_BLOCK_HEIGHT = 3750000; // Approximate current block
+    const SECONDS_PER_BLOCK = 600; // ~10 minutes per block on Stacks
+
+    // Calculate estimated block height from date
+    const estimatedBlock = useMemo(() => {
+        if (!resolveDate) return 0;
+        const targetTime = new Date(resolveDate).getTime();
+        const now = Date.now();
+        const secondsUntilResolve = Math.max(0, (targetTime - now) / 1000);
+        const blocksUntilResolve = Math.ceil(secondsUntilResolve / SECONDS_PER_BLOCK);
+        return CURRENT_BLOCK_HEIGHT + blocksUntilResolve;
+    }, [resolveDate]);
 
     const handleFileChange = async (e: React.ChangeEvent<HTMLInputElement>) => {
         const file = e.target.files?.[0];
@@ -120,8 +135,13 @@ function CreateMarketContent() {
         e.preventDefault();
         const config = getContractConfig();
 
-        if (!question || !resolveBlock) {
-            toast.error('Question and Resolution Block are required');
+        if (!question || !resolveDate) {
+            toast.error('Question and Resolution Date are required');
+            return;
+        }
+
+        if (estimatedBlock <= CURRENT_BLOCK_HEIGHT) {
+            toast.error('Resolution date must be in the future');
             return;
         }
 
@@ -142,7 +162,7 @@ function CreateMarketContent() {
                 functionArgs: [
                     stringAsciiCV(question),
                     description ? someCV(stringAsciiCV(description)) : noneCV(),
-                    uintCV(resolveBlock),
+                    uintCV(estimatedBlock),
                     noneCV(), // No external ID
                     stringAsciiCV(category),
                     imageUrl ? someCV(stringAsciiCV(imageUrl)) : noneCV(),
@@ -204,15 +224,20 @@ function CreateMarketContent() {
                                     </select>
                                 </div>
                                 <div className="space-y-2">
-                                    <Label htmlFor="block">Resolution Block Height</Label>
+                                    <Label htmlFor="resolveDate">Resolution Date & Time</Label>
                                     <Input 
-                                        id="block" 
-                                        type="number" 
-                                        placeholder="e.g. 150000" 
-                                        value={resolveBlock}
-                                        onChange={(e) => setResolveBlock(e.target.value)}
+                                        id="resolveDate" 
+                                        type="datetime-local" 
+                                        value={resolveDate}
+                                        onChange={(e) => setResolveDate(e.target.value)}
+                                        min={new Date().toISOString().slice(0, 16)}
                                         required
                                     />
+                                    {resolveDate && (
+                                        <p className="text-xs text-muted-foreground">
+                                            Estimated block: ~{estimatedBlock.toLocaleString()}
+                                        </p>
+                                    )}
                                 </div>
                             </div>
 
