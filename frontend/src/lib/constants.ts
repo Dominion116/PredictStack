@@ -10,7 +10,7 @@ export const APP_DETAILS = {
 };
 
 // Contract Configuration
-const DEPLOYER_TESTNET = 'ST1PQHQKV0RJXZFY1DGX8MNSNYVE3VGZJSRTPGZGM'; // Default/Placeholder
+const DEPLOYER_TESTNET = 'ST30VGN68PSGVWGNMD0HH2WQMM5T486EK3WBNTHCY'; // Updated to your wallet address
 const DEPLOYER_MAINNET = 'SP...'; // To be filled
 
 export const NETWORK_ENV = process.env.NEXT_PUBLIC_NETWORK || 'testnet'; // Default to testnet
