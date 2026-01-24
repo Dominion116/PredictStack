@@ -23,7 +23,7 @@ export default function Home() {
           Predict the future, today.
         </p>
         <div className="flex flex-col sm:flex-row gap-4">
-            <Link href="/create">
+            <Link href="/markets">
               <Button size="lg" className="h-12 px-8 text-lg">
                 Start Betting <ArrowRight className="ml-2 h-4 w-4" />
               </Button>
@@ -43,9 +43,11 @@ export default function Home() {
                   <h2 className="text-3xl font-bold tracking-tighter sm:text-4xl">Trending Markets</h2>
                   <p className="text-muted-foreground">The most active predictions right now on PredictStack.</p>
               </div>
-              <Button variant="ghost" className="hidden md:flex">
-                  View all markets <ArrowRight className="ml-2 h-4 w-4" />
-              </Button>
+              <Link href="/markets">
+                <Button variant="ghost" className="hidden md:flex">
+                    View all markets <ArrowRight className="ml-2 h-4 w-4" />
+                </Button>
+              </Link>
           </div>
 
           <MarketsList />
