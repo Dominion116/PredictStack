@@ -38,3 +38,7 @@ coverage/
 .env.*
 !.env.example
 *.md
+
+# Seed outputs
+seed_output*.txt
+transactions.json
