@@ -9,9 +9,8 @@ import { blockToDate, formatResolutionDate } from '@/lib/date-utils';
 import { Button } from '@/components/ui/button';
 import { Card, CardContent, CardDescription, CardFooter, CardHeader, CardTitle } from '@/components/ui/card';
 import { Input } from '@/components/ui/input';
-import { Progress } from '@/components/ui/progress';
 import { Badge } from '@/components/ui/badge';
-import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
+import { Tabs, TabsList, TabsTrigger } from '@/components/ui/tabs';
 import { Loader2, TrendingUp, Clock, AlertCircle, Trophy, Wallet } from 'lucide-react';
 import { toast } from 'sonner';
 import { useConnect } from '@stacks/connect-react';
@@ -20,10 +19,7 @@ import {
     uintCV, 
     contractPrincipalCV, 
     PostConditionMode, 
-    AnchorMode,
-    FungibleConditionCode, 
-    createAssetInfo, 
-    makeStandardFungiblePostCondition 
+    AnchorMode
 } from '@stacks/transactions';
 
 export default function MarketPage() {
