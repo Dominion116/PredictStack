@@ -10,8 +10,8 @@
 ;; TRAITS
 ;; ============================================================================
 
-;; Use official SIP-010 trait for compatibility with USDCx
-(use-trait sip010-trait 'ST1PQHQKV0RJXZFY1DGX8MNSNYVE3VGZJSRTPGZGM.sip-010-trait-ft-standard.sip-010-trait)
+;; Use local SIP-010 trait definition
+(use-trait sip010-trait .sip010-trait.sip010-trait)
 
 ;; ============================================================================
 ;; CONSTANTS - ERROR CODES
