@@ -6,6 +6,7 @@ import { Badge } from '@/components/ui/badge';
 import { Button } from '@/components/ui/button';
 import { TrendingUp, Clock } from 'lucide-react';
 import Link from 'next/link';
+import { blockToDate, formatResolutionDate } from '@/lib/date-utils';
 
 interface MarketCardProps {
     market: any;
@@ -31,6 +32,13 @@ export function MarketCard({ market }: MarketCardProps) {
     // Calculate implied probability for display
     const yesImpliedProb = totalPool > 0 ? ((yesPool / totalPool) * 100).toFixed(1) : '50.0';
     const noImpliedProb = totalPool > 0 ? ((noPool / totalPool) * 100).toFixed(1) : '50.0';
+
+    // Calculate resolution date
+    const resolveBlock = market['resolve-date']?.value ? Number(market['resolve-date'].value) : 0;
+    // For mocked markets without block data, we'll default to "Active"
+    // In a real app with block data, we'd use:
+    const resolutionDate = resolveBlock > 0 ? blockToDate(resolveBlock) : null;
+    const timeDisplay = resolutionDate ? formatResolutionDate(resolutionDate) : "Active";
 
     return (
         <Card className="overflow-hidden bg-card/50 backdrop-blur hover:border-primary/50 transition-all group flex flex-col">
@@ -67,7 +75,7 @@ export function MarketCard({ market }: MarketCardProps) {
                     </span>
                     <span className="flex items-center gap-1">
                         <Clock className="h-3 w-3" />
-                        Active
+                        {timeDisplay}
                     </span>
                 </div>
                 <CardTitle className="text-lg leading-tight line-clamp-2">
