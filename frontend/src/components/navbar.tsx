@@ -1,11 +1,13 @@
+
 'use client';
 
 import { useConnect } from '@stacks/connect-react';
 import { Button } from '@/components/ui/button';
 import { Badge } from '@/components/ui/badge';
-import { userSession } from '@/lib/constants';
+import { userSession, getContractConfig } from '@/lib/constants';
 import { useEffect, useState } from 'react';
 import { LogOut, Wallet } from 'lucide-react';
+import Link from 'next/link';
 
 export function Navbar() {
   const [mounted, setMounted] = useState(false);
@@ -31,16 +33,20 @@ function NavbarContent() {
   const { doOpenAuth } = useConnect();
   const [isSignedIn, setIsSignedIn] = useState(false);
   const [address, setAddress] = useState<string | null>(null);
+  const [isAdmin, setIsAdmin] = useState(false);
 
   useEffect(() => {
     try {
       if (userSession.isUserSignedIn()) {
         setIsSignedIn(true);
-        setAddress(userSession.loadUserData().profile.stxAddress.testnet);
+        const userAddress = userSession.loadUserData().profile.stxAddress.testnet;
+        setAddress(userAddress);
+        
+        const config = getContractConfig();
+        setIsAdmin(userAddress === config.deployer);
       }
     } catch (error) {
       console.error("Session data corrupted, clearing...", error);
-      // Clear localStorage to fix the corrupted state
       userSession.signUserOut();
     }
   }, []);
@@ -53,6 +59,7 @@ function NavbarContent() {
     userSession.signUserOut();
     setIsSignedIn(false);
     setAddress(null);
+    setIsAdmin(false);
     window.location.reload();
   };
 
@@ -63,13 +70,15 @@ function NavbarContent() {
     <nav className="border-b bg-background/95 backdrop-blur supports-[backdrop-filter]:bg-background/60">
       <div className="container flex h-14 items-center gap-4">
         <div className="mr-4 hidden md:flex">
-          <a className="mr-6 flex items-center space-x-2 font-bold" href="/">
+          <Link href="/" className="mr-6 flex items-center space-x-2 font-bold">
             PredictStack
-          </a>
+          </Link>
           <nav className="flex items-center space-x-6 text-sm font-medium">
-            <a className="transition-colors hover:text-foreground/80 text-foreground" href="/">Markets</a>
-            <a className="transition-colors hover:text-foreground/80 text-foreground/60" href="/bridge">Bridge</a>
-            <a className="transition-colors hover:text-foreground/80 text-foreground/60" href="/create">Create</a>
+            <Link className="transition-colors hover:text-foreground/80 text-foreground" href="/">Markets</Link>
+            <Link className="transition-colors hover:text-foreground/80 text-foreground/60" href="/bridge">Bridge</Link>
+            {isAdmin && (
+              <Link className="transition-colors hover:text-foreground/80 text-foreground/60" href="/create">Create</Link>
+            )}
           </nav>
         </div>
 
@@ -96,4 +105,3 @@ function NavbarContent() {
     </nav>
   );
 }
-

@@ -14,6 +14,8 @@ interface MarketCardProps {
 export function MarketCard({ market }: MarketCardProps) {
     // Try to get external-id from the market data structure
     const question = market.question?.value || market.question || 'Unknown Market';
+    const imageUrl = market['image-url']?.value || market['image-url'];
+    const category = market.category?.value || market.category || 'General';
 
     // Parse pool values safely
     const yesPoolRaw = market['yes-pool']?.value || market['yes-pool'] || 0;
@@ -32,10 +34,30 @@ export function MarketCard({ market }: MarketCardProps) {
 
     return (
         <Card className="overflow-hidden bg-card/50 backdrop-blur hover:border-primary/50 transition-all group flex flex-col">
-            {/* Header Section */}
-            <div className="h-24 w-full bg-gradient-to-br from-primary/20 to-primary/5 flex items-center justify-center">
-                <TrendingUp className="h-8 w-8 text-primary/50" />
-            </div>
+            {/* Image/Header Section */}
+            {imageUrl ? (
+                <div className="relative h-40 w-full overflow-hidden">
+                    <img 
+                        src={imageUrl} 
+                        alt={question}
+                        className="object-cover w-full h-full transition-transform duration-500 group-hover:scale-110"
+                    />
+                    <div className="absolute top-2 left-2">
+                        <Badge className="bg-background/80 backdrop-blur-sm text-foreground">
+                            {category}
+                        </Badge>
+                    </div>
+                </div>
+            ) : (
+                <div className="relative h-24 w-full bg-gradient-to-br from-primary/20 to-primary/5 flex items-center justify-center">
+                    <TrendingUp className="h-8 w-8 text-primary/50" />
+                    <div className="absolute top-2 left-2">
+                        <Badge className="bg-background/80 backdrop-blur-sm text-foreground">
+                            {category}
+                        </Badge>
+                    </div>
+                </div>
+            )}
             
             <CardHeader className="space-y-1 flex-grow">
                 <div className="flex items-center justify-between text-xs text-muted-foreground mb-2">

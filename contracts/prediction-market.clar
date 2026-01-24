@@ -94,7 +94,9 @@
     status: uint,
     winning-outcome: (optional bool),
     resolved-at: (optional uint),
-    external-id: (optional (string-ascii 128))
+    external-id: (optional (string-ascii 128)),
+    category: (string-ascii 32),
+    image-url: (optional (string-ascii 256))
   }
 )
 
@@ -379,6 +381,8 @@
   (description (optional (string-ascii 512)))
   (resolve-date uint)
   (external-id (optional (string-ascii 128)))
+  (category (string-ascii 32))
+  (image-url (optional (string-ascii 256)))
   (token-contract <sip010-trait>)
 )
   (let
@@ -407,7 +411,9 @@
         status: STATUS-ACTIVE,
         winning-outcome: none,
         resolved-at: none,
-        external-id: external-id
+        external-id: external-id,
+        category: category,
+        image-url: image-url
       }
     )
     
@@ -423,6 +429,8 @@
       creator: tx-sender,
       resolve-date: resolve-date,
       external-id: external-id,
+      category: category,
+      image-url: image-url,
       block-height: block-height
     })
     
@@ -735,7 +743,9 @@
       total-bets: (get total-bets market),
       status: (status-to-string (get status market)),
       winning-outcome: (get winning-outcome market),
-      resolved-at: (get resolved-at market)
+      resolved-at: (get resolved-at market),
+      category: (get category market),
+      image-url: (get image-url market)
     })
     ERR-MARKET-NOT-FOUND
   )
