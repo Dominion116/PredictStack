@@ -1,12 +1,10 @@
 
 'use client';
 
-import { useEffect, useState } from 'react';
 import { Card, CardContent, CardFooter, CardHeader, CardTitle } from '@/components/ui/card';
 import { Badge } from '@/components/ui/badge';
 import { Button } from '@/components/ui/button';
-import { fetchPolymarketMetadata, PolymarketMetadata } from '@/lib/polymarket';
-import { Loader2, TrendingUp, Clock, ExternalLink } from 'lucide-react';
+import { TrendingUp, Clock } from 'lucide-react';
 import Link from 'next/link';
 
 interface MarketCardProps {
@@ -14,27 +12,8 @@ interface MarketCardProps {
 }
 
 export function MarketCard({ market }: MarketCardProps) {
-    const [metadata, setMetadata] = useState<PolymarketMetadata | null>(null);
-    const [loadingMetadata, setLoadingMetadata] = useState(false);
-    const [metadataError, setMetadataError] = useState(false);
-
     // Try to get external-id from the market data structure
-    const externalId = market['external-id']?.value;
     const question = market.question?.value || market.question || 'Unknown Market';
-
-    useEffect(() => {
-        if (externalId) {
-            setLoadingMetadata(true);
-            setMetadataError(false);
-            fetchPolymarketMetadata(externalId)
-                .then(data => {
-                    setMetadata(data);
-                    if (!data) setMetadataError(true);
-                })
-                .catch(() => setMetadataError(true))
-                .finally(() => setLoadingMetadata(false));
-        }
-    }, [externalId]);
 
     // Parse pool values safely
     const yesPoolRaw = market['yes-pool']?.value || market['yes-pool'] || 0;
@@ -43,43 +22,20 @@ export function MarketCard({ market }: MarketCardProps) {
     const noPool = Number(noPoolRaw) / 1_000_000;
     const totalPool = yesPool + noPool;
     
-    // Calculate simple odds based on pool size (50/50 if empty)
-    const yesOdds = totalPool > 0 ? (yesPool / totalPool) * 100 : 50;
-
-    // Polymarket odds (converted to percentage)
-    const polymarketYesOdds = metadata?.liveOdds?.yes 
-        ? (metadata.liveOdds.yes * 100).toFixed(1) 
-        : null;
+    // Calculate payout multipliers (how much you get back per $1 bet if you win)
+    const yesMultiplier = yesPool > 0 ? (totalPool / yesPool).toFixed(2) : '2.00';
+    const noMultiplier = noPool > 0 ? (totalPool / noPool).toFixed(2) : '2.00';
+    
+    // Calculate implied probability for display
+    const yesImpliedProb = totalPool > 0 ? ((yesPool / totalPool) * 100).toFixed(1) : '50.0';
+    const noImpliedProb = totalPool > 0 ? ((noPool / totalPool) * 100).toFixed(1) : '50.0';
 
     return (
         <Card className="overflow-hidden bg-card/50 backdrop-blur hover:border-primary/50 transition-all group flex flex-col">
-            {/* Image Section */}
-            {loadingMetadata ? (
-                <div className="h-40 w-full bg-muted flex items-center justify-center">
-                    <Loader2 className="h-6 w-6 animate-spin text-muted-foreground" />
-                </div>
-            ) : metadata?.image ? (
-                <div className="relative h-40 w-full overflow-hidden">
-                    <img 
-                        src={metadata.image} 
-                        alt={question}
-                        className="object-cover w-full h-full transition-transform duration-500 group-hover:scale-110"
-                        onError={(e) => {
-                            // Hide image on error
-                            (e.target as HTMLImageElement).style.display = 'none';
-                        }}
-                    />
-                    <div className="absolute top-2 left-2">
-                        <Badge className="bg-background/80 backdrop-blur-sm text-foreground hover:bg-background/90">
-                            {metadata.category}
-                        </Badge>
-                    </div>
-                </div>
-            ) : (
-                <div className="h-24 w-full bg-gradient-to-br from-primary/20 to-primary/5 flex items-center justify-center">
-                    <TrendingUp className="h-8 w-8 text-primary/50" />
-                </div>
-            )}
+            {/* Header Section */}
+            <div className="h-24 w-full bg-gradient-to-br from-primary/20 to-primary/5 flex items-center justify-center">
+                <TrendingUp className="h-8 w-8 text-primary/50" />
+            </div>
             
             <CardHeader className="space-y-1 flex-grow">
                 <div className="flex items-center justify-between text-xs text-muted-foreground mb-2">
@@ -99,34 +55,42 @@ export function MarketCard({ market }: MarketCardProps) {
 
             <CardContent>
                 <div className="space-y-4">
-                    <div className="flex justify-between items-end">
-                         <div className="space-y-1">
-                            <span className="text-sm font-medium text-muted-foreground">Stacks Odds</span>
-                            <div className="text-2xl font-bold text-green-500">
-                                {yesOdds.toFixed(1)}% YES
-                            </div>
-                         </div>
-                         {externalId && (
-                             <div className="text-right space-y-1">
-                                <span className="text-sm font-medium text-muted-foreground flex items-center gap-1 justify-end">
-                                    Polymarket <ExternalLink className="h-3 w-3" />
-                                </span>
-                                <div className="text-lg font-semibold text-blue-500">
-                                    {polymarketYesOdds ? `${polymarketYesOdds}%` : '--'}
+                    {/* Stacks Pool Odds */}
+                    <div>
+                        <span className="text-xs font-medium text-muted-foreground mb-2 block">
+                            Pool Distribution
+                        </span>
+                        <div className="flex justify-between items-center">
+                            <div className="space-y-1">
+                                <div className="text-sm text-muted-foreground">YES</div>
+                                <div className="text-2xl font-bold text-green-500">
+                                    {yesMultiplier}x
                                 </div>
-                             </div>
-                         )}
+                                <div className="text-xs text-muted-foreground">
+                                    ${yesPool.toFixed(2)} pool
+                                </div>
+                            </div>
+                            <div className="text-right space-y-1">
+                                <div className="text-sm text-muted-foreground">NO</div>
+                                <div className="text-2xl font-bold text-red-500">
+                                    {noMultiplier}x
+                                </div>
+                                <div className="text-xs text-muted-foreground">
+                                    ${noPool.toFixed(2)} pool
+                                </div>
+                            </div>
+                        </div>
                     </div>
                     
                     {/* Progress bar visual */}
                     <div className="h-2 w-full bg-secondary rounded-full overflow-hidden flex">
                         <div 
                             className="h-full bg-green-500 transition-all duration-1000" 
-                            style={{ width: `${yesOdds}%` }}
+                            style={{ width: `${yesImpliedProb}%` }}
                         />
                          <div 
                             className="h-full bg-red-500 transition-all duration-1000" 
-                            style={{ width: `${100 - yesOdds}%` }}
+                            style={{ width: `${noImpliedProb}%` }}
                         />
                     </div>
                 </div>

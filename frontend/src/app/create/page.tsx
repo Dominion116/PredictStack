@@ -51,7 +51,6 @@ function CreateMarketContent() {
     const [question, setQuestion] = useState('');
     const [description, setDescription] = useState('');
     const [resolveBlock, setResolveBlock] = useState('');
-    const [externalId, setExternalId] = useState('');
 
     const handleSubmit = async (e: React.FormEvent) => {
         e.preventDefault();
@@ -75,7 +74,7 @@ function CreateMarketContent() {
                     stringAsciiCV(question),
                     description ? someCV(stringAsciiCV(description)) : noneCV(),
                     uintCV(resolveBlock),
-                    externalId ? someCV(stringAsciiCV(externalId)) : noneCV(),
+                    noneCV(), // No external ID
                     contractPrincipalCV(tokenAddr, tokenName)
                 ],
                 postConditionMode: PostConditionMode.Deny,
@@ -129,27 +128,16 @@ function CreateMarketContent() {
                                 />
                             </div>
 
-                            <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-                                <div className="space-y-2">
-                                    <Label htmlFor="block">Resolution Block Height</Label>
-                                    <Input 
-                                        id="block" 
-                                        type="number" 
-                                        placeholder="e.g. 150000" 
-                                        value={resolveBlock}
-                                        onChange={(e) => setResolveBlock(e.target.value)}
-                                        required
-                                    />
-                                </div>
-                                <div className="space-y-2">
-                                    <Label htmlFor="external">Polymarket ID (Optional)</Label>
-                                    <Input 
-                                        id="external" 
-                                        placeholder="condition_id" 
-                                        value={externalId}
-                                        onChange={(e) => setExternalId(e.target.value)}
-                                    />
-                                </div>
+                            <div className="space-y-2">
+                                <Label htmlFor="block">Resolution Block Height</Label>
+                                <Input 
+                                    id="block" 
+                                    type="number" 
+                                    placeholder="e.g. 150000" 
+                                    value={resolveBlock}
+                                    onChange={(e) => setResolveBlock(e.target.value)}
+                                    required
+                                />
                             </div>
 
                             <Button type="submit" className="w-full" disabled={isSubmitting}>
