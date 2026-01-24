@@ -37,7 +37,9 @@ coverage/
 .env
 .env.*
 !.env.example
-*.md
+# *.md
+!README.md
+!docs/*.md
 
 # Seed outputs
 seed_output*.txt

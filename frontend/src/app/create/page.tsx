@@ -78,6 +78,43 @@ function CreateMarketContent() {
     const [resolveBlock, setResolveBlock] = useState('');
     const [category, setCategory] = useState('Crypto');
     const [imageUrl, setImageUrl] = useState('');
+    const [isUploading, setIsUploading] = useState(false);
+    const [previewUrl, setPreviewUrl] = useState<string | null>(null);
+
+    const handleFileChange = async (e: React.ChangeEvent<HTMLInputElement>) => {
+        const file = e.target.files?.[0];
+        if (!file) return;
+
+        // Validate file size (max 2MB)
+        if (file.size > 2 * 1024 * 1024) {
+            toast.error('Image must be less than 2MB');
+            return;
+        }
+
+        // Show local preview immediately
+        const localUrl = URL.createObjectURL(file);
+        setPreviewUrl(localUrl);
+
+        // Upload to IPFS via Pinata
+        setIsUploading(true);
+        try {
+            const { uploadToPinata } = await import('@/lib/pinata');
+            const result = await uploadToPinata(file, `market-image-${Date.now()}`);
+            
+            if (result.success && result.ipfsUrl) {
+                setImageUrl(result.ipfsUrl);
+                toast.success('Image uploaded to IPFS successfully!');
+            } else {
+                throw new Error(result.error || 'Upload failed');
+            }
+        } catch (error: any) {
+            toast.error(error.message || 'Failed to upload image');
+            // Keep the preview but clear the URL
+            setImageUrl('');
+        } finally {
+            setIsUploading(false);
+        }
+    };
 
     const handleSubmit = async (e: React.FormEvent) => {
         e.preventDefault();
@@ -85,6 +122,11 @@ function CreateMarketContent() {
 
         if (!question || !resolveBlock) {
             toast.error('Question and Resolution Block are required');
+            return;
+        }
+
+        if (isUploading) {
+            toast.error('Please wait for image upload to complete');
             return;
         }
 
@@ -175,13 +217,35 @@ function CreateMarketContent() {
                             </div>
 
                             <div className="space-y-2">
-                                <Label htmlFor="imageUrl">Image URL (Optional)</Label>
-                                <Input 
-                                    id="imageUrl" 
-                                    placeholder="https://example.com/image.jpg" 
-                                    value={imageUrl}
-                                    onChange={(e) => setImageUrl(e.target.value)}
-                                />
+                                <Label htmlFor="image">Market Image</Label>
+                                <div className="flex flex-col items-center justify-center border-2 border-dashed rounded-lg p-6 hover:bg-muted/50 transition-colors cursor-pointer relative">
+                                    <input 
+                                        type="file" 
+                                        id="image" 
+                                        className="absolute inset-0 opacity-0 cursor-pointer" 
+                                        accept="image/*"
+                                        onChange={handleFileChange}
+                                        disabled={isUploading}
+                                    />
+                                    {previewUrl ? (
+                                        <div className="relative w-full h-40">
+                                            <img src={previewUrl} className="w-full h-full object-cover rounded-md" alt="Preview" />
+                                            {isUploading && (
+                                                <div className="absolute inset-0 bg-background/60 flex items-center justify-center rounded-md">
+                                                    <Loader2 className="h-6 w-6 animate-spin" />
+                                                </div>
+                                            )}
+                                        </div>
+                                    ) : (
+                                        <div className="text-center">
+                                            <div className="mx-auto h-12 w-12 text-muted-foreground mb-2 flex items-center justify-center">
+                                                {isUploading ? <Loader2 className="h-8 w-8 animate-spin" /> : "📁"}
+                                            </div>
+                                            <p className="text-sm font-medium">Click to upload or drag and drop</p>
+                                            <p className="text-xs text-muted-foreground mt-1">PNG, JPG or GIF (max 2MB)</p>
+                                        </div>
+                                    )}
+                                </div>
                             </div>
 
                             <div className="space-y-2">
