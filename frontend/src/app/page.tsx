@@ -37,7 +37,7 @@ export default function Home() {
       </section>
 
       {/* Stats Section */}
-      <section className="border-y bg-muted/30">
+      <section className="bg-muted/30">
         <div className="container py-12">
           <div className="grid grid-cols-2 md:grid-cols-4 gap-8 text-center">
             <div>
@@ -78,7 +78,7 @@ export default function Home() {
       </section>
 
       {/* How It Works */}
-      <section className="container py-12 md:py-24 border-t">
+      <section className="container py-12 md:py-24">
         <div className="text-center mb-12">
           <h2 className="text-3xl font-bold tracking-tighter sm:text-4xl mb-4">How It Works</h2>
           <p className="text-muted-foreground max-w-2xl mx-auto">
@@ -120,7 +120,7 @@ export default function Home() {
       </section>
 
       {/* Feature Grid */}
-      <section className="container py-12 md:py-24 border-t">
+      <section className="container py-12 md:py-24">
           <div className="text-center mb-12">
             <h2 className="text-3xl font-bold tracking-tighter sm:text-4xl mb-4">Why PredictStack?</h2>
             <p className="text-muted-foreground max-w-2xl mx-auto">
@@ -161,43 +161,88 @@ export default function Home() {
           </div>
       </section>
 
-      {/* Trust Section */}
-      <section className="bg-muted/30 border-y">
+      {/* FAQ Section */}
+      <section className="bg-muted/30">
         <div className="container py-12 md:py-20">
-          <div className="grid md:grid-cols-2 gap-12 items-center">
-            <div>
-              <h2 className="text-3xl font-bold tracking-tighter sm:text-4xl mb-6">
-                Fully On-Chain. Fully Transparent.
-              </h2>
-              <div className="space-y-4">
-                <div className="flex items-start gap-3">
-                  <CheckCircle className="h-6 w-6 text-green-500 mt-0.5 shrink-0" />
-                  <div>
-                    <div className="font-medium">Non-Custodial</div>
-                    <div className="text-sm text-muted-foreground">Your funds are always in your control. We never hold your assets.</div>
-                  </div>
-                </div>
-                <div className="flex items-start gap-3">
-                  <CheckCircle className="h-6 w-6 text-green-500 mt-0.5 shrink-0" />
-                  <div>
-                    <div className="font-medium">Verifiable Outcomes</div>
-                    <div className="text-sm text-muted-foreground">All market resolutions are recorded on-chain and publicly auditable.</div>
-                  </div>
-                </div>
-                <div className="flex items-start gap-3">
-                  <CheckCircle className="h-6 w-6 text-green-500 mt-0.5 shrink-0" />
-                  <div>
-                    <div className="font-medium">Open Source</div>
-                    <div className="text-sm text-muted-foreground">Our smart contracts are open source and have been reviewed by the community.</div>
-                  </div>
-                </div>
-              </div>
-            </div>
-            <div className="bg-gradient-to-br from-orange-500/20 to-orange-500/5 rounded-2xl p-8 md:p-12 text-center">
-              <div className="text-5xl font-bold text-orange-500 mb-2">100%</div>
-              <div className="text-lg font-medium mb-1">On-Chain</div>
-              <div className="text-sm text-muted-foreground">Every bet, every resolution, every payout — all recorded on the blockchain.</div>
-            </div>
+          <div className="text-center mb-12">
+            <h2 className="text-3xl font-bold tracking-tighter sm:text-4xl mb-4">Frequently Asked Questions</h2>
+            <p className="text-muted-foreground max-w-2xl mx-auto">
+              Everything you need to know about PredictStack.
+            </p>
+          </div>
+          
+          <div className="max-w-3xl mx-auto space-y-4">
+            <details className="group bg-background rounded-lg p-6">
+              <summary className="font-semibold cursor-pointer list-none flex justify-between items-center">
+                What is PredictStack?
+                <span className="transition group-open:rotate-180">
+                  <svg fill="none" height="24" shape-rendering="geometricPrecision" stroke="currentColor" stroke-linecap="round" stroke-linejoin="round" stroke-width="1.5" viewBox="0 0 24 24" width="24"><path d="M6 9l6 6 6-6"></path></svg>
+                </span>
+              </summary>
+              <p className="text-muted-foreground mt-4">
+                PredictStack is a decentralized prediction market platform built on Stacks. Users can bet on future events using USDCx tokens, with all transactions secured by Bitcoin through Stacks&apos; Proof-of-Transfer consensus.
+              </p>
+            </details>
+
+            <details className="group bg-background rounded-lg p-6">
+              <summary className="font-semibold cursor-pointer list-none flex justify-between items-center">
+                How do I get started?
+                <span className="transition group-open:rotate-180">
+                  <svg fill="none" height="24" shape-rendering="geometricPrecision" stroke="currentColor" stroke-linecap="round" stroke-linejoin="round" stroke-width="1.5" viewBox="0 0 24 24" width="24"><path d="M6 9l6 6 6-6"></path></svg>
+                </span>
+              </summary>
+              <p className="text-muted-foreground mt-4">
+                First, connect a Stacks wallet like Leather or Xverse. Then, bridge some USDC to get USDCx tokens. Finally, browse our markets and place your first prediction!
+              </p>
+            </details>
+
+            <details className="group bg-background rounded-lg p-6">
+              <summary className="font-semibold cursor-pointer list-none flex justify-between items-center">
+                What is USDCx?
+                <span className="transition group-open:rotate-180">
+                  <svg fill="none" height="24" shape-rendering="geometricPrecision" stroke="currentColor" stroke-linecap="round" stroke-linejoin="round" stroke-width="1.5" viewBox="0 0 24 24" width="24"><path d="M6 9l6 6 6-6"></path></svg>
+                </span>
+              </summary>
+              <p className="text-muted-foreground mt-4">
+                USDCx is a bridged version of USDC on the Stacks blockchain. It maintains a 1:1 peg with USDC and can be bridged back to Ethereum at any time through our bridge interface.
+              </p>
+            </details>
+
+            <details className="group bg-background rounded-lg p-6">
+              <summary className="font-semibold cursor-pointer list-none flex justify-between items-center">
+                How are markets resolved?
+                <span className="transition group-open:rotate-180">
+                  <svg fill="none" height="24" shape-rendering="geometricPrecision" stroke="currentColor" stroke-linecap="round" stroke-linejoin="round" stroke-width="1.5" viewBox="0 0 24 24" width="24"><path d="M6 9l6 6 6-6"></path></svg>
+                </span>
+              </summary>
+              <p className="text-muted-foreground mt-4">
+                Markets are resolved by trusted oracles after the event concludes. Once resolved, winnings are automatically distributed to the correct predictions. All resolutions are recorded on-chain for transparency.
+              </p>
+            </details>
+
+            <details className="group bg-background rounded-lg p-6">
+              <summary className="font-semibold cursor-pointer list-none flex justify-between items-center">
+                Are my funds safe?
+                <span className="transition group-open:rotate-180">
+                  <svg fill="none" height="24" shape-rendering="geometricPrecision" stroke="currentColor" stroke-linecap="round" stroke-linejoin="round" stroke-width="1.5" viewBox="0 0 24 24" width="24"><path d="M6 9l6 6 6-6"></path></svg>
+                </span>
+              </summary>
+              <p className="text-muted-foreground mt-4">
+                Yes! PredictStack is non-custodial, meaning your funds are held in smart contracts, not by us. All contracts are open source and secured by Bitcoin through Stacks&apos; unique architecture.
+              </p>
+            </details>
+
+            <details className="group bg-background rounded-lg p-6">
+              <summary className="font-semibold cursor-pointer list-none flex justify-between items-center">
+                What fees does PredictStack charge?
+                <span className="transition group-open:rotate-180">
+                  <svg fill="none" height="24" shape-rendering="geometricPrecision" stroke="currentColor" stroke-linecap="round" stroke-linejoin="round" stroke-width="1.5" viewBox="0 0 24 24" width="24"><path d="M6 9l6 6 6-6"></path></svg>
+                </span>
+              </summary>
+              <p className="text-muted-foreground mt-4">
+                We charge a small platform fee (typically 2-3%) on winning bets. This fee helps maintain the platform and oracle infrastructure. There are no fees for placing bets or withdrawing funds.
+              </p>
+            </details>
           </div>
         </div>
       </section>
