@@ -10,7 +10,8 @@
 ;; TRAITS
 ;; ============================================================================
 
-(use-trait sip010-trait .sip010-trait.sip010-trait)
+;; Use official SIP-010 trait for compatibility with USDCx
+(use-trait sip010-trait 'ST1PQHQKV0RJXZFY1DGX8MNSNYVE3VGZJSRTPGZGM.sip-010-trait-ft-standard.sip-010-trait)
 
 ;; ============================================================================
 ;; CONSTANTS - ERROR CODES
@@ -601,6 +602,8 @@
     
     (let
       (
+        ;; Capture user address outside as-contract context
+        (claimer tx-sender)
         ;; Get user's stake on winning side
         (user-winning-stake (if winning-outcome 
           (get yes-amount position) 
@@ -639,7 +642,7 @@
         (var-set total-fees-collected (+ (var-get total-fees-collected) platform-fee))
         
         ;; Transfer winnings to user
-        (try! (as-contract (contract-call? token-contract transfer total-payout tx-sender tx-sender none)))
+        (try! (as-contract (contract-call? token-contract transfer total-payout tx-sender claimer none)))
         
         ;; Transfer platform fee to treasury
         (if (> platform-fee u0)
@@ -675,6 +678,7 @@
     (
       (market (unwrap! (map-get? markets { market-id: market-id }) ERR-MARKET-NOT-FOUND))
       (position (unwrap! (map-get? user-positions { user: tx-sender, market-id: market-id }) ERR-NO-POSITION))
+      (claimer tx-sender)
     )
     ;; Validations
     (asserts! (var-get contract-initialized) ERR-NOT-INITIALIZED)
@@ -696,7 +700,7 @@
       )
       
       ;; Transfer refund to user
-      (try! (as-contract (contract-call? token-contract transfer total-refund tx-sender tx-sender none)))
+      (try! (as-contract (contract-call? token-contract transfer total-refund tx-sender claimer none)))
       
       ;; Emit event
       (print {

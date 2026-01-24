@@ -5,16 +5,13 @@ authors = []
 telemetry = true
 cache_dir = "./.cache"
 
-# SIP-010 Trait Definition
-[contracts.sip010-trait]
-path = "contracts/sip010-trait.clar"
+
 
 
 
 # Main Prediction Market Contract
 [contracts.prediction-market]
 path = "contracts/prediction-market.clar"
-depends_on = ["sip010-trait"]
 
 [repl.analysis]
 passes = ["check_checker"]

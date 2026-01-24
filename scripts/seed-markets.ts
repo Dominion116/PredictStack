@@ -9,7 +9,8 @@ import {
   someCV,
   stringAsciiCV,
   uintCV,
-  contractPrincipalCV
+  contractPrincipalCV,
+  getAddressFromPrivateKey
 } from '@stacks/transactions';
 import { STACKS_TESTNET, STACKS_MAINNET, createNetwork } from '@stacks/network';
 import 'dotenv/config';
@@ -17,7 +18,7 @@ import 'dotenv/config';
 // Constants
 const POLYMARKET_API_URL = 'https://clob.polymarket.com/markets';
 const PREDICTION_MARKET_CONTRACT = {
-    testnet: 'ST1PQHQKV0RJXZFY1DGX8MNSNYVE3VGZJSRTPGZGM.prediction-market',
+    testnet: 'ST30VGN68PSGVWGNMD0HH2WQMM5T486EK3WBNTHCY.prediction-market',
     mainnet: 'SP120SBRBQJ00MCWS7TM5R8WJNTTKD5K0HFRC2CNE.prediction-market'
 };
 const TOKEN_CONTRACT = {
@@ -29,6 +30,10 @@ const TOKEN_CONTRACT = {
 const NETWORK_ENV = process.env.NETWORK || 'testnet';
 const PRIVATE_KEY = process.env.STACKS_PRIVATE_KEY!;
 const DRY_RUN = process.argv.includes('--dry-run');
+
+// Transaction Versions
+const TRANSACTION_VERSION_MAINNET = 0x00;
+const TRANSACTION_VERSION_TESTNET = 0x80;
 
 if (!PRIVATE_KEY && !DRY_RUN) {
     console.error('Error: STACKS_PRIVATE_KEY not found in .env');
@@ -89,17 +94,31 @@ async function fetchPolymarketData() {
     }
 }
 
-async function createStacksMarket(market: PolymarketMarket, currentBlockHeight: number) {
+
+// Helper to ensure ASCII only
+function toAscii(str: string): string {
+    // Remove non-ASCII characters
+    return str.replace(/[^\x00-\x7F]/g, "").trim();
+}
+
+async function createStacksMarket(market: PolymarketMarket, currentBlockHeight: number, nonce: bigint) {
     const resolveBlock = calculateResolveBlockHeight(market.end_date_iso, currentBlockHeight);
     
-    // Truncate to fit Clarity constraints
-    const question = market.question.substring(0, 255); 
-    const description = market.description.substring(0, 511);
+    // Truncate to fit Clarity constraints and ensure ASCII
+    const question = toAscii(market.question).substring(0, 255); 
+    const description = toAscii(market.description).substring(0, 511);
+    const conditionId = toAscii(market.condition_id);
 
     console.log(`\n-----------------------------------`);
     console.log(`📝 Preparing Market: "${question}"`);
     console.log(`   Resolve Date: ${market.end_date_iso} -> Block #${resolveBlock}`);
+    console.log(`   Nonce: ${nonce}`);
     
+    if (question.length === 0) {
+        console.log('   [SKIP] Question is empty after ASCII sanitization or originally empty.');
+        return;
+    }
+
     if (DRY_RUN) {
         console.log('   [DRY RUN] Skipping transaction broadcast.');
         return;
@@ -116,12 +135,13 @@ async function createStacksMarket(market: PolymarketMarket, currentBlockHeight: 
             stringAsciiCV(question),
             someCV(stringAsciiCV(description)),
             uintCV(resolveBlock),
-            someCV(stringAsciiCV(market.condition_id)),
+            someCV(stringAsciiCV(conditionId)),
             contractPrincipalCV(tokenAddress, tokenName)
         ],
         senderKey: PRIVATE_KEY,
         network: getNetwork(),
         anchorMode: AnchorMode.Any,
+        nonce: nonce
     };
 
     try {
@@ -130,6 +150,7 @@ async function createStacksMarket(market: PolymarketMarket, currentBlockHeight: 
         
         if ('error' in broadcastResponse) {
             console.error('   ❌ Transaction failed:', broadcastResponse.error);
+            console.error('   Reason:', broadcastResponse.reason);
         } else {
             console.log(`   ✅ Market created! TxID: ${broadcastResponse.txid}`);
         }
@@ -147,8 +168,18 @@ async function main() {
     const markets = await fetchPolymarketData();
     console.log(`🎯 Found ${markets.length} candidates.`);
     
+    // Get starting nonce
+    const senderAddress = 'ST30VGN68PSGVWGNMD0HH2WQMM5T486EK3WBNTHCY';
+    const nonceResponse = await axios.get(`https://api.${NETWORK_ENV}.hiro.so/extended/v1/address/${senderAddress}/nonces`);
+    let nonce = BigInt(nonceResponse.data.possible_next_nonce);
+    console.log(`🔢 Starting Nonce: ${nonce}`);
+
     for (const market of markets) {
-        await createStacksMarket(market, currentBlock);
+        console.log(`Processing market with nonce ${nonce}`);
+        await createStacksMarket(market, currentBlock, nonce);
+        // Add a small delay for good measure
+        await new Promise(r => setTimeout(r, 1000));
+        nonce += 1n;
     }
 }
 
