@@ -229,8 +229,8 @@ function BridgeContent() {
     <main className="min-h-screen flex flex-col bg-background">
       <Navbar />
       
-      <div className="container py-12 flex-1 flex flex-col items-center justify-center">
-        <div className="mb-8 text-center max-w-2xl">
+      <div className="container py-12 flex-1 flex flex-col">
+        <div className="mb-8 max-w-2xl">
             <h1 className="text-3xl font-bold tracking-tight mb-2">Bridge USDC</h1>
             <p className="text-muted-foreground">
                 Move USDC between Ethereum Sepolia and Stacks Testnet. 
@@ -371,7 +371,7 @@ function BridgeContent() {
             </Tabs>
         </Card>
 
-        <p className="mt-8 text-sm text-muted-foreground text-center max-w-md">
+        <p className="mt-8 text-sm text-muted-foreground max-w-md">
             Note: This is a Testnet bridge. Do not use real Mainnet USDC. <br/>
             Get Sepolia ETH and Testnet USDC from faucets before starting.
         </p>

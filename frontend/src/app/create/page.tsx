@@ -188,7 +188,7 @@ function CreateMarketContent() {
     return (
         <main className="min-h-screen flex flex-col bg-background">
             <Navbar />
-            <div className="container py-12 flex-1 flex flex-col items-center">
+            <div className="container py-12 flex-1 flex flex-col">
                 <Card className="w-full max-w-2xl">
                     <CardHeader>
                         <CardTitle>Create Prediction Market</CardTitle>
