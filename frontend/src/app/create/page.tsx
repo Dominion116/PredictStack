@@ -50,23 +50,6 @@ export default function CreateMarketPage() {
         );
     }
 
-    if (isAdmin === false) {
-        return (
-            <main className="min-h-screen flex flex-col bg-background">
-                <Navbar />
-                <div className="container py-24 flex-1 flex flex-col items-center justify-center text-center">
-                    <ShieldAlert className="h-16 w-16 text-destructive mb-4" />
-                    <h1 className="text-3xl font-bold mb-2">Unauthorized Access</h1>
-                    <p className="text-muted-foreground max-w-md">
-                        Only the platform administrator can create new prediction markets. 
-                        Please connect the admin wallet to proceed.
-                    </p>
-                </div>
-                <Footer />
-            </main>
-        );
-    }
-
     return <CreateMarketContent />;
 }
 
@@ -192,9 +175,9 @@ function CreateMarketContent() {
             <Navbar />
             <div className="container py-12 flex-1 flex flex-col">
                 <div className="mb-8 max-w-2xl">
-                    <h1 className="text-3xl font-bold tracking-tight mb-2">Create Prediction Market</h1>
+                    <h1 className="text-3xl font-bold tracking-tight mb-2">Propose Prediction Market</h1>
                     <p className="text-muted-foreground">
-                        Launch a new P2P market on the Stacks blockchain. (Admin Only)
+                        Propose a new P2P market. It will be reviewed by an admin before going live.
                     </p>
                 </div>
                 
