@@ -1,4 +1,3 @@
-
 // Approximate block time for Stacks in seconds (10 minutes)
 export const SECONDS_PER_BLOCK = 600;
 
