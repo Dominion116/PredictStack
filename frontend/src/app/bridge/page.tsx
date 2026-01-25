@@ -230,7 +230,7 @@ function BridgeContent() {
     <main className="min-h-screen flex flex-col bg-background">
       <Navbar />
       
-      <div className="container py-12 flex-1 flex flex-col">
+      <div className="container py-12 flex-1 flex flex-col items-center">
         <div className="mb-8 max-w-3xl">
             <h1 className="text-3xl font-bold tracking-tight mb-2">Bridge USDC</h1>
             <p className="text-muted-foreground">

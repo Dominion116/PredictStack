@@ -78,6 +78,7 @@ function NavbarContent() {
         <div className="absolute left-1/2 transform -translate-x-1/2 hidden md:block">
             <nav className="flex items-center space-x-8 text-sm font-medium">
               <Link className="transition-colors hover:text-foreground/80 text-foreground" href="/markets">Markets</Link>
+              <Link className="transition-colors hover:text-foreground/80 text-foreground/60" href="/leaderboard">Leaderboard</Link>
               <Link className="transition-colors hover:text-foreground/80 text-foreground/60" href="/bridge">Bridge</Link>
               {isAdmin && (
                 <Link className="transition-colors hover:text-foreground/80 text-foreground/60" href="/admin">Admin</Link>
