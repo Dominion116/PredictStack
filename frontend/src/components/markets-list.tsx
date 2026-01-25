@@ -1,4 +1,3 @@
-
 'use client';
 
 import { useEffect, useState } from 'react';
@@ -7,7 +6,9 @@ import { MarketCard, MarketCardSkeleton } from './market-card';
 import { Button } from './ui/button';
 import { Tabs, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { Input } from "@/components/ui/input";
-import { InfoIcon, RefreshCcw, Search } from 'lucide-react';
+import { InfoIcon, RefreshCcw, Search, ChevronLeft, ChevronRight } from 'lucide-react';
+
+const ITEMS_PER_PAGE = 9;
 
 export function MarketsList() {
     const [allMarkets, setAllMarkets] = useState<any[]>([]);
@@ -16,12 +17,13 @@ export function MarketsList() {
     const [error, setError] = useState<string | null>(null);
     const [activeTab, setActiveTab] = useState('all');
     const [searchQuery, setSearchQuery] = useState('');
+    const [currentPage, setCurrentPage] = useState(1);
 
     const loadMarkets = async () => {
         setLoading(true);
         setError(null);
         try {
-            const data = await getRecentMarkets(50); // Increased limit for better searching
+            const data = await getRecentMarkets(50);
             setAllMarkets(data);
             applyFilter(data, activeTab, searchQuery);
         } catch (err) {
@@ -35,7 +37,6 @@ export function MarketsList() {
     const applyFilter = (data: any[], tab: string, query: string) => {
         let result = data;
 
-        // 1. Filter by Tab
         if (tab !== 'all') {
             result = result.filter(market => {
                 const category = market.category?.value || market.category || 'General';
@@ -43,7 +44,6 @@ export function MarketsList() {
             });
         }
 
-        // 2. Filter by Search Query
         if (query.trim()) {
             const lowerQuery = query.toLowerCase();
             result = result.filter(market => {
@@ -53,6 +53,7 @@ export function MarketsList() {
         }
 
         setFilteredMarkets(result);
+        setCurrentPage(1); // Reset to first page on filter change
     };
 
     useEffect(() => {
@@ -62,6 +63,12 @@ export function MarketsList() {
     useEffect(() => {
         applyFilter(allMarkets, activeTab, searchQuery);
     }, [activeTab, searchQuery, allMarkets]);
+
+    const totalPages = Math.ceil(filteredMarkets.length / ITEMS_PER_PAGE);
+    const paginatedMarkets = filteredMarkets.slice(
+        (currentPage - 1) * ITEMS_PER_PAGE,
+        currentPage * ITEMS_PER_PAGE
+    );
 
     if (loading) {
         return (
@@ -127,11 +134,48 @@ export function MarketsList() {
                     </Button>
                 </div>
             ) : (
-                <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6 animate-in fade-in duration-500">
-                    {filteredMarkets.map((market) => (
-                        <MarketCard key={market.id} market={market} />
-                    ))}
-                </div>
+                <>
+                    <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
+                        {paginatedMarkets.map((market) => (
+                            <MarketCard key={market.id} market={market} />
+                        ))}
+                    </div>
+
+                    {/* Pagination */}
+                    {totalPages > 1 && (
+                        <div className="flex items-center justify-center gap-2 pt-4">
+                            <Button
+                                variant="outline"
+                                size="sm"
+                                onClick={() => setCurrentPage(p => Math.max(1, p - 1))}
+                                disabled={currentPage === 1}
+                            >
+                                <ChevronLeft className="h-4 w-4" />
+                            </Button>
+                            <div className="flex items-center gap-1">
+                                {Array.from({ length: totalPages }, (_, i) => i + 1).map(page => (
+                                    <Button
+                                        key={page}
+                                        variant={currentPage === page ? "default" : "outline"}
+                                        size="sm"
+                                        onClick={() => setCurrentPage(page)}
+                                        className="w-8 h-8 p-0"
+                                    >
+                                        {page}
+                                    </Button>
+                                ))}
+                            </div>
+                            <Button
+                                variant="outline"
+                                size="sm"
+                                onClick={() => setCurrentPage(p => Math.min(totalPages, p + 1))}
+                                disabled={currentPage === totalPages}
+                            >
+                                <ChevronRight className="h-4 w-4" />
+                            </Button>
+                        </div>
+                    )}
+                </>
             )}
         </div>
     );

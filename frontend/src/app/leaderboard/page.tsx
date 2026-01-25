@@ -4,7 +4,8 @@ import { useState, useEffect } from 'react';
 import { Navbar } from "@/components/navbar";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Badge } from '@/components/ui/badge';
-import { TrendingUp, Trophy, Medal, Award } from 'lucide-react';
+import { Button } from '@/components/ui/button';
+import { TrendingUp, Trophy, Medal, Award, ChevronLeft, ChevronRight } from 'lucide-react';
 import { Footer } from "@/components/footer";
 
 interface LeaderboardEntry {
@@ -25,17 +26,31 @@ const MOCK_LEADERBOARD: LeaderboardEntry[] = [
     { address: "ST3KK...77BT", totalProfit: 1840.10, winRate: 51.9, totalBets: 38, rank: 7 },
     { address: "ST1DF...22GG", totalProfit: 1560.50, winRate: 50.5, totalBets: 52, rank: 8 },
     { address: "ST2HH...11JJ", totalProfit: 1200.00, winRate: 49.8, totalBets: 31, rank: 9 },
-    { address: "ST3SS...44KK", totalProfit: 980.20, winRate: 48.2, totalBets: 27, rank: 10 }
+    { address: "ST3SS...44KK", totalProfit: 980.20, winRate: 48.2, totalBets: 27, rank: 10 },
+    { address: "ST4AA...55LL", totalProfit: 850.00, winRate: 47.5, totalBets: 22, rank: 11 },
+    { address: "ST5BB...66MM", totalProfit: 720.30, winRate: 46.8, totalBets: 19, rank: 12 },
+    { address: "ST6CC...77NN", totalProfit: 650.00, winRate: 45.2, totalBets: 18, rank: 13 },
+    { address: "ST7DD...88OO", totalProfit: 580.50, winRate: 44.1, totalBets: 15, rank: 14 },
+    { address: "ST8EE...99PP", totalProfit: 490.00, winRate: 43.0, totalBets: 12, rank: 15 }
 ];
+
+const ITEMS_PER_PAGE = 10;
 
 export default function LeaderboardPage() {
     const [mounted, setMounted] = useState(false);
+    const [currentPage, setCurrentPage] = useState(1);
 
     useEffect(() => {
         setMounted(true);
     }, []);
 
     if (!mounted) return null;
+
+    const totalPages = Math.ceil(MOCK_LEADERBOARD.length / ITEMS_PER_PAGE);
+    const paginatedData = MOCK_LEADERBOARD.slice(
+        (currentPage - 1) * ITEMS_PER_PAGE,
+        currentPage * ITEMS_PER_PAGE
+    );
 
     const getRankIcon = (rank: number) => {
         if (rank === 1) return <Trophy className="h-5 w-5 text-yellow-500" />;
@@ -102,7 +117,7 @@ export default function LeaderboardPage() {
                                     </tr>
                                 </thead>
                                 <tbody>
-                                    {MOCK_LEADERBOARD.map((entry) => (
+                                    {paginatedData.map((entry) => (
                                         <tr 
                                             key={entry.address} 
                                             className="border-b last:border-0 hover:bg-muted/30 transition-colors"
@@ -140,6 +155,41 @@ export default function LeaderboardPage() {
                         </div>
                     </CardContent>
                 </Card>
+
+                {/* Pagination */}
+                {totalPages > 1 && (
+                    <div className="flex items-center justify-center gap-2 pt-6">
+                        <Button
+                            variant="outline"
+                            size="sm"
+                            onClick={() => setCurrentPage(p => Math.max(1, p - 1))}
+                            disabled={currentPage === 1}
+                        >
+                            <ChevronLeft className="h-4 w-4" />
+                        </Button>
+                        <div className="flex items-center gap-1">
+                            {Array.from({ length: totalPages }, (_, i) => i + 1).map(page => (
+                                <Button
+                                    key={page}
+                                    variant={currentPage === page ? "default" : "outline"}
+                                    size="sm"
+                                    onClick={() => setCurrentPage(page)}
+                                    className="w-8 h-8 p-0"
+                                >
+                                    {page}
+                                </Button>
+                            ))}
+                        </div>
+                        <Button
+                            variant="outline"
+                            size="sm"
+                            onClick={() => setCurrentPage(p => Math.min(totalPages, p + 1))}
+                            disabled={currentPage === totalPages}
+                        >
+                            <ChevronRight className="h-4 w-4" />
+                        </Button>
+                    </div>
+                )}
 
                 <p className="text-sm text-muted-foreground mt-6 text-center">
                     Minimum 5 bets required to appear on the leaderboard.
