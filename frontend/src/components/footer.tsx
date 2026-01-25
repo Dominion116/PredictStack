@@ -47,7 +47,7 @@ export function Footer() {
 
           <div className="border-t mt-8 pt-8 flex flex-col md:flex-row justify-between items-center gap-4">
             <div className="text-sm text-muted-foreground">
-              © 2024 PredictStack. All rights reserved.
+              © 2026 PredictStack. All rights reserved.
             </div>
             <div className="text-sm text-muted-foreground">
               Built on Stacks
