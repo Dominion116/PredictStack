@@ -150,7 +150,10 @@
     "active"
     (if (is-eq status STATUS-RESOLVED)
       "resolved"
-      "cancelled"
+      (if (is-eq status STATUS-CANCELLED)
+        "cancelled"
+        "pending"
+      )
     )
   )
 )
