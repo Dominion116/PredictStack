@@ -14,6 +14,7 @@ import { Cl, PostConditionMode, AnchorMode } from '@stacks/transactions';
 import { toast } from 'sonner';
 import Link from 'next/link';
 import { Footer } from '@/components/footer';
+import { RecentActivity } from '@/components/recent-activity';
 
 export default function DashboardPage() {
     const [mounted, setMounted] = useState(false);
@@ -211,8 +212,12 @@ function DashboardContent() {
                     </Card>
                 </div>
 
-                {/* Bets Tabs */}
-                <Tabs defaultValue="active" className="w-full">
+                {/* Main Content Grid */}
+                <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
+                    {/* Bets Section (2 columns) */}
+                    <div className="lg:col-span-2">
+                        {/* Bets Tabs */}
+                        <Tabs defaultValue="active" className="w-full">
                     <TabsList>
                         <TabsTrigger value="active">Active Bets ({activeBets.length})</TabsTrigger>
                         <TabsTrigger value="history">History ({resolvedBets.length})</TabsTrigger>
@@ -259,6 +264,13 @@ function DashboardContent() {
                         )}
                     </TabsContent>
                 </Tabs>
+                    </div>
+
+                    {/* Recent Activity Sidebar */}
+                    <div className="lg:col-span-1">
+                        <RecentActivity />
+                    </div>
+                </div>
 
             </div>
             <Footer />

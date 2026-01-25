@@ -238,3 +238,177 @@ export async function getUserMarkets(address: string) {
         return [];
     }
 }
+
+// -----------------------------------
+// CONTRACT EVENTS (Recent Activity)
+// -----------------------------------
+
+interface ContractEvent {
+    event_type: string;
+    tx_id: string;
+    block_height: number;
+    timestamp: number;
+    data: any;
+}
+
+/**
+ * Fetches recent contract events from the Stacks API.
+ * Used for "Recent Activity" feed on the dashboard.
+ */
+export async function getContractEvents(limit: number = 20): Promise<ContractEvent[]> {
+    try {
+        const apiUrl = NETWORK_ENV === 'mainnet' 
+            ? 'https://api.mainnet.hiro.so' 
+            : 'https://api.testnet.hiro.so';
+        
+        const contractId = `${config.deployer}.${config.predictionMarket}`;
+        const url = `${apiUrl}/extended/v1/contract/${contractId}/events?limit=${limit}`;
+        
+        const response = await fetch(url);
+        if (!response.ok) {
+            throw new Error(`Failed to fetch events: ${response.status}`);
+        }
+        
+        const data = await response.json();
+        const events: ContractEvent[] = [];
+        
+        for (const event of data.results || []) {
+            if (event.event_type === 'smart_contract_log') {
+                try {
+                    // Parse the contract log data
+                    const logData = event.contract_log?.value?.repr;
+                    if (logData) {
+                        // Extract event type from the log
+                        let eventType = 'unknown';
+                        if (logData.includes('market-created')) eventType = 'market-created';
+                        else if (logData.includes('bet-placed')) eventType = 'bet-placed';
+                        else if (logData.includes('market-resolved')) eventType = 'market-resolved';
+                        else if (logData.includes('winnings-claimed')) eventType = 'winnings-claimed';
+                        else if (logData.includes('refund-claimed')) eventType = 'refund-claimed';
+                        
+                        events.push({
+                            event_type: eventType,
+                            tx_id: event.tx_id,
+                            block_height: event.block_height,
+                            timestamp: new Date(event.block_time_iso || Date.now()).getTime(),
+                            data: event.contract_log?.value
+                        });
+                    }
+                } catch (parseError) {
+                    // Skip unparseable events
+                }
+            }
+        }
+        
+        return events;
+    } catch (error) {
+        console.error("Error fetching contract events:", error);
+        return [];
+    }
+}
+
+// -----------------------------------
+// LEADERBOARD DATA
+// -----------------------------------
+
+interface LeaderboardEntry {
+    address: string;
+    totalProfit: number;
+    winRate: number;
+    totalBets: number;
+    rank: number;
+}
+
+/**
+ * Fetches leaderboard data by analyzing contract events.
+ * This aggregates bet-placed and winnings-claimed events to calculate profits.
+ */
+export async function getLeaderboardData(limit: number = 15): Promise<LeaderboardEntry[]> {
+    try {
+        const apiUrl = NETWORK_ENV === 'mainnet' 
+            ? 'https://api.mainnet.hiro.so' 
+            : 'https://api.testnet.hiro.so';
+        
+        const contractId = `${config.deployer}.${config.predictionMarket}`;
+        
+        // Fetch a larger set of events to aggregate
+        const url = `${apiUrl}/extended/v1/contract/${contractId}/events?limit=500`;
+        
+        const response = await fetch(url);
+        if (!response.ok) {
+            throw new Error(`Failed to fetch events: ${response.status}`);
+        }
+        
+        const data = await response.json();
+        
+        // Aggregate user stats
+        const userStats: Map<string, { bets: number, wins: number, totalBet: number, totalWon: number }> = new Map();
+        
+        for (const event of data.results || []) {
+            if (event.event_type === 'smart_contract_log') {
+                const logRepr = event.contract_log?.value?.repr || '';
+                
+                // Parse bet-placed events
+                if (logRepr.includes('bet-placed')) {
+                    const userMatch = logRepr.match(/user\s+([A-Z0-9]+)/i);
+                    const amountMatch = logRepr.match(/amount\s+u(\d+)/);
+                    
+                    if (userMatch && amountMatch) {
+                        const user = userMatch[1];
+                        const amount = parseInt(amountMatch[1]) / 1000000;
+                        
+                        const existing = userStats.get(user) || { bets: 0, wins: 0, totalBet: 0, totalWon: 0 };
+                        existing.bets += 1;
+                        existing.totalBet += amount;
+                        userStats.set(user, existing);
+                    }
+                }
+                
+                // Parse winnings-claimed events
+                if (logRepr.includes('winnings-claimed')) {
+                    const userMatch = logRepr.match(/user\s+([A-Z0-9]+)/i);
+                    const payoutMatch = logRepr.match(/total-payout\s+u(\d+)/);
+                    
+                    if (userMatch && payoutMatch) {
+                        const user = userMatch[1];
+                        const payout = parseInt(payoutMatch[1]) / 1000000;
+                        
+                        const existing = userStats.get(user) || { bets: 0, wins: 0, totalBet: 0, totalWon: 0 };
+                        existing.wins += 1;
+                        existing.totalWon += payout;
+                        userStats.set(user, existing);
+                    }
+                }
+            }
+        }
+        
+        // Convert to leaderboard entries
+        const leaderboard: LeaderboardEntry[] = [];
+        
+        userStats.forEach((stats, address) => {
+            const profit = stats.totalWon - stats.totalBet;
+            const winRate = stats.bets > 0 ? (stats.wins / stats.bets) * 100 : 0;
+            
+            leaderboard.push({
+                address: `${address.slice(0, 6)}...${address.slice(-4)}`,
+                totalProfit: Math.round(profit * 100) / 100,
+                winRate: Math.round(winRate * 10) / 10,
+                totalBets: stats.bets,
+                rank: 0 // Will be assigned after sorting
+            });
+        });
+        
+        // Sort by profit descending
+        leaderboard.sort((a, b) => b.totalProfit - a.totalProfit);
+        
+        // Assign ranks and limit
+        return leaderboard.slice(0, limit).map((entry, index) => ({
+            ...entry,
+            rank: index + 1
+        }));
+        
+    } catch (error) {
+        console.error("Error fetching leaderboard data:", error);
+        return [];
+    }
+}
