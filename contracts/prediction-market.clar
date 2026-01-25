@@ -38,10 +38,15 @@
 (define-constant ERR-TRANSFER-FAILED (err u118))
 (define-constant ERR-ZERO-POOL (err u119))
 (define-constant ERR-MARKET-ACTIVE (err u120))
+(define-constant ERR-INVALID-TOKEN (err u121))
+(define-constant ERR-MARKET-TOO-SHORT (err u122))
 
 ;; ============================================================================
 ;; CONSTANTS - PLATFORM DEFAULTS
 ;; ============================================================================
+
+;; Minimum duration for a market (e.g., 144 blocks ~ 24 hours)
+(define-constant MIN-MARKET-DURATION u144)
 
 ;; Maximum values for safety
 (define-constant MAX-FEE-BPS u1000) ;; Max 10% fee
@@ -96,7 +101,8 @@
     resolved-at: (optional uint),
     external-id: (optional (string-ascii 128)),
     category: (string-ascii 32),
-    image-url: (optional (string-ascii 256))
+    image-url: (optional (string-ascii 256)),
+    token: principal
   }
 )
 
@@ -394,7 +400,7 @@
     (asserts! (is-platform-active) ERR-PLATFORM-PAUSED)
     (asserts! (is-admin-or-oracle) ERR-NOT-AUTHORIZED)
     (asserts! (> (len question) u0) ERR-INVALID-QUESTION)
-    (asserts! (> resolve-date block-height) ERR-DEADLINE-PASSED)
+    (asserts! (> resolve-date (+ block-height MIN-MARKET-DURATION)) ERR-MARKET-TOO-SHORT)
     
     ;; Create the market
     (map-set markets
@@ -413,7 +419,8 @@
         resolved-at: none,
         external-id: external-id,
         category: category,
-        image-url: image-url
+        image-url: image-url,
+        token: (contract-of token-contract)
       }
     )
     
@@ -541,6 +548,7 @@
     (asserts! (is-eq (get status market) STATUS-ACTIVE) ERR-MARKET-RESOLVED)
     (asserts! (< block-height (get resolve-date market)) ERR-DEADLINE-PASSED)
     (asserts! (>= amount (var-get min-bet-amount)) ERR-INVALID-AMOUNT)
+    (asserts! (is-eq (contract-of token-contract) (get token market)) ERR-INVALID-TOKEN)
     
     ;; Transfer tokens from user to contract
     (try! (contract-call? token-contract transfer amount tx-sender (as-contract tx-sender) none))
@@ -607,6 +615,7 @@
     (asserts! (var-get contract-initialized) ERR-NOT-INITIALIZED)
     (asserts! (is-eq (get status market) STATUS-RESOLVED) ERR-MARKET-NOT-RESOLVED)
     (asserts! (not (get claimed position)) ERR-ALREADY-CLAIMED)
+    (asserts! (is-eq (contract-of token-contract) (get token market)) ERR-INVALID-TOKEN)
     
     (let
       (
@@ -745,7 +754,8 @@
       winning-outcome: (get winning-outcome market),
       resolved-at: (get resolved-at market),
       category: (get category market),
-      image-url: (get image-url market)
+      image-url: (get image-url market),
+      token: (get token market)
     })
     ERR-MARKET-NOT-FOUND
   )
