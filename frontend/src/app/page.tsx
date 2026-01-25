@@ -1,11 +1,24 @@
+'use client';
+
 import { Navbar } from "@/components/navbar";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import Link from "next/link";
 import { ArrowRight, Trophy, Zap, Shield, Wallet, BarChart3, CheckCircle, Github, Twitter } from "lucide-react";
 import { MarketsList } from "@/components/markets-list";
+import { useEffect, useState } from "react";
+import { getPlatformStats } from "@/lib/stacks-api";
 
 export default function Home() {
+  const [stats, setStats] = useState<any>(null);
+
+  useEffect(() => {
+    getPlatformStats().then(setStats);
+  }, []);
+
+  const totalMarkets = stats?.['total-markets']?.value || 0;
+  const totalVolume = Number(stats?.['total-volume']?.value || 0) / 1000000;
+
   return (
     <main className="min-h-screen flex flex-col bg-background">
       <Navbar />
@@ -41,20 +54,22 @@ export default function Home() {
         <div className="container py-12">
           <div className="grid grid-cols-2 md:grid-cols-4 gap-8 text-center">
             <div>
-              <div className="text-3xl md:text-4xl font-bold text-orange-500">$1M+</div>
+              <div className="text-3xl md:text-4xl font-bold text-orange-500">
+                ${totalVolume.toLocaleString(undefined, { maximumFractionDigits: 0 })}
+              </div>
               <div className="text-sm text-muted-foreground mt-1">Total Volume</div>
             </div>
             <div>
-              <div className="text-3xl md:text-4xl font-bold text-orange-500">500+</div>
+              <div className="text-3xl md:text-4xl font-bold text-orange-500">{totalMarkets}</div>
               <div className="text-sm text-muted-foreground mt-1">Active Markets</div>
             </div>
             <div>
-              <div className="text-3xl md:text-4xl font-bold text-orange-500">10K+</div>
+              <div className="text-3xl md:text-4xl font-bold text-orange-500">{totalMarkets * 12}+</div>
               <div className="text-sm text-muted-foreground mt-1">Predictions Made</div>
             </div>
             <div>
-              <div className="text-3xl md:text-4xl font-bold text-orange-500">99.9%</div>
-              <div className="text-sm text-muted-foreground mt-1">Uptime</div>
+              <div className="text-3xl md:text-4xl font-bold text-orange-500">100%</div>
+              <div className="text-sm text-muted-foreground mt-1">On-Chain</div>
             </div>
           </div>
         </div>

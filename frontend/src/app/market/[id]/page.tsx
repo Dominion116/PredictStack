@@ -4,22 +4,22 @@
 import { useEffect, useState } from 'react';
 import { useParams } from 'next/navigation';
 import { Navbar } from "@/components/navbar";
-import { getMarket } from '@/lib/stacks-api';
+import { getMarket, getUSDCxBalance, getUserPosition } from '@/lib/stacks-api';
 import { blockToDate, formatResolutionDate } from '@/lib/date-utils';
 import { Button } from '@/components/ui/button';
 import { Card, CardContent, CardDescription, CardFooter, CardHeader, CardTitle } from '@/components/ui/card';
 import { Input } from '@/components/ui/input';
 import { Badge } from '@/components/ui/badge';
 import { Tabs, TabsList, TabsTrigger } from '@/components/ui/tabs';
-import { Loader2, TrendingUp, Clock, AlertCircle, Trophy, Wallet } from 'lucide-react';
+import { Loader2, TrendingUp, Clock, AlertCircle, Trophy, Wallet, CheckCircle } from 'lucide-react';
 import { toast } from 'sonner';
 import { useConnect } from '@stacks/connect-react';
 import { userSession, getContractConfig } from '@/lib/constants';
 import { 
-    uintCV, 
-    contractPrincipalCV, 
     PostConditionMode, 
-    AnchorMode
+    AnchorMode,
+    Cl,
+    Pc
 } from '@stacks/transactions';
 
 export default function MarketPage() {
@@ -32,20 +32,35 @@ export default function MarketPage() {
     const [betAmount, setBetAmount] = useState('');
     const [selectedOutcome, setSelectedOutcome] = useState<'YES' | 'NO'>('YES');
     const [isSubmitting, setIsSubmitting] = useState(false);
+    const [userBalance, setUserBalance] = useState<number | null>(null);
+    const [userPosition, setUserPosition] = useState<any>(null);
 
     useEffect(() => {
-        const loadMarket = async () => {
+        const loadData = async () => {
             if (isNaN(marketId)) return;
             try {
                 const data = await getMarket(marketId);
                 setMarket(data);
+
+                if (userSession.isUserSignedIn()) {
+                    const userData = userSession.loadUserData();
+                    const address = userData.profile.stxAddress.testnet;
+                    
+                    const [balance, position] = await Promise.all([
+                        getUSDCxBalance(address),
+                        getUserPosition(address, marketId)
+                    ]);
+                    
+                    setUserBalance(balance);
+                    setUserPosition(position);
+                }
             } catch (error) {
                 console.error(error);
             } finally {
                 setLoading(false);
             }
         };
-        loadMarket();
+        loadData();
     }, [marketId]);
 
     const handleBet = async () => {
@@ -64,30 +79,38 @@ export default function MarketPage() {
         const amountMicro = Math.floor(Number(betAmount) * 1000000); // USDCx is 6 decimals
         
         try {
+            const userData = userSession.loadUserData();
+            const userAddress = userData.profile.stxAddress.testnet;
             const [tokenAddr, tokenName] = config.usdcx.split('.');
-            const functionName = selectedOutcome === 'YES' ? 'bet-yes' : 'bet-no';
+            const outcome = selectedOutcome === 'YES';
 
-            // Define post-conditions (transferring USDCx)
-            // In a real app, you'd construct this carefully. 
-            // For now, we'll use Deny mode but allow the contract to do what it needs via explicit PostConditions if easy, 
-            // but actually standard checks often allow "Allow" mode or specific FT transfer.
-            // Let's rely on standard contract calls for now.
+            // Define post-condition: user sends exactly amountMicro to the contract
+            const postCondition = Pc.principal(userAddress)
+                .willSendEq(amountMicro)
+                .ft(`${tokenAddr}.${tokenName}`, 'usdcx');
             
             await doContractCall({
                 contractAddress: config.deployer,
                 contractName: config.predictionMarket,
-                functionName: functionName,
+                functionName: 'place-bet',
                 functionArgs: [
-                    uintCV(marketId),
-                    uintCV(amountMicro),
-                    contractPrincipalCV(tokenAddr, tokenName)
+                    Cl.uint(marketId),
+                    Cl.bool(outcome),
+                    Cl.uint(amountMicro),
+                    Cl.contractPrincipal(tokenAddr, tokenName)
                 ],
-                postConditionMode: PostConditionMode.Allow, // Simplification for demo
+                postConditions: [postCondition],
+                postConditionMode: PostConditionMode.Deny,
                 anchorMode: AnchorMode.Any,
                 onFinish: (data) => {
                     toast.success(`Bet submitted! ID: ${data.txId}`);
                     setIsSubmitting(false);
                     setBetAmount('');
+                    // Update balance after a short delay
+                    setTimeout(async () => {
+                        const newBalance = await getUSDCxBalance(userAddress);
+                        setUserBalance(newBalance);
+                    }, 4000);
                 },
                 onCancel: () => {
                     setIsSubmitting(false);
@@ -95,6 +118,49 @@ export default function MarketPage() {
             });
         } catch (error: any) {
             toast.error(error.message || "Failed to place bet");
+            setIsSubmitting(false);
+        }
+    };
+
+    const handleClaim = async () => {
+        if (!userSession.isUserSignedIn()) return;
+        
+        setIsSubmitting(true);
+        const config = getContractConfig();
+        
+        try {
+            const userData = userSession.loadUserData();
+            const userAddress = userData.profile.stxAddress.testnet;
+            const [tokenAddr, tokenName] = config.usdcx.split('.');
+
+            await doContractCall({
+                contractAddress: config.deployer,
+                contractName: config.predictionMarket,
+                functionName: 'claim-winnings',
+                functionArgs: [
+                    Cl.uint(marketId),
+                    Cl.contractPrincipal(tokenAddr, tokenName)
+                ],
+                postConditionMode: PostConditionMode.Allow,
+                anchorMode: AnchorMode.Any,
+                onFinish: (data) => {
+                    toast.success("Winnings claimed! Processing...");
+                    setTimeout(async () => {
+                        const [newBalance, newPosition] = await Promise.all([
+                            getUSDCxBalance(userAddress),
+                            getUserPosition(userAddress, marketId)
+                        ]);
+                        setUserBalance(newBalance);
+                        setUserPosition(newPosition);
+                        setIsSubmitting(false);
+                    }, 5000);
+                },
+                onCancel: () => {
+                    setIsSubmitting(false);
+                }
+            });
+        } catch (error: any) {
+            toast.error(error.message || "Failed to claim");
             setIsSubmitting(false);
         }
     };
@@ -261,7 +327,9 @@ export default function MarketPage() {
                                 <div className="space-y-2">
                                     <div className="flex justify-between text-sm">
                                         <label className="font-medium">Amount</label>
-                                        <span className="text-muted-foreground">Balance: -- USDCx</span>
+                                        <span className="text-muted-foreground">
+                                            Balance: {userBalance !== null ? `${userBalance.toLocaleString()} USDCx` : '--'}
+                                        </span>
                                     </div>
                                     <div className="relative">
                                         <span className="absolute left-3 top-1/2 -translate-y-1/2 text-muted-foreground">$</span>
@@ -307,6 +375,47 @@ export default function MarketPage() {
                                 </Button>
                             </CardContent>
                         </Card>
+
+                        {/* User Position Card */}
+                        {userSession.isUserSignedIn() && userPosition && (
+                            <Card className="mt-6 border-primary/20 bg-primary/5">
+                                <CardHeader className="pb-2">
+                                    <CardTitle className="text-sm font-medium flex items-center gap-2">
+                                        <CheckCircle className="w-4 h-4 text-primary" />
+                                        Your Position
+                                    </CardTitle>
+                                </CardHeader>
+                                <CardContent className="space-y-3">
+                                    <div className="flex justify-between text-sm">
+                                        <span className="text-muted-foreground">YES Position</span>
+                                        <span className="font-semibold">${(Number(userPosition['yes-amount']?.value || 0) / 1000000).toLocaleString()}</span>
+                                    </div>
+                                    <div className="flex justify-between text-sm">
+                                        <span className="text-muted-foreground">NO Position</span>
+                                        <span className="font-semibold">${(Number(userPosition['no-amount']?.value || 0) / 1000000).toLocaleString()}</span>
+                                    </div>
+                                    
+                                    {/* Claim Section */}
+                                    {market.status === 'resolved' && !userPosition.claimed?.value && (
+                                        <div className="pt-2">
+                                            <Button 
+                                                className="w-full bg-primary text-primary-foreground hover:bg-primary/90"
+                                                onClick={handleClaim}
+                                                disabled={isSubmitting}
+                                            >
+                                                {isSubmitting ? <Loader2 className="mr-2 h-4 w-4 animate-spin" /> : null}
+                                                Claim Winnings
+                                            </Button>
+                                        </div>
+                                    )}
+                                    {userPosition.claimed?.value && (
+                                        <div className="pt-2 text-center text-sm font-medium text-green-600">
+                                            Winnings Claimed ✓
+                                        </div>
+                                    )}
+                                </CardContent>
+                            </Card>
+                        )}
                     </div>
 
                 </div>

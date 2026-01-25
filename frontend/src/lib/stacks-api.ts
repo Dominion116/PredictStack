@@ -1,8 +1,8 @@
-
 import { 
     fetchCallReadOnlyFunction, 
     cvToJSON, 
-    uintCV
+    uintCV,
+    principalCV
 } from '@stacks/transactions';
 import { 
     STACKS_TESTNET,
@@ -82,10 +82,6 @@ const MOCK_MARKETS = [
  * Fetches a single market's details from the Stacks contract.
  */
 export async function getMarket(marketId: number) {
-    // Return from mock data if it exists
-    const mock = MOCK_MARKETS.find(m => m.id === marketId);
-    if (mock) return mock;
-
     try {
         const response = await fetchCallReadOnlyFunction({
             contractAddress: config.deployer,
@@ -98,7 +94,17 @@ export async function getMarket(marketId: number) {
         
         const json: any = cvToJSON(response);
         if (json.success && json.value && json.value.value) {
-            return json.value.value;
+            // Merge with mock metadata if it exists (for images/descriptions if not in contract)
+            const marketData = json.value.value;
+            const mock = MOCK_MARKETS.find(m => m.id === marketId);
+            if (mock) {
+                return { 
+                    ...marketData, 
+                    "image-url": marketData["image-url"]?.value || mock["image-url"],
+                    category: marketData.category?.value || mock.category
+                };
+            }
+            return marketData;
         }
         return null;
     } catch (error) {
@@ -125,16 +131,84 @@ export async function getPlatformStats() {
         if (json.success && json.value) {
             return json.value.value;
         }
-        return { "total-markets": { value: MOCK_MARKETS.length } };
+        return { "total-markets": { value: 0 } };
     } catch (error) {
-        return { "total-markets": { value: MOCK_MARKETS.length } };
+        return { "total-markets": { value: 0 } };
     }
 }
 
 /**
- * Helper to get multiple markets. 
+ * Fetches recent markets from the contract.
  */
 export async function getRecentMarkets(limit: number = 6) {
-    // Use mocks for now as requested
-    return MOCK_MARKETS.slice(0, limit);
+    try {
+        const stats = await getPlatformStats();
+        const totalMarkets = stats["total-markets"]?.value || 0;
+        
+        if (totalMarkets === 0) return MOCK_MARKETS.slice(0, limit);
+
+        const markets = [];
+        const startId = Math.max(1, totalMarkets - limit + 1);
+        
+        for (let id = totalMarkets; id >= startId; id--) {
+            const market = await getMarket(id);
+            if (market) markets.push({ ...market, id });
+        }
+        
+        return markets;
+    } catch (error) {
+        console.error("Error fetching recent markets:", error);
+        return MOCK_MARKETS.slice(0, limit);
+    }
+}
+
+/**
+ * Fetches the user's USDCx balance.
+ */
+export async function getUSDCxBalance(address: string) {
+    try {
+        const [tokenAddr, tokenName] = config.usdcx.split('.');
+        const response = await fetchCallReadOnlyFunction({
+            contractAddress: tokenAddr,
+            contractName: tokenName,
+            functionName: 'get-balance',
+            functionArgs: [principalCV(address)],
+            network,
+            senderAddress: address,
+        });
+
+        const json: any = cvToJSON(response);
+        if (json.success && json.value) {
+            // SIP-010 get-balance returns (response uint uint)
+            return Number(json.value.value) / 1000000;
+        }
+        return 0;
+    } catch (error) {
+        console.error("Error fetching balance:", error);
+        return 0;
+    }
+}
+
+/**
+ * Fetches the user's position in a specific market.
+ */
+export async function getUserPosition(address: string, marketId: number) {
+    try {
+        const response = await fetchCallReadOnlyFunction({
+            contractAddress: config.deployer,
+            contractName: config.predictionMarket,
+            functionName: 'get-user-position',
+            functionArgs: [principalCV(address), uintCV(marketId)],
+            network,
+            senderAddress: address,
+        });
+
+        const json: any = cvToJSON(response);
+        if (json.success && json.value && json.value.value) {
+            return json.value.value;
+        }
+        return null;
+    } catch (error) {
+        return null;
+    }
 }
