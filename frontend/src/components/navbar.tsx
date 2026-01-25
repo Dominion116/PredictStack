@@ -19,8 +19,8 @@ export function Navbar() {
   if (!mounted) {
     return (
       <nav className="border-b bg-background/95 backdrop-blur">
-        <div className="container flex h-14 items-center">
-          <span className="font-bold">PredictStack</span>
+        <div className="container flex h-16 items-center">
+          <span className="text-xl font-bold">PredictStack</span>
         </div>
       </nav>
     );
@@ -68,9 +68,9 @@ function NavbarContent() {
 
   return (
     <nav className="border-b bg-background/95 backdrop-blur supports-[backdrop-filter]:bg-background/60">
-      <div className="container flex h-14 items-center justify-between">
+      <div className="container flex h-16 items-center justify-between">
         {/* Left: Brand */}
-        <Link href="/" className="flex items-center space-x-2 font-bold z-10">
+        <Link href="/" className="flex items-center space-x-2 text-xl font-bold z-10">
           PredictStack
         </Link>
         
