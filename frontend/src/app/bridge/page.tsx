@@ -242,8 +242,8 @@ function BridgeContent() {
             <Tabs defaultValue="deposit" className="w-full">
                 <div className="px-6 pt-6">
                     <TabsList className="grid w-full grid-cols-2 h-12">
-                        <TabsTrigger value="deposit" className="h-10">Deposit (ETH → Stacks)</TabsTrigger>
-                        <TabsTrigger value="withdraw" className="h-10">Withdraw (Stacks → ETH)</TabsTrigger>
+                        <TabsTrigger value="deposit" className="h-10">Deposit (ETH to Stacks)</TabsTrigger>
+                        <TabsTrigger value="withdraw" className="h-10">Withdraw (Stacks to ETH)</TabsTrigger>
                     </TabsList>
                 </div>
                 

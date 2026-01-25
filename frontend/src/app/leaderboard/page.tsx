@@ -105,7 +105,7 @@ export default function LeaderboardPage() {
             <div className="container py-12 md:py-20 flex-1 flex flex-col items-center">
                 <div className="text-center mb-16 space-y-4">
                     <div className="inline-flex items-center rounded-lg bg-muted px-3 py-1 text-sm font-medium mb-2">
-                        🏆 Hall of Fame
+                        Hall of Fame
                     </div>
                     <h1 className="text-4xl md:text-6xl font-bold tracking-tighter sm:text-5xl mb-6">
                         PredictStack <span className="text-orange-500">Leaders</span>
