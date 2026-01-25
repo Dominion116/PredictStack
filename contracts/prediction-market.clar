@@ -38,6 +38,7 @@
 (define-constant ERR-TRANSFER-FAILED (err u118))
 (define-constant ERR-ZERO-POOL (err u119))
 (define-constant ERR-MARKET-ACTIVE (err u120))
+(define-constant ERR-MARKET-NOT-PENDING (err u121))
 
 ;; ============================================================================
 ;; CONSTANTS - PLATFORM DEFAULTS
@@ -51,6 +52,7 @@
 (define-constant STATUS-ACTIVE u0)
 (define-constant STATUS-RESOLVED u1) 
 (define-constant STATUS-CANCELLED u2)
+(define-constant STATUS-PENDING u3)
 
 ;; ============================================================================
 ;; DATA VARIABLES
@@ -392,7 +394,6 @@
     ;; Validations
     (asserts! (var-get contract-initialized) ERR-NOT-INITIALIZED)
     (asserts! (is-platform-active) ERR-PLATFORM-PAUSED)
-    (asserts! (is-admin-or-oracle) ERR-NOT-AUTHORIZED)
     (asserts! (> (len question) u0) ERR-INVALID-QUESTION)
     (asserts! (> resolve-date block-height) ERR-DEADLINE-PASSED)
     
@@ -408,7 +409,7 @@
         yes-pool: u0,
         no-pool: u0,
         total-bets: u0,
-        status: STATUS-ACTIVE,
+        status: STATUS-PENDING,
         winning-outcome: none,
         resolved-at: none,
         external-id: external-id,
@@ -435,6 +436,39 @@
     })
     
     (ok market-id)
+  )
+)
+
+;; Approve a pending market (admin only)
+(define-public (approve-market 
+  (market-id uint)
+)
+  (let
+    (
+      (market (unwrap! (map-get? markets { market-id: market-id }) ERR-MARKET-NOT-FOUND))
+    )
+    ;; Validations
+    (asserts! (var-get contract-initialized) ERR-NOT-INITIALIZED)
+    (asserts! (is-admin) ERR-NOT-AUTHORIZED)
+    (asserts! (is-eq (get status market) STATUS-PENDING) ERR-MARKET-NOT-PENDING)
+    
+    ;; Update market status
+    (map-set markets
+      { market-id: market-id }
+      (merge market {
+        status: STATUS-ACTIVE
+      })
+    )
+    
+    ;; Emit event
+    (print {
+      event: "market-approved",
+      market-id: market-id,
+      approved-by: tx-sender,
+      block-height: block-height
+    })
+    
+    (ok true)
   )
 )
 
