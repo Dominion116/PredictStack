@@ -1,4 +1,3 @@
-
 'use client';
 
 import { useConnect } from '@stacks/connect-react';
@@ -6,8 +5,9 @@ import { Button } from '@/components/ui/button';
 import { Badge } from '@/components/ui/badge';
 import { userSession, getContractConfig } from '@/lib/constants';
 import { useEffect, useState } from 'react';
-import { LogOut, Wallet } from 'lucide-react';
+import { LogOut, Wallet, Sun, Moon } from 'lucide-react';
 import Link from 'next/link';
+import { useTheme } from 'next-themes';
 
 export function Navbar() {
   const [mounted, setMounted] = useState(false);
@@ -34,6 +34,7 @@ function NavbarContent() {
   const [isSignedIn, setIsSignedIn] = useState(false);
   const [address, setAddress] = useState<string | null>(null);
   const [isAdmin, setIsAdmin] = useState(false);
+  const { theme, setTheme } = useTheme();
 
   useEffect(() => {
     try {
@@ -63,6 +64,9 @@ function NavbarContent() {
     window.location.reload();
   };
 
+  const toggleTheme = () => {
+    setTheme(theme === 'dark' ? 'light' : 'dark');
+  };
 
   const truncatedAddress = address ? `${address.slice(0, 6)}...${address.slice(-4)}` : '';
 
@@ -70,7 +74,7 @@ function NavbarContent() {
     <nav className="border-b bg-background/95 backdrop-blur supports-[backdrop-filter]:bg-background/60">
       <div className="container flex h-16 items-center justify-between">
         {/* Left: Brand */}
-        <Link href="/" className="flex items-center space-x-2 text-xl font-bold z-10">
+        <Link href="/" className="flex items-center space-x-2 text-xl font-bold z-10 transition-colors hover:text-foreground/80">
           PredictStack
         </Link>
         
@@ -86,11 +90,17 @@ function NavbarContent() {
             </nav>
         </div>
 
-        {/* Right: Wallet/Auth */}
+        {/* Right: Wallet/Auth & Theme Toggle */}
         <div className="flex items-center gap-2 z-10">
+          <Button variant="ghost" size="icon" onClick={toggleTheme} className="mr-2">
+            <Sun className="h-[1.2rem] w-[1.2rem] rotate-0 scale-100 transition-all dark:-rotate-90 dark:scale-0" />
+            <Moon className="absolute h-[1.2rem] w-[1.2rem] rotate-90 scale-0 transition-all dark:rotate-0 dark:scale-100" />
+            <span className="sr-only">Toggle theme</span>
+          </Button>
+
           {isSignedIn ? (
             <div className="flex items-center gap-2">
-              <Badge variant="outline" className="h-9 px-4 py-2 font-mono">
+              <Badge variant="outline" className="h-9 px-4 py-2 font-mono hidden sm:flex">
                 {truncatedAddress}
               </Badge>
               <Button variant="ghost" size="icon" onClick={handleDisconnect}>
