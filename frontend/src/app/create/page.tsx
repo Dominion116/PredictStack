@@ -21,6 +21,7 @@ import {
 } from '@stacks/transactions';
 import { toast } from 'sonner';
 import { Loader2, ShieldAlert } from 'lucide-react';
+import { Footer } from "@/components/footer";
 
 export default function CreateMarketPage() {
     const [mounted, setMounted] = useState(false);
@@ -61,6 +62,7 @@ export default function CreateMarketPage() {
                         Please connect the admin wallet to proceed.
                     </p>
                 </div>
+                <Footer />
             </main>
         );
     }
@@ -292,6 +294,7 @@ function CreateMarketContent() {
                     </CardContent>
                 </Card>
             </div>
+            <Footer />
         </main>
     );
 }

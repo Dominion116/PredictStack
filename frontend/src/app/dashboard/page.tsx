@@ -13,6 +13,7 @@ import { useConnect } from '@stacks/connect-react';
 import { Cl, PostConditionMode, AnchorMode } from '@stacks/transactions';
 import { toast } from 'sonner';
 import Link from 'next/link';
+import { Footer } from '@/components/footer';
 
 export default function DashboardPage() {
     const [mounted, setMounted] = useState(false);
@@ -152,12 +153,11 @@ function DashboardContent() {
         const no = Number(bet.position['no-amount']?.value || 0);
         return acc + ((yes + no) / 1000000);
     }, 0);
-
     return (
         <main className="min-h-screen flex flex-col bg-background">
             <Navbar />
             
-            <div className="container py-8 md:py-12 space-y-8">
+            <div className="container py-8 md:py-12 space-y-8 flex-1">
                 
                 {/* Header Section */}
                 <div className="flex flex-col md:flex-row justify-between items-start md:items-center gap-4">
@@ -261,6 +261,7 @@ function DashboardContent() {
                 </Tabs>
 
             </div>
+            <Footer />
         </main>
     );
 }

@@ -14,6 +14,7 @@ import { BRIDGE_CONFIG, ERC20_ABI, X_RESERVE_ABI, encodeStacksAddressToBytes32, 
 import { toast } from 'sonner';
 import { AnchorMode, PostConditionMode, Pc, Cl } from '@stacks/transactions';
 import { Loader2, ArrowRight } from 'lucide-react';
+import { Footer } from "@/components/footer";
 
 // Default to testnet for now as per project setting
 const CURRENT_NETWORK = 'testnet';
@@ -229,7 +230,7 @@ function BridgeContent() {
     <main className="min-h-screen flex flex-col bg-background">
       <Navbar />
       
-      <div className="container py-12 flex-1 flex flex-col">
+      <div className="container py-12 flex-1 flex flex-col items-center">
         <div className="mb-8 max-w-2xl">
             <h1 className="text-3xl font-bold tracking-tight mb-2">Bridge USDC</h1>
             <p className="text-muted-foreground">
@@ -376,6 +377,7 @@ function BridgeContent() {
             Get Sepolia ETH and Testnet USDC from faucets before starting.
         </p>
       </div>
+      <Footer />
     </main>
   );
 }

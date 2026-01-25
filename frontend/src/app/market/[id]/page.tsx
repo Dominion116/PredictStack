@@ -5,6 +5,7 @@ import { useEffect, useState } from 'react';
 import { useParams } from 'next/navigation';
 import { Navbar } from "@/components/navbar";
 import { getMarket, getUSDCxBalance, getUserPosition } from '@/lib/stacks-api';
+import { Footer } from "@/components/footer";
 import { blockToDate, formatResolutionDate } from '@/lib/date-utils';
 import { Button } from '@/components/ui/button';
 import { Card, CardContent, CardDescription, CardFooter, CardHeader, CardTitle } from '@/components/ui/card';
@@ -220,7 +221,7 @@ export default function MarketPage() {
         <main className="min-h-screen flex flex-col bg-background">
             <Navbar />
             
-            <div className="container py-8 md:py-12">
+            <div className="container py-8 md:py-12 flex-1">
                 <div className="grid grid-cols-1 lg:grid-cols-3 gap-8">
                     
                     {/* Market Details (Left Column) */}
@@ -229,6 +230,7 @@ export default function MarketPage() {
                         <div className="relative rounded-2xl overflow-hidden aspect-video md:aspect-[2.5/1] bg-muted">
                             {imageUrl ? (
                                 <img src={imageUrl} alt={question} className="w-full h-full object-cover" />
+
                             ) : (
                                 <div className="w-full h-full bg-gradient-to-br from-primary/20 to-primary/5 flex items-center justify-center">
                                     <TrendingUp className="h-16 w-16 text-primary/30" />
@@ -420,6 +422,7 @@ export default function MarketPage() {
 
                 </div>
             </div>
+            <Footer />
         </main>
     );
 }
