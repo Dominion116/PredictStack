@@ -32,7 +32,7 @@ export default function Home() {
       <Navbar />
       
       {/* Hero */}
-      <section className="flex-1 py-20 md:py-32 flex flex-col items-center justify-center text-center px-4 animate-in fade-in zoom-in duration-500">
+      <section className="py-20 md:py-32 flex flex-col items-center justify-center text-center px-4 animate-in fade-in zoom-in duration-500">
         <div className="inline-flex items-center rounded-lg bg-muted px-3 py-1 text-sm font-medium mb-6">
           Now Live on Stacks Testnet
         </div>
@@ -83,25 +83,8 @@ export default function Home() {
         </div>
       </section>
 
-      {/* Featured Markets */}
-      <section className="container py-12 md:py-24">
-          <div className="flex flex-col md:flex-row justify-between items-end mb-10 gap-4">
-              <div className="space-y-2">
-                  <h2 className="text-3xl font-bold tracking-tighter sm:text-4xl">Trending Markets</h2>
-                  <p className="text-muted-foreground">The most active predictions right now on PredictStack.</p>
-              </div>
-              <Link href="/markets">
-                <Button variant="ghost" className="hidden md:flex">
-                    View all markets <ArrowRight className="ml-2 h-4 w-4" />
-                </Button>
-              </Link>
-          </div>
-
-          <MarketsList />
-      </section>
-
       {/* How It Works */}
-      <section className="container py-12 md:py-24">
+      <section className="container py-16 md:py-24">
         <div className="text-center mb-12">
           <h2 className="text-3xl font-bold tracking-tighter sm:text-4xl mb-4">How It Works</h2>
           <p className="text-muted-foreground max-w-2xl mx-auto">
@@ -142,8 +125,27 @@ export default function Home() {
         </div>
       </section>
 
-      {/* Feature Grid */}
-      <section className="container py-12 md:py-24">
+      {/* Featured Markets */}
+      <section className="bg-muted/30">
+        <div className="container py-16 md:py-24">
+          <div className="flex flex-col md:flex-row justify-between items-end mb-10 gap-4">
+              <div className="space-y-2">
+                  <h2 className="text-3xl font-bold tracking-tighter sm:text-4xl">Trending Markets</h2>
+                  <p className="text-muted-foreground">The most active predictions right now on PredictStack.</p>
+              </div>
+              <Link href="/markets">
+                <Button variant="ghost" className="hidden md:flex">
+                    View all markets <ArrowRight className="ml-2 h-4 w-4" />
+                </Button>
+              </Link>
+          </div>
+
+          <MarketsList />
+        </div>
+      </section>
+
+      {/* Feature Grid - Why PredictStack */}
+      <section className="container py-16 md:py-24">
           <div className="text-center mb-12">
             <h2 className="text-3xl font-bold tracking-tighter sm:text-4xl mb-4">Why PredictStack?</h2>
             <p className="text-muted-foreground max-w-2xl mx-auto">
@@ -186,7 +188,7 @@ export default function Home() {
 
       {/* FAQ Section */}
       <section className="bg-muted/30">
-        <div className="container py-12 md:py-20">
+        <div className="container py-16 md:py-24">
           <div className="text-center mb-12">
             <h2 className="text-3xl font-bold tracking-tighter sm:text-4xl mb-4">Frequently Asked Questions</h2>
             <p className="text-muted-foreground max-w-2xl mx-auto">
@@ -199,7 +201,7 @@ export default function Home() {
               <summary className="font-semibold cursor-pointer list-none flex justify-between items-center">
                 What is PredictStack?
                 <span className="transition group-open:rotate-180">
-                  <svg fill="none" height="24" shape-rendering="geometricPrecision" stroke="currentColor" stroke-linecap="round" stroke-linejoin="round" stroke-width="1.5" viewBox="0 0 24 24" width="24"><path d="M6 9l6 6 6-6"></path></svg>
+                  <svg fill="none" height="24" shapeRendering="geometricPrecision" stroke="currentColor" strokeLinecap="round" strokeLinejoin="round" strokeWidth="1.5" viewBox="0 0 24 24" width="24"><path d="M6 9l6 6 6-6"></path></svg>
                 </span>
               </summary>
               <p className="text-muted-foreground mt-4">
@@ -211,7 +213,7 @@ export default function Home() {
               <summary className="font-semibold cursor-pointer list-none flex justify-between items-center">
                 How do I get started?
                 <span className="transition group-open:rotate-180">
-                  <svg fill="none" height="24" shape-rendering="geometricPrecision" stroke="currentColor" stroke-linecap="round" stroke-linejoin="round" stroke-width="1.5" viewBox="0 0 24 24" width="24"><path d="M6 9l6 6 6-6"></path></svg>
+                  <svg fill="none" height="24" shapeRendering="geometricPrecision" stroke="currentColor" strokeLinecap="round" strokeLinejoin="round" strokeWidth="1.5" viewBox="0 0 24 24" width="24"><path d="M6 9l6 6 6-6"></path></svg>
                 </span>
               </summary>
               <p className="text-muted-foreground mt-4">
@@ -223,7 +225,7 @@ export default function Home() {
               <summary className="font-semibold cursor-pointer list-none flex justify-between items-center">
                 What is USDCx?
                 <span className="transition group-open:rotate-180">
-                  <svg fill="none" height="24" shape-rendering="geometricPrecision" stroke="currentColor" stroke-linecap="round" stroke-linejoin="round" stroke-width="1.5" viewBox="0 0 24 24" width="24"><path d="M6 9l6 6 6-6"></path></svg>
+                  <svg fill="none" height="24" shapeRendering="geometricPrecision" stroke="currentColor" strokeLinecap="round" strokeLinejoin="round" strokeWidth="1.5" viewBox="0 0 24 24" width="24"><path d="M6 9l6 6 6-6"></path></svg>
                 </span>
               </summary>
               <p className="text-muted-foreground mt-4">
@@ -235,7 +237,7 @@ export default function Home() {
               <summary className="font-semibold cursor-pointer list-none flex justify-between items-center">
                 How are markets resolved?
                 <span className="transition group-open:rotate-180">
-                  <svg fill="none" height="24" shape-rendering="geometricPrecision" stroke="currentColor" stroke-linecap="round" stroke-linejoin="round" stroke-width="1.5" viewBox="0 0 24 24" width="24"><path d="M6 9l6 6 6-6"></path></svg>
+                  <svg fill="none" height="24" shapeRendering="geometricPrecision" stroke="currentColor" strokeLinecap="round" strokeLinejoin="round" strokeWidth="1.5" viewBox="0 0 24 24" width="24"><path d="M6 9l6 6 6-6"></path></svg>
                 </span>
               </summary>
               <p className="text-muted-foreground mt-4">
@@ -247,7 +249,7 @@ export default function Home() {
               <summary className="font-semibold cursor-pointer list-none flex justify-between items-center">
                 Are my funds safe?
                 <span className="transition group-open:rotate-180">
-                  <svg fill="none" height="24" shape-rendering="geometricPrecision" stroke="currentColor" stroke-linecap="round" stroke-linejoin="round" stroke-width="1.5" viewBox="0 0 24 24" width="24"><path d="M6 9l6 6 6-6"></path></svg>
+                  <svg fill="none" height="24" shapeRendering="geometricPrecision" stroke="currentColor" strokeLinecap="round" strokeLinejoin="round" strokeWidth="1.5" viewBox="0 0 24 24" width="24"><path d="M6 9l6 6 6-6"></path></svg>
                 </span>
               </summary>
               <p className="text-muted-foreground mt-4">
@@ -259,7 +261,7 @@ export default function Home() {
               <summary className="font-semibold cursor-pointer list-none flex justify-between items-center">
                 What fees does PredictStack charge?
                 <span className="transition group-open:rotate-180">
-                  <svg fill="none" height="24" shape-rendering="geometricPrecision" stroke="currentColor" stroke-linecap="round" stroke-linejoin="round" stroke-width="1.5" viewBox="0 0 24 24" width="24"><path d="M6 9l6 6 6-6"></path></svg>
+                  <svg fill="none" height="24" shapeRendering="geometricPrecision" stroke="currentColor" strokeLinecap="round" strokeLinejoin="round" strokeWidth="1.5" viewBox="0 0 24 24" width="24"><path d="M6 9l6 6 6-6"></path></svg>
                 </span>
               </summary>
               <p className="text-muted-foreground mt-4">
