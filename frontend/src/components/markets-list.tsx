@@ -4,10 +4,10 @@
 import { useEffect, useState } from 'react';
 import { getRecentMarkets } from '@/lib/stacks-api';
 import { MarketCard, MarketCardSkeleton } from './market-card';
-import { Alert, AlertDescription, AlertTitle } from '@/components/ui/alert';
-import { InfoIcon, RefreshCcw } from 'lucide-react';
 import { Button } from './ui/button';
 import { Tabs, TabsList, TabsTrigger } from "@/components/ui/tabs";
+import { Input } from "@/components/ui/input";
+import { InfoIcon, RefreshCcw, Search } from 'lucide-react';
 
 export function MarketsList() {
     const [allMarkets, setAllMarkets] = useState<any[]>([]);
@@ -15,14 +15,15 @@ export function MarketsList() {
     const [loading, setLoading] = useState(true);
     const [error, setError] = useState<string | null>(null);
     const [activeTab, setActiveTab] = useState('all');
+    const [searchQuery, setSearchQuery] = useState('');
 
     const loadMarkets = async () => {
         setLoading(true);
         setError(null);
         try {
-            const data = await getRecentMarkets(20); // Load more to allow filtering
+            const data = await getRecentMarkets(50); // Increased limit for better searching
             setAllMarkets(data);
-            applyFilter(data, activeTab);
+            applyFilter(data, activeTab, searchQuery);
         } catch (err) {
             console.error(err);
             setError('Failed to load markets from the Stacks blockchain.');
@@ -31,16 +32,27 @@ export function MarketsList() {
         }
     };
 
-    const applyFilter = (data: any[], tab: string) => {
-        if (tab === 'all') {
-            setFilteredMarkets(data);
-        } else {
-            const filtered = data.filter(market => {
+    const applyFilter = (data: any[], tab: string, query: string) => {
+        let result = data;
+
+        // 1. Filter by Tab
+        if (tab !== 'all') {
+            result = result.filter(market => {
                 const category = market.category?.value || market.category || 'General';
                 return category.toLowerCase() === tab.toLowerCase();
             });
-            setFilteredMarkets(filtered);
         }
+
+        // 2. Filter by Search Query
+        if (query.trim()) {
+            const lowerQuery = query.toLowerCase();
+            result = result.filter(market => {
+                const question = (market.question?.value || market.question || '').toLowerCase();
+                return question.includes(lowerQuery);
+            });
+        }
+
+        setFilteredMarkets(result);
     };
 
     useEffect(() => {
@@ -48,13 +60,16 @@ export function MarketsList() {
     }, []);
 
     useEffect(() => {
-        applyFilter(allMarkets, activeTab);
-    }, [activeTab, allMarkets]);
+        applyFilter(allMarkets, activeTab, searchQuery);
+    }, [activeTab, searchQuery, allMarkets]);
 
     if (loading) {
         return (
             <div className="space-y-6">
-                <div className="h-10 w-full max-w-md bg-muted animate-pulse rounded-lg" />
+                <div className="flex flex-col md:flex-row gap-4 justify-between">
+                     <div className="h-10 w-full max-w-md bg-muted animate-pulse rounded-lg" />
+                     <div className="h-10 w-full max-w-sm bg-muted animate-pulse rounded-lg" />
+                </div>
                 <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
                     {[1, 2, 3, 4, 5, 6].map(i => (
                         <MarketCardSkeleton key={i} />
@@ -77,15 +92,26 @@ export function MarketsList() {
 
     return (
         <div className="space-y-8">
-            <div className="flex justify-center md:justify-start">
-                <Tabs defaultValue="all" value={activeTab} onValueChange={setActiveTab} className="w-full">
-                    <TabsList className="grid w-full max-w-md grid-cols-4">
+            <div className="flex flex-col md:flex-row justify-between items-start md:items-center gap-4">
+                <Tabs defaultValue="all" value={activeTab} onValueChange={setActiveTab} className="w-full md:w-auto">
+                    <TabsList className="grid w-full grid-cols-4 md:w-[400px]">
                         <TabsTrigger value="all">All</TabsTrigger>
                         <TabsTrigger value="crypto">Crypto</TabsTrigger>
                         <TabsTrigger value="politics">Politics</TabsTrigger>
                         <TabsTrigger value="sports">Sports</TabsTrigger>
                     </TabsList>
                 </Tabs>
+
+                <div className="relative w-full md:w-[300px]">
+                    <Search className="absolute left-2.5 top-2.5 h-4 w-4 text-muted-foreground" />
+                    <Input
+                        type="search"
+                        placeholder="Search markets..."
+                        className="pl-9 w-full"
+                        value={searchQuery}
+                        onChange={(e) => setSearchQuery(e.target.value)}
+                    />
+                </div>
             </div>
 
             {filteredMarkets.length === 0 ? (
@@ -93,15 +119,15 @@ export function MarketsList() {
                     <InfoIcon className="h-12 w-12 text-muted-foreground mx-auto mb-4" />
                     <h3 className="text-lg font-semibold">No markets found</h3>
                     <p className="text-muted-foreground max-w-sm mx-auto mt-2">
-                        There are currently no active markets in the <strong>{activeTab}</strong> category. 
-                        Check back later or explore other categories.
+                        We couldn't find any markets matching your criteria.
+                        Try adjusting your filters or search terms.
                     </p>
-                    <Button className="mt-6" variant="outline" onClick={loadMarkets}>
-                       <RefreshCcw className="mr-2 h-4 w-4" /> Refresh
+                    <Button className="mt-6" variant="outline" onClick={() => { setActiveTab('all'); setSearchQuery(''); }}>
+                       Clear Filters
                     </Button>
                 </div>
             ) : (
-                <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
+                <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6 animate-in fade-in duration-500">
                     {filteredMarkets.map((market) => (
                         <MarketCard key={market.id} market={market} />
                     ))}
