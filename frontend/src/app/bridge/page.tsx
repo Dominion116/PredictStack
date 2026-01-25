@@ -231,7 +231,7 @@ function BridgeContent() {
       <Navbar />
       
       <div className="container py-12 flex-1 flex flex-col items-center">
-        <div className="mb-8 max-w-3xl">
+        <div className="mb-8 max-w-2xl text-center">
             <h1 className="text-3xl font-bold tracking-tight mb-2">Bridge USDC</h1>
             <p className="text-muted-foreground">
                 Move USDC between Ethereum Sepolia and Stacks Testnet. Powered by Circle's Cross-Chain Transfer Protocol (CCTP).
