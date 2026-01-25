@@ -49,18 +49,25 @@ export default function DashboardPage() {
             
             // 3. Get Details for each market
             const betPromises = marketIds.map(async (id: number) => {
-                const [market, position] = await Promise.all([
-                    getMarket(id),
-                    getUserPosition(address, id)
-                ]);
-                return { 
-                    ...market, 
-                    position, 
-                    id 
-                };
+                try {
+                    const [market, position] = await Promise.all([
+                        getMarket(id),
+                        getUserPosition(address, id)
+                    ]);
+                    
+                    if (!market || !position) return null;
+
+                    return { 
+                        ...market, 
+                        position, 
+                        id 
+                    };
+                } catch (e) {
+                    return null;
+                }
             });
 
-            const bets = await Promise.all(betPromises);
+            const bets = (await Promise.all(betPromises)).filter(b => b !== null);
             setUserBets(bets.reverse()); // Show newest first
 
         } catch (error) {
