@@ -64,98 +64,13 @@ export default function AdminPage() {
 
 function AdminDashboard() {
     const { doContractCall } = useConnect();
-    const [markets, setMarkets] = useState<any[]>([]);
-    const [loading, setLoading] = useState(true);
-    const [processingId, setProcessingId] = useState<number | null>(null);
+    const [activeTab, setActiveTab] = useState('pending');
 
     const loadData = async () => {
-        setLoading(true);
-        try {
-            const allMarkets = await getRecentMarkets(100);
-            setMarkets(allMarkets);
-        } catch (error) {
-            console.error(error);
-            toast.error("Failed to load markets");
-        } finally {
-            setLoading(false);
-        }
+        // ... (existing code)
     };
 
-    useEffect(() => {
-        loadData();
-    }, []);
-
-    const handleApprove = async (marketId: number) => {
-        setProcessingId(marketId);
-        const config = getContractConfig();
-
-        try {
-            await doContractCall({
-                contractAddress: config.deployer,
-                contractName: config.predictionMarket,
-                functionName: 'approve-market',
-                functionArgs: [uintCV(marketId)],
-                postConditionMode: PostConditionMode.Deny,
-                anchorMode: AnchorMode.Any,
-                onFinish: (data) => {
-                    toast.success(`Approval tx submitted: ${data.txId}`);
-                    setProcessingId(null);
-                    // Optimistically update or reload
-                    setTimeout(loadData, 2000); 
-                },
-                onCancel: () => {
-                    setProcessingId(null);
-                }
-            });
-        } catch (error: any) {
-            toast.error(error.message || "Failed to approve market");
-            setProcessingId(null);
-        }
-    };
-
-    const handleResolve = async (marketId: number, outcome: boolean) => {
-        setProcessingId(marketId);
-        const config = getContractConfig();
-        const [tokenAddr, tokenName] = config.usdcx.split('.');
-
-        try {
-            await doContractCall({
-                contractAddress: config.deployer,
-                contractName: config.predictionMarket,
-                functionName: 'resolve-market',
-                functionArgs: [
-                    uintCV(marketId),
-                    outcome ? trueCV() : falseCV(),
-                    contractPrincipalCV(tokenAddr, tokenName)
-                ],
-                postConditionMode: PostConditionMode.Deny,
-                anchorMode: AnchorMode.Any,
-                onFinish: (data) => {
-                    toast.success(`Resolution tx submitted: ${data.txId}`);
-                    setProcessingId(null);
-                    // Optimistically update or reload
-                    setTimeout(loadData, 2000); 
-                },
-                onCancel: () => {
-                    setProcessingId(null);
-                }
-            });
-        } catch (error: any) {
-            toast.error(error.message || "Failed to resolve market");
-            setProcessingId(null);
-        }
-    };
-
-    // Pending markets have status "pending" (which we defined as u3, but clarity response might vary, let's assume raw string from API 'pending' or u3 mapped)
-    // The API `getRecentMarkets` usually returns formatted status if we updated `status-to-string`.
-    // Wait, I didn't update `status-to-string` in the contract! It only handles 0, 1, 2.
-    // I need to update `status-to-string` helper in contract too, or `getRecentMarkets` will return "cancelled" for u3 (default case).
-    // Let's assume I fix the contract helper for u3 -> "pending".
-    
-    // Filter functions
-    const pendingMarkets = markets.filter(m => m.status === 'pending' || m.status === '3' || m.status === 3);
-    const activeMarkets = markets.filter(m => m.status === 'active' || m.status === '0' || m.status === 0);
-    const resolvedMarkets = markets.filter(m => m.status === 'resolved' || m.status === '1' || m.status === 1);
+    // ... (useEffect and handlers)
 
     return (
         <main className="min-h-screen flex flex-col bg-background">
@@ -166,33 +81,37 @@ function AdminDashboard() {
                 <aside className="w-full md:w-64 border-r bg-muted/20 p-6 flex flex-col gap-6">
                     <div className="font-semibold text-lg px-2">Admin Dashboard</div>
                     <nav className="space-y-2">
-                         <div className="px-2 py-1.5 text-sm font-medium text-muted-foreground bg-muted/50 rounded-md">
+                         <button 
+                            onClick={() => setActiveTab('overview')}
+                            className={`w-full text-left px-3 py-2 text-sm font-medium rounded-md transition-colors ${activeTab === 'overview' ? 'bg-primary/10 text-primary' : 'hover:bg-muted/50 text-muted-foreground'}`}
+                         >
                             Overview
-                        </div>
-                        <div className="px-2 py-1.5 text-sm font-medium hover:bg-muted/50 rounded-md cursor-pointer transition-colors">
+                        </button>
+                        <button 
+                            onClick={() => setActiveTab('pending')}
+                            className={`w-full text-left px-3 py-2 text-sm font-medium rounded-md transition-colors flex justify-between items-center ${activeTab === 'pending' ? 'bg-primary/10 text-primary' : 'hover:bg-muted/50 text-muted-foreground'}`}
+                        >
                             Pending Markets
                             {pendingMarkets.length > 0 && (
-                                <Badge className="ml-2 h-5 w-5 rounded-full px-0 flex items-center justify-center bg-orange-500">
+                                <Badge className="ml-2 h-5 w-5 rounded-full px-0 flex items-center justify-center bg-orange-500 hover:bg-orange-600">
                                     {pendingMarkets.length}
                                 </Badge>
                             )}
-                        </div>
-                        <div className="px-2 py-1.5 text-sm font-medium hover:bg-muted/50 rounded-md cursor-pointer transition-colors">
+                        </button>
+                        <button 
+                            onClick={() => setActiveTab('resolve')}
+                            className={`w-full text-left px-3 py-2 text-sm font-medium rounded-md transition-colors ${activeTab === 'resolve' ? 'bg-primary/10 text-primary' : 'hover:bg-muted/50 text-muted-foreground'}`}
+                        >
                             Resolve Betting
-                        </div>
+                        </button>
                     </nav>
                 </aside>
 
                 {/* Main Content */}
                 <div className="flex-1 p-8 space-y-8">
-                    <Tabs defaultValue="pending" className="w-full">
-                        <TabsList>
-                            <TabsTrigger value="pending">Pending Approval</TabsTrigger>
-                            <TabsTrigger value="resolve">Resolve Markets</TabsTrigger>
-                            <TabsTrigger value="overview">Overview</TabsTrigger>
-                        </TabsList>
-
-                        <TabsContent value="pending" className="space-y-6 mt-6">
+                    <Tabs value={activeTab} onValueChange={setActiveTab} className="w-full">
+                        
+                        <TabsContent value="pending" className="space-y-6">
                             <div className="flex items-center justify-between">
                                 <h2 className="text-2xl font-bold tracking-tight">Pending Markets</h2>
                                 <Button variant="outline" size="sm" onClick={loadData}>
@@ -200,7 +119,8 @@ function AdminDashboard() {
                                     Refresh
                                 </Button>
                             </div>
-
+                            
+                            {/* ... Content ... */}
                             {loading ? (
                                 <div className="space-y-4">
                                     {[1, 2, 3].map(i => <div key={i} className="h-32 bg-muted animate-pulse rounded-lg"/>)}
@@ -244,13 +164,14 @@ function AdminDashboard() {
                             )}
                         </TabsContent>
 
-                        <TabsContent value="resolve" className="space-y-6 mt-6">
+                        <TabsContent value="resolve" className="space-y-6">
                             <h2 className="text-2xl font-bold tracking-tight">Resolve Markets</h2>
                             <p className="text-muted-foreground">Select a market to declare the winning outcome.</p>
                             <div className="grid gap-6">
                                 {activeMarkets.map(market => (
                                    <Card key={market.id}>
                                         <CardHeader>
+// ... existing content ...
                                             <CardTitle className="flex justify-between">
                                                 {market.question}
                                                 <Badge variant="outline">ID: {market.id}</Badge>
