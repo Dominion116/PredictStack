@@ -16,6 +16,17 @@ import Link from 'next/link';
 
 export default function DashboardPage() {
     const [mounted, setMounted] = useState(false);
+
+    useEffect(() => {
+        setMounted(true);
+    }, []);
+
+    if (!mounted) return null;
+
+    return <DashboardContent />;
+}
+
+function DashboardContent() {
     const [loading, setLoading] = useState(true);
     const [userData, setUserData] = useState<any>(null);
     const [balance, setBalance] = useState<number>(0);
@@ -25,7 +36,6 @@ export default function DashboardPage() {
     const { doContractCall } = useConnect();
 
     useEffect(() => {
-        setMounted(true);
         if (userSession.isUserSignedIn()) {
             setUserData(userSession.loadUserData());
             loadDashboardData();
