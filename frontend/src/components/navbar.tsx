@@ -79,7 +79,6 @@ function NavbarContent() {
             <nav className="flex items-center space-x-8 text-sm font-medium">
               <Link className="transition-colors hover:text-foreground/80 text-foreground" href="/markets">Markets</Link>
               <Link className="transition-colors hover:text-foreground/80 text-foreground/60" href="/bridge">Bridge</Link>
-              <Link className="transition-colors hover:text-foreground/80 text-foreground/60" href="/create">Create</Link>
               {isAdmin && (
                 <Link className="transition-colors hover:text-foreground/80 text-foreground/60" href="/admin">Admin</Link>
               )}
