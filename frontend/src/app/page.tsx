@@ -8,12 +8,19 @@ import { ArrowRight, Trophy, Zap, Shield, Wallet, BarChart3, CheckCircle, Github
 import { MarketsList } from "@/components/markets-list";
 import { useEffect, useState } from "react";
 import { getPlatformStats } from "@/lib/stacks-api";
+import { userSession } from "@/lib/constants";
+import { useRouter } from "next/navigation";
 
 export default function Home() {
   const [stats, setStats] = useState<any>(null);
+  const router = useRouter();
 
   useEffect(() => {
-    getPlatformStats().then(setStats);
+    if (userSession.isUserSignedIn()) {
+      router.replace('/dashboard');
+    } else {
+      getPlatformStats().then(setStats);
+    }
   }, []);
 
   const totalMarkets = stats?.['total-markets']?.value || 0;
