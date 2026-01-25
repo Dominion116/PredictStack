@@ -42,15 +42,7 @@ export function Footer() {
               </ul>
             </div>
 
-            {/* Legal */}
-            <div>
-              <div className="font-semibold mb-4">Legal</div>
-              <ul className="space-y-2 text-sm text-muted-foreground">
-                <li><a href="#" className="hover:text-foreground transition-colors">Terms of Service</a></li>
-                <li><a href="#" className="hover:text-foreground transition-colors">Privacy Policy</a></li>
-                <li><a href="#" className="hover:text-foreground transition-colors">Risk Disclosure</a></li>
-              </ul>
-            </div>
+
           </div>
 
           <div className="border-t mt-8 pt-8 flex flex-col md:flex-row justify-between items-center gap-4">
