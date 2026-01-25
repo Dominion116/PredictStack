@@ -58,7 +58,7 @@ export function Footer() {
               © 2024 PredictStack. All rights reserved.
             </div>
             <div className="text-sm text-muted-foreground">
-              Built with ❤️ on Stacks
+              Built on Stacks
             </div>
           </div>
         </div>

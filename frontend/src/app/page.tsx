@@ -34,7 +34,7 @@ export default function Home() {
       {/* Hero */}
       <section className="flex-1 py-20 md:py-32 flex flex-col items-center justify-center text-center px-4 animate-in fade-in zoom-in duration-500">
         <div className="inline-flex items-center rounded-lg bg-muted px-3 py-1 text-sm font-medium mb-6">
-          🚀 Now Live on Stacks Testnet
+          Now Live on Stacks Testnet
         </div>
         <h1 className="text-4xl md:text-6xl font-bold tracking-tighter sm:text-5xl mb-6 max-w-3xl">
           Decentralized Prediction Markets on <span className="text-orange-500">Stacks</span>

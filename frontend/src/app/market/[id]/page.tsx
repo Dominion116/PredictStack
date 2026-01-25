@@ -412,7 +412,7 @@ export default function MarketPage() {
                                     )}
                                     {userPosition.claimed?.value && (
                                         <div className="pt-2 text-center text-sm font-medium text-green-600">
-                                            Winnings Claimed ✓
+                                            Winnings Claimed
                                         </div>
                                     )}
                                 </CardContent>
