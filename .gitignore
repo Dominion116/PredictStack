@@ -44,3 +44,4 @@ coverage/
 # Seed outputs
 seed_output*.txt
 transactions.json
+.agent/
