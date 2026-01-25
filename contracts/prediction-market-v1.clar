@@ -11,7 +11,7 @@
 ;; ============================================================================
 
 ;; Use local SIP-010 trait definition
-(use-trait sip010-trait .sip010-trait.sip010-trait)
+(use-trait sip010-trait .sip010-trait-v1.sip010-trait)
 
 ;; ============================================================================
 ;; CONSTANTS - ERROR CODES
