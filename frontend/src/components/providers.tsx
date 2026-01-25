@@ -23,7 +23,7 @@ export function Providers({ children }: ProvidersProps) {
     <Connect
       authOptions={{
         appDetails: APP_DETAILS,
-        redirectTo: '/',
+        redirectTo: '/dashboard',
         onFinish: () => {
           window.location.reload();
         },
