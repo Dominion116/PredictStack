@@ -158,8 +158,8 @@ function AdminDashboard() {
             return;
         }
 
-        if (estimatedBlock <= CURRENT_BLOCK_HEIGHT) {
-            toast.error('Resolution date must be in the future');
+        if (estimatedBlock <= CURRENT_BLOCK_HEIGHT + 144) {
+            toast.error('Resolution date must be at least 24 hours in the future');
             return;
         }
 
