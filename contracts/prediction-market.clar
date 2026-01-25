@@ -10,6 +10,7 @@
 ;; TRAITS
 ;; ============================================================================
 
+;; Use local SIP-010 trait definition
 (use-trait sip010-trait .sip010-trait.sip010-trait)
 
 ;; ============================================================================
@@ -92,7 +93,10 @@
     total-bets: uint,
     status: uint,
     winning-outcome: (optional bool),
-    resolved-at: (optional uint)
+    resolved-at: (optional uint),
+    external-id: (optional (string-ascii 128)),
+    category: (string-ascii 32),
+    image-url: (optional (string-ascii 256))
   }
 )
 
@@ -376,6 +380,9 @@
   (question (string-ascii 256))
   (description (optional (string-ascii 512)))
   (resolve-date uint)
+  (external-id (optional (string-ascii 128)))
+  (category (string-ascii 32))
+  (image-url (optional (string-ascii 256)))
   (token-contract <sip010-trait>)
 )
   (let
@@ -403,7 +410,10 @@
         total-bets: u0,
         status: STATUS-ACTIVE,
         winning-outcome: none,
-        resolved-at: none
+        resolved-at: none,
+        external-id: external-id,
+        category: category,
+        image-url: image-url
       }
     )
     
@@ -418,6 +428,9 @@
       question: question,
       creator: tx-sender,
       resolve-date: resolve-date,
+      external-id: external-id,
+      category: category,
+      image-url: image-url,
       block-height: block-height
     })
     
@@ -597,6 +610,8 @@
     
     (let
       (
+        ;; Capture user address outside as-contract context
+        (claimer tx-sender)
         ;; Get user's stake on winning side
         (user-winning-stake (if winning-outcome 
           (get yes-amount position) 
@@ -635,7 +650,7 @@
         (var-set total-fees-collected (+ (var-get total-fees-collected) platform-fee))
         
         ;; Transfer winnings to user
-        (try! (as-contract (contract-call? token-contract transfer total-payout tx-sender tx-sender none)))
+        (try! (as-contract (contract-call? token-contract transfer total-payout tx-sender claimer none)))
         
         ;; Transfer platform fee to treasury
         (if (> platform-fee u0)
@@ -671,6 +686,7 @@
     (
       (market (unwrap! (map-get? markets { market-id: market-id }) ERR-MARKET-NOT-FOUND))
       (position (unwrap! (map-get? user-positions { user: tx-sender, market-id: market-id }) ERR-NO-POSITION))
+      (claimer tx-sender)
     )
     ;; Validations
     (asserts! (var-get contract-initialized) ERR-NOT-INITIALIZED)
@@ -692,7 +708,7 @@
       )
       
       ;; Transfer refund to user
-      (try! (as-contract (contract-call? token-contract transfer total-refund tx-sender tx-sender none)))
+      (try! (as-contract (contract-call? token-contract transfer total-refund tx-sender claimer none)))
       
       ;; Emit event
       (print {
@@ -727,7 +743,9 @@
       total-bets: (get total-bets market),
       status: (status-to-string (get status market)),
       winning-outcome: (get winning-outcome market),
-      resolved-at: (get resolved-at market)
+      resolved-at: (get resolved-at market),
+      category: (get category market),
+      image-url: (get image-url market)
     })
     ERR-MARKET-NOT-FOUND
   )
