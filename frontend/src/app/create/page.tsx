@@ -189,14 +189,15 @@ function CreateMarketContent() {
         <main className="min-h-screen flex flex-col bg-background">
             <Navbar />
             <div className="container py-12 flex-1 flex flex-col">
+                <div className="mb-8 max-w-2xl">
+                    <h1 className="text-3xl font-bold tracking-tight mb-2">Create Prediction Market</h1>
+                    <p className="text-muted-foreground">
+                        Launch a new P2P market on the Stacks blockchain. (Admin Only)
+                    </p>
+                </div>
+                
                 <Card className="w-full max-w-2xl">
-                    <CardHeader>
-                        <CardTitle>Create Prediction Market</CardTitle>
-                        <CardDescription>
-                            Launch a new P2P market on the Stacks blockchain. (Admin Only)
-                        </CardDescription>
-                    </CardHeader>
-                    <CardContent>
+                    <CardContent className="pt-6">
                         <form onSubmit={handleSubmit} className="space-y-6">
                             <div className="space-y-2">
                                 <Label htmlFor="question">Question</Label>
