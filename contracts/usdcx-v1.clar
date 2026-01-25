@@ -1,7 +1,7 @@
-;; USDCx - Mock Stablecoin for PredictStack
+;; USDCx - Stablecoin for PredictStack
 ;; A standard SIP-010 fungible token
 
-(impl-trait .sip010-trait.sip010-trait)
+(impl-trait .sip010-trait-v1.sip010-trait)
 
 ;; Constants
 (define-constant ERR-NOT-AUTHORIZED (err u100))
