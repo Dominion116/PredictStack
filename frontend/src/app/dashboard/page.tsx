@@ -122,7 +122,7 @@ function DashboardContent() {
         }
     };
 
-    if (!mounted) return null;
+
 
     if (!userSession.isUserSignedIn()) {
         return (
