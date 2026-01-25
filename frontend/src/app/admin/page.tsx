@@ -1,20 +1,32 @@
 
 'use client';
 
-import { useState, useEffect } from 'react';
+import { useState, useEffect, useMemo } from 'react';
 import { Navbar } from "@/components/navbar";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { Button } from '@/components/ui/button';
 import { Badge } from '@/components/ui/badge';
 import { Input } from '@/components/ui/input';
+import { Textarea } from '@/components/ui/textarea';
+import { Label } from '@/components/ui/label';
 import { useConnect } from '@stacks/connect-react';
 import { getContractConfig, userSession } from '@/lib/constants';
 import { getRecentMarkets } from '@/lib/stacks-api';
 import { Loader2, ShieldAlert, CheckCircle, XCircle, Gavel, Filter } from 'lucide-react';
 import { Footer } from "@/components/footer";
 import { toast } from 'sonner';
-import { uintCV, trueCV, falseCV, contractPrincipalCV, PostConditionMode, AnchorMode } from '@stacks/transactions';
+import { 
+    uintCV, 
+    trueCV, 
+    falseCV, 
+    stringAsciiCV,
+    someCV,
+    noneCV,
+    contractPrincipalCV, 
+    PostConditionMode, 
+    AnchorMode 
+} from '@stacks/transactions';
 
 export default function AdminPage() {
     const [mounted, setMounted] = useState(false);
@@ -64,13 +76,157 @@ export default function AdminPage() {
 
 function AdminDashboard() {
     const { doContractCall } = useConnect();
-    const [activeTab, setActiveTab] = useState('pending');
+    const [activeTab, setActiveTab] = useState('create');
+    const [markets, setMarkets] = useState<any[]>([]);
+    const [loading, setLoading] = useState(true);
+    const [processingId, setProcessingId] = useState<number | null>(null);
+
+    // Form State
+    const activeMarkets = markets.filter(m => m.status === 'active' || m.status === '0' || m.status === 0);
+    const resolvedMarkets = markets.filter(m => m.status === 'resolved' || m.status === '1' || m.status === 1);
+    const [question, setQuestion] = useState('');
+    const [description, setDescription] = useState('');
+    const [resolveDate, setResolveDate] = useState('');
+    const [category, setCategory] = useState('Crypto');
+    const [imageUrl, setImageUrl] = useState('');
+    const [isUploading, setIsUploading] = useState(false);
+    const [previewUrl, setPreviewUrl] = useState<string | null>(null);
+    const [isSubmitting, setIsSubmitting] = useState(false);
+
+    const CURRENT_BLOCK_HEIGHT = 3750000;
+    const SECONDS_PER_BLOCK = 600;
+
+    const estimatedBlock = useMemo(() => {
+        if (!resolveDate) return 0;
+        const targetTime = new Date(resolveDate).getTime();
+        const now = Date.now();
+        const secondsUntilResolve = Math.max(0, (targetTime - now) / 1000);
+        const blocksUntilResolve = Math.ceil(secondsUntilResolve / SECONDS_PER_BLOCK);
+        return CURRENT_BLOCK_HEIGHT + blocksUntilResolve;
+    }, [resolveDate]);
 
     const loadData = async () => {
-        // ... (existing code)
+        setLoading(true);
+        try {
+            const fetchedMarkets = await getRecentMarkets(100);
+            setMarkets(fetchedMarkets);
+        } catch (error) {
+            console.error("Failed to load markets:", error);
+            toast.error("Failed to load markets.");
+        } finally {
+            setLoading(false);
+        }
     };
 
-    // ... (useEffect and handlers)
+    useEffect(() => {
+        loadData();
+    }, []);
+
+    const handleFileChange = async (e: React.ChangeEvent<HTMLInputElement>) => {
+        const file = e.target.files?.[0];
+        if (!file) return;
+        if (file.size > 2 * 1024 * 1024) {
+            toast.error('Image must be less than 2MB');
+            return;
+        }
+        const localUrl = URL.createObjectURL(file);
+        setPreviewUrl(localUrl);
+        setIsUploading(true);
+        try {
+            const { uploadToPinata } = await import('@/lib/pinata');
+            const result = await uploadToPinata(file, `market-image-${Date.now()}`);
+            if (result.success && result.ipfsUrl) {
+                setImageUrl(result.ipfsUrl);
+                toast.success('Image uploaded to IPFS!');
+            } else {
+                throw new Error(result.error || 'Upload failed');
+            }
+        } catch (error: any) {
+            toast.error(error.message || 'Failed to upload image');
+            setImageUrl('');
+        } finally {
+            setIsUploading(false);
+        }
+    };
+
+    const handleCreateMarket = async (e: React.FormEvent) => {
+        e.preventDefault();
+        const config = getContractConfig();
+
+        if (!question || !resolveDate) {
+            toast.error('Question and Resolution Date are required');
+            return;
+        }
+
+        if (estimatedBlock <= CURRENT_BLOCK_HEIGHT) {
+            toast.error('Resolution date must be in the future');
+            return;
+        }
+
+        try {
+            setIsSubmitting(true);
+            const [tokenAddr, tokenName] = config.usdcx.split('.');
+
+            await doContractCall({
+                contractAddress: config.deployer,
+                contractName: config.predictionMarket,
+                functionName: 'create-market',
+                functionArgs: [
+                    stringAsciiCV(question),
+                    description ? someCV(stringAsciiCV(description)) : noneCV(),
+                    uintCV(estimatedBlock),
+                    noneCV(),
+                    stringAsciiCV(category),
+                    imageUrl ? someCV(stringAsciiCV(imageUrl)) : noneCV(),
+                    contractPrincipalCV(tokenAddr, tokenName)
+                ],
+                postConditionMode: PostConditionMode.Deny,
+                anchorMode: AnchorMode.Any,
+                onFinish: (data) => {
+                    toast.success('Market created successfully!');
+                    setQuestion('');
+                    setDescription('');
+                    setResolveDate('');
+                    setPreviewUrl(null);
+                    setImageUrl('');
+                    setIsSubmitting(false);
+                    setTimeout(loadData, 2000);
+                },
+                onCancel: () => {
+                    setIsSubmitting(false);
+                }
+            });
+        } catch (error: any) {
+            toast.error(error.message || 'Failed to create market');
+            setIsSubmitting(false);
+        }
+    };
+
+    const handleResolve = async (marketId: number, outcome: boolean) => {
+        setProcessingId(marketId);
+        const config = getContractConfig();
+        try {
+            await doContractCall({
+                contractAddress: config.deployer,
+                contractName: config.predictionMarket,
+                functionName: 'resolve-market',
+                functionArgs: [uintCV(marketId), outcome ? trueCV() : falseCV()],
+                postConditionMode: PostConditionMode.Deny,
+                anchorMode: AnchorMode.Any,
+                onFinish: (data) => {
+                    toast.success(`Market ${marketId} resolved as ${outcome ? 'YES' : 'NO'}!`);
+                    setProcessingId(null);
+                    setTimeout(loadData, 2000);
+                },
+                onCancel: () => {
+                    setProcessingId(null);
+                }
+            });
+        } catch (error: any) {
+            toast.error(error.message || 'Failed to resolve market');
+            setProcessingId(null);
+        }
+    };
 
     return (
         <main className="min-h-screen flex flex-col bg-background">
@@ -88,15 +244,10 @@ function AdminDashboard() {
                             Overview
                         </button>
                         <button 
-                            onClick={() => setActiveTab('pending')}
-                            className={`w-full text-left px-3 py-2 text-sm font-medium rounded-md transition-colors flex justify-between items-center ${activeTab === 'pending' ? 'bg-primary/10 text-primary' : 'hover:bg-muted/50 text-muted-foreground'}`}
+                            onClick={() => setActiveTab('create')}
+                            className={`w-full text-left px-3 py-2 text-sm font-medium rounded-md transition-colors flex justify-between items-center ${activeTab === 'create' ? 'bg-primary/10 text-primary' : 'hover:bg-muted/50 text-muted-foreground'}`}
                         >
-                            Pending Markets
-                            {pendingMarkets.length > 0 && (
-                                <Badge className="ml-2 h-5 w-5 rounded-full px-0 flex items-center justify-center bg-orange-500 hover:bg-orange-600">
-                                    {pendingMarkets.length}
-                                </Badge>
-                            )}
+                            Create Market
                         </button>
                         <button 
                             onClick={() => setActiveTab('resolve')}
@@ -111,57 +262,90 @@ function AdminDashboard() {
                 <div className="flex-1 p-8 space-y-8">
                     <Tabs value={activeTab} onValueChange={setActiveTab} className="w-full">
                         
-                        <TabsContent value="pending" className="space-y-6">
+                        <TabsContent value="create" className="space-y-6">
                             <div className="flex items-center justify-between">
-                                <h2 className="text-2xl font-bold tracking-tight">Pending Markets</h2>
-                                <Button variant="outline" size="sm" onClick={loadData}>
-                                    <Loader2 className={`mr-2 h-3 w-3 ${loading ? 'animate-spin' : ''}`} />
-                                    Refresh
-                                </Button>
+                                <h2 className="text-2xl font-bold tracking-tight">Create New Market</h2>
                             </div>
-                            
-                            {/* ... Content ... */}
-                            {loading ? (
-                                <div className="space-y-4">
-                                    {[1, 2, 3].map(i => <div key={i} className="h-32 bg-muted animate-pulse rounded-lg"/>)}
-                                </div>
-                            ) : pendingMarkets.length === 0 ? (
-                                <div className="text-center py-12 border border-dashed rounded-lg text-muted-foreground">
-                                    No pending markets found.
-                                </div>
-                            ) : (
-                                <div className="grid gap-6">
-                                    {pendingMarkets.map(market => (
-                                        <Card key={market.id}>
-                                            <CardHeader>
-                                                <CardTitle className="flex justify-between items-start">
-                                                    <span>{market.question}</span>
-                                                    <Badge variant="outline">ID: {market.id}</Badge>
-                                                </CardTitle>
-                                                <CardDescription>
-                                                    Category: {market.category} • Created: {new Date(Number(market['created-at']) * 1000).toLocaleDateString()}
-                                                </CardDescription>
-                                            </CardHeader>
-                                            <CardContent>
-                                                <div className="flex gap-4">
-                                                    <Button 
-                                                        onClick={() => handleApprove(market.id)} 
-                                                        disabled={processingId === market.id}
-                                                        className="bg-green-600 hover:bg-green-700"
-                                                    >
-                                                        {processingId === market.id ? <Loader2 className="mr-2 h-4 w-4 animate-spin"/> : <CheckCircle className="mr-2 h-4 w-4"/>}
-                                                        Approve Market
-                                                    </Button>
-                                                    <Button variant="destructive" disabled>
-                                                        <XCircle className="mr-2 h-4 w-4"/>
-                                                        Reject
-                                                    </Button>
+
+                            <Card>
+                                <CardContent className="pt-6">
+                                    <form onSubmit={handleCreateMarket} className="space-y-4">
+                                        <div className="space-y-2">
+                                            <Label htmlFor="question">Market Question</Label>
+                                            <Input 
+                                                id="question" 
+                                                placeholder="e.g. Will Bitcoin reach $100k by end of year?" 
+                                                value={question}
+                                                onChange={(e) => setQuestion(e.target.value)}
+                                                required
+                                            />
+                                        </div>
+
+                                        <div className="grid grid-cols-2 gap-4">
+                                            <div className="space-y-2">
+                                                <Label htmlFor="category">Category</Label>
+                                                <select 
+                                                    id="category"
+                                                    className="flex h-10 w-full rounded-md border border-input bg-background px-3 py-2 text-sm"
+                                                    value={category}
+                                                    onChange={(e) => setCategory(e.target.value)}
+                                                >
+                                                    <option value="Crypto">Crypto</option>
+                                                    <option value="Politics">Politics</option>
+                                                    <option value="Sports">Sports</option>
+                                                </select>
+                                            </div>
+                                            <div className="space-y-2">
+                                                <Label htmlFor="resolveDate">Resolution Date</Label>
+                                                <Input 
+                                                    id="resolveDate" 
+                                                    type="datetime-local" 
+                                                    value={resolveDate}
+                                                    onChange={(e) => setResolveDate(e.target.value)}
+                                                    required
+                                                />
+                                            </div>
+                                        </div>
+
+                                        <div className="space-y-2">
+                                            <Label htmlFor="image">Market Image</Label>
+                                            <div className="flex items-center gap-4">
+                                                <div className="flex-1 border-2 border-dashed rounded-lg p-4 text-center cursor-pointer hover:bg-muted/50 relative">
+                                                    <input 
+                                                        type="file" 
+                                                        className="absolute inset-0 opacity-0 cursor-pointer" 
+                                                        onChange={handleFileChange}
+                                                        accept="image/*"
+                                                        disabled={isUploading}
+                                                    />
+                                                    {previewUrl ? (
+                                                        <img src={previewUrl} className="h-20 mx-auto rounded" alt="Preview"/>
+                                                    ) : (
+                                                        <div className="text-sm text-muted-foreground">
+                                                            {isUploading ? <Loader2 className="h-4 w-4 animate-spin mx-auto"/> : "Click to upload image"}
+                                                        </div>
+                                                    )}
                                                 </div>
-                                            </CardContent>
-                                        </Card>
-                                    ))}
-                                </div>
-                            )}
+                                            </div>
+                                        </div>
+
+                                        <div className="space-y-2">
+                                            <Label htmlFor="description">Description (Markdown supported)</Label>
+                                            <Textarea 
+                                                id="description" 
+                                                placeholder="Market rules and outcome conditions..." 
+                                                value={description}
+                                                onChange={(e) => setDescription(e.target.value)}
+                                            />
+                                        </div>
+
+                                        <Button type="submit" className="w-full" disabled={isSubmitting || isUploading}>
+                                            {isSubmitting && <Loader2 className="mr-2 h-4 w-4 animate-spin"/>}
+                                            {isSubmitting ? "Creating Market..." : "Create Market"}
+                                        </Button>
+                                    </form>
+                                </CardContent>
+                            </Card>
                         </TabsContent>
 
                         <TabsContent value="resolve" className="space-y-6">
@@ -232,10 +416,10 @@ function AdminDashboard() {
                                 </Card>
                                 <Card>
                                     <CardHeader className="pb-2">
-                                        <CardTitle className="text-sm font-medium text-muted-foreground">Pending Approval</CardTitle>
+                                        <CardTitle className="text-sm font-medium text-muted-foreground">Active Markets</CardTitle>
                                     </CardHeader>
                                     <CardContent>
-                                        <div className="text-2xl font-bold text-orange-500">{pendingMarkets.length}</div>
+                                        <div className="text-2xl font-bold text-orange-500">{activeMarkets.length}</div>
                                     </CardContent>
                                 </Card>
                                 <Card>
