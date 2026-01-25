@@ -102,16 +102,15 @@ export default function LeaderboardPage() {
         <main className="min-h-screen flex flex-col bg-background">
             <Navbar />
             
-            <div className="container py-12 flex-1 flex flex-col items-center">
-                <div className="text-center mb-12 space-y-4">
-                    <div className="inline-flex items-center justify-center p-2 bg-primary/10 rounded-full mb-2">
-                        <Trophy className="h-6 w-6 text-primary mr-2" />
-                        <span className="text-sm font-bold uppercase tracking-wider text-primary">Hall of Fame</span>
+            <div className="container py-12 md:py-20 flex-1 flex flex-col items-center">
+                <div className="text-center mb-16 space-y-4">
+                    <div className="inline-flex items-center rounded-lg bg-muted px-3 py-1 text-sm font-medium mb-2">
+                        🏆 Hall of Fame
                     </div>
-                    <h1 className="text-4xl md:text-5xl font-extrabold tracking-tight italic bg-gradient-to-r from-primary to-purple-600 bg-clip-text text-transparent">
-                        PredictStack Leaders
+                    <h1 className="text-4xl md:text-6xl font-bold tracking-tighter sm:text-5xl mb-6">
+                        PredictStack <span className="text-orange-500">Leaders</span>
                     </h1>
-                    <p className="text-muted-foreground max-w-2xl mx-auto text-lg">
+                    <p className="max-w-[700px] text-muted-foreground md:text-xl mx-auto leading-relaxed">
                         The top predictors on PredictStack. Ranked by total profit in USDCx.
                     </p>
                 </div>
@@ -162,7 +161,7 @@ export default function LeaderboardPage() {
                                 +${entry.totalProfit.toLocaleString()}
                             </div>
                             <div className="col-span-2 text-right font-medium">
-                                <Badge variant="outline" className="font-mono text-primary">
+                                <Badge variant="outline" className="font-mono text-orange-500 border-orange-200">
                                     {entry.winRate}%
                                 </Badge>
                             </div>
@@ -187,30 +186,30 @@ export default function LeaderboardPage() {
 
 function PodiumCard({ entry, highlight, delay }: { entry: LeaderboardEntry, highlight?: boolean, delay?: string }) {
     return (
-        <Card className={`relative overflow-hidden transition-all hover:translate-y-[-8px] hover:shadow-2xl duration-500 animate-in fade-in slide-in-from-bottom-8 ${highlight ? 'border-primary ring-2 ring-primary/20 bg-primary/5 scale-105 z-10' : 'bg-card/30'}`} style={{ animationDelay: `${delay}ms` }}>
+        <Card className={`relative overflow-hidden transition-all hover:translate-y-[-8px] hover:shadow-2xl duration-500 animate-in fade-in slide-in-from-bottom-8 ${highlight ? 'border-orange-500 ring-4 ring-orange-500/10 bg-orange-500/[0.02] scale-105 z-10 shadow-xl' : 'bg-card/30'}`} style={{ animationDelay: `${delay}ms` }}>
             {highlight && (
                 <div className="absolute top-0 right-0 p-3">
-                    <Crown className="h-8 w-8 text-yellow-500 fill-yellow-500" />
+                    <Crown className="h-8 w-8 text-orange-500 fill-orange-500 animate-pulse" />
                 </div>
             )}
             <CardHeader className="text-center pb-2 pt-8">
                 <div className="relative mx-auto mb-4">
-                    <div className={`h-24 w-24 rounded-full flex items-center justify-center text-3xl font-black border-4 shadow-xl ${highlight ? 'bg-primary text-primary-foreground border-primary/50' : 'bg-secondary text-secondary-foreground border-border'}`}>
+                    <div className={`h-24 w-24 rounded-full flex items-center justify-center text-3xl font-black border-4 shadow-xl ${highlight ? 'bg-orange-500 text-white border-orange-200' : 'bg-secondary text-secondary-foreground border-border'}`}>
                         {entry.address.slice(2, 4)}
                     </div>
-                    <div className={`absolute -bottom-2 -right-2 h-10 w-10 rounded-full border-4 flex items-center justify-center font-black shadow-lg ${entry.rank === 1 ? 'bg-yellow-500 border-yellow-700 text-white' : entry.rank === 2 ? 'bg-slate-300 border-slate-400 text-slate-700' : 'bg-amber-600 border-amber-800 text-white'}`}>
+                    <div className={`absolute -bottom-2 -right-2 h-10 w-10 rounded-full border-4 flex items-center justify-center font-black shadow-lg ${entry.rank === 1 ? 'bg-yellow-500 border-yellow-700 text-white' : entry.rank === 2 ? 'bg-slate-300 border-slate-400 text-slate-700' : 'bg-orange-600 border-orange-800 text-white'}`}>
                         {entry.rank}
                     </div>
                 </div>
                 <CardTitle className="text-xl font-bold truncate">{entry.address}</CardTitle>
-                <CardDescription className="flex items-center justify-center gap-1">
+                <CardDescription className="flex items-center justify-center gap-1 font-medium">
                     <TrendingUp className="h-3 w-3 text-green-500" />
                     Top Performer
                 </CardDescription>
             </CardHeader>
             <CardContent className="space-y-6 pb-8 pt-4">
                 <div className="text-center">
-                    <div className="text-sm text-muted-foreground uppercase tracking-widest mb-1">Total Profit</div>
+                    <div className="text-[10px] text-muted-foreground uppercase tracking-[0.2em] mb-1">Total Profit</div>
                     <div className="text-3xl font-black text-green-500">
                         +${entry.totalProfit.toLocaleString()}
                     </div>
@@ -219,7 +218,7 @@ function PodiumCard({ entry, highlight, delay }: { entry: LeaderboardEntry, high
                 <div className="grid grid-cols-2 gap-4 border-t pt-4">
                     <div className="text-center">
                         <div className="text-[10px] text-muted-foreground uppercase">Win Rate</div>
-                        <div className="font-bold text-primary">{entry.winRate}%</div>
+                        <div className="font-bold text-orange-500">{entry.winRate}%</div>
                     </div>
                     <div className="text-center border-l">
                         <div className="text-[10px] text-muted-foreground uppercase">Bets</div>
@@ -228,7 +227,7 @@ function PodiumCard({ entry, highlight, delay }: { entry: LeaderboardEntry, high
                 </div>
             </CardContent>
             {highlight && (
-                <div className="absolute bottom-0 left-0 w-full h-1 bg-gradient-to-r from-transparent via-primary to-transparent" />
+                <div className="absolute bottom-0 left-0 w-full h-1 bg-gradient-to-r from-transparent via-orange-500 to-transparent" />
             )}
         </Card>
     );
