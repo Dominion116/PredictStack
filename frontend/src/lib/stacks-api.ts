@@ -212,3 +212,29 @@ export async function getUserPosition(address: string, marketId: number) {
         return null;
     }
 }
+
+/**
+ * Fetches the list of market IDs a user has participated in.
+ */
+export async function getUserMarkets(address: string) {
+    try {
+        const response = await fetchCallReadOnlyFunction({
+            contractAddress: config.deployer,
+            contractName: config.predictionMarket,
+            functionName: 'get-user-markets',
+            functionArgs: [principalCV(address)],
+            network,
+            senderAddress: address,
+        });
+
+        const json: any = cvToJSON(response);
+        if (json.success && json.value && json.value.value) {
+            // value is a list of uints
+            return json.value.value.map((val: any) => Number(val.value));
+        }
+        return [];
+    } catch (error) {
+        console.error("Error fetching user markets:", error);
+        return [];
+    }
+}
