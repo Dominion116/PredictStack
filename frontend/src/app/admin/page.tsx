@@ -14,7 +14,7 @@ import { getRecentMarkets } from '@/lib/stacks-api';
 import { Loader2, ShieldAlert, CheckCircle, XCircle, Gavel, Filter } from 'lucide-react';
 import { Footer } from "@/components/footer";
 import { toast } from 'sonner';
-import { uintCV, PostConditionMode, AnchorMode } from '@stacks/transactions';
+import { uintCV, trueCV, falseCV, contractPrincipalCV, PostConditionMode, AnchorMode } from '@stacks/transactions';
 
 export default function AdminPage() {
     const [mounted, setMounted] = useState(false);
@@ -109,6 +109,39 @@ function AdminDashboard() {
             });
         } catch (error: any) {
             toast.error(error.message || "Failed to approve market");
+            setProcessingId(null);
+        }
+    };
+
+    const handleResolve = async (marketId: number, outcome: boolean) => {
+        setProcessingId(marketId);
+        const config = getContractConfig();
+        const [tokenAddr, tokenName] = config.usdcx.split('.');
+
+        try {
+            await doContractCall({
+                contractAddress: config.deployer,
+                contractName: config.predictionMarket,
+                functionName: 'resolve-market',
+                functionArgs: [
+                    uintCV(marketId),
+                    outcome ? trueCV() : falseCV(),
+                    contractPrincipalCV(tokenAddr, tokenName)
+                ],
+                postConditionMode: PostConditionMode.Deny,
+                anchorMode: AnchorMode.Any,
+                onFinish: (data) => {
+                    toast.success(`Resolution tx submitted: ${data.txId}`);
+                    setProcessingId(null);
+                    // Optimistically update or reload
+                    setTimeout(loadData, 2000); 
+                },
+                onCancel: () => {
+                    setProcessingId(null);
+                }
+            });
+        } catch (error: any) {
+            toast.error(error.message || "Failed to resolve market");
             setProcessingId(null);
         }
     };
@@ -214,19 +247,50 @@ function AdminDashboard() {
                         <TabsContent value="resolve" className="space-y-6 mt-6">
                             <h2 className="text-2xl font-bold tracking-tight">Resolve Markets</h2>
                             <p className="text-muted-foreground">Select a market to declare the winning outcome.</p>
-                            {/* Will implement resolution logic next */}
                             <div className="grid gap-6">
                                 {activeMarkets.map(market => (
                                    <Card key={market.id}>
                                         <CardHeader>
-                                            <CardTitle>{market.question}</CardTitle>
+                                            <CardTitle className="flex justify-between">
+                                                {market.question}
+                                                <Badge variant="outline">ID: {market.id}</Badge>
+                                            </CardTitle>
                                             <CardDescription>Ends: {new Date(Number(market['resolve-date']) * 1000).toLocaleDateString()}</CardDescription>
                                         </CardHeader>
                                         <CardContent>
-                                            <div className="flex gap-2">
-                                                <Button variant="outline" className="w-full">
-                                                    <Gavel className="mr-2 h-4 w-4"/> Resolve
-                                                </Button>
+                                            <div className="flex flex-col gap-4">
+                                                <div className="flex gap-4">
+                                                    <div className="flex-1 bg-green-50 p-3 rounded-md text-center border border-green-100">
+                                                        <div className="text-xs text-muted-foreground uppercase mb-1">Yes Pool</div>
+                                                        <div className="font-bold text-green-700">
+                                                            ${(Number(market['yes-pool']?.value || 0) / 1000000).toLocaleString()}
+                                                        </div>
+                                                    </div>
+                                                    <div className="flex-1 bg-red-50 p-3 rounded-md text-center border border-red-100">
+                                                        <div className="text-xs text-muted-foreground uppercase mb-1">No Pool</div>
+                                                        <div className="font-bold text-red-700">
+                                                            ${(Number(market['no-pool']?.value || 0) / 1000000).toLocaleString()}
+                                                        </div>
+                                                    </div>
+                                                </div>
+                                                <div className="flex gap-4">
+                                                    <Button 
+                                                        className="flex-1 bg-green-600 hover:bg-green-700"
+                                                        onClick={() => handleResolve(market.id, true)}
+                                                        disabled={processingId === market.id}
+                                                    >
+                                                        {processingId === market.id ? <Loader2 className="mr-2 h-4 w-4 animate-spin"/> : <Gavel className="mr-2 h-4 w-4"/>}
+                                                        Resolve YES
+                                                    </Button>
+                                                    <Button 
+                                                        className="flex-1 bg-red-600 hover:bg-red-700"
+                                                        onClick={() => handleResolve(market.id, false)}
+                                                        disabled={processingId === market.id}
+                                                    >
+                                                        {processingId === market.id ? <Loader2 className="mr-2 h-4 w-4 animate-spin"/> : <Gavel className="mr-2 h-4 w-4"/>}
+                                                        Resolve NO
+                                                    </Button>
+                                                </div>
                                             </div>
                                         </CardContent>
                                    </Card> 
