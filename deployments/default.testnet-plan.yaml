@@ -9,10 +9,10 @@ plan:
     - id: 0
       transactions:
         - contract-publish:
-            contract-name: prediction-market
+            contract-name: prediction-market-v3
             expected-sender: ST30VGN68PSGVWGNMD0HH2WQMM5T486EK3WBNTHCY
-            cost: 303340
-            path: contracts/prediction-market.clar
+            cost: 30050
+            path: contracts/prediction-market-v3.clar
             anchor-block-only: true
             clarity-version: 1
       epoch: "2.05"

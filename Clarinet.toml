@@ -7,15 +7,15 @@ cache_dir = "./.cache"
 
 # SIP-010 Trait Definition
 [contracts.sip010-trait-v1]
-path = "contracts/sip010-trait-v1.clar"
+path = "contracts/sip010-trait.clar"
 
 # USDCx Mock Token
 [contracts.usdcx-v1]
-path = "contracts/usdcx-v1.clar"
+path = "contracts/usdcx.clar"
 
-# Main Prediction Market Contract
-[contracts.prediction-market-v1]
-path = "contracts/prediction-market-v1.clar"
+# Main Prediction Market Contract V3
+[contracts.prediction-market-v3]
+path = "contracts/prediction-market-v3.clar"
 
 [repl.analysis]
 passes = ["check_checker"]

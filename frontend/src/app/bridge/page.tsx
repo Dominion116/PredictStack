@@ -238,9 +238,9 @@ function BridgeContent() {
             </p>
         </div>
 
-        <Card className="w-full max-w-xl shadow-lg border-muted">
+        <Card className="w-full max-w-2xl shadow-lg border-muted">
             <Tabs defaultValue="deposit" className="w-full">
-                <div className="px-6 pt-6">
+                <div className="px-8 pt-8">
                     <TabsList className="grid w-full grid-cols-2 h-12">
                         <TabsTrigger value="deposit" className="h-10">Deposit (ETH to Stacks)</TabsTrigger>
                         <TabsTrigger value="withdraw" className="h-10">Withdraw (Stacks to ETH)</TabsTrigger>
@@ -249,11 +249,11 @@ function BridgeContent() {
                 
                 {/* DEPOSIT TAB */}
                 <TabsContent value="deposit">
-                    <CardContent className="space-y-6 pt-6">
+                    <CardContent className="space-y-8 p-8">
                         <div className="space-y-2">
                             <Label>From (Ethereum Sepolia)</Label>
                             {ethAddress ? (
-                                <div className="p-3 bg-secondary/50 rounded-md font-mono text-xs break-all border">
+                                <div className="p-4 bg-secondary/50 rounded-md font-mono text-xs break-all border">
                                     {ethAddress}
                                 </div>
                             ) : (
@@ -276,11 +276,11 @@ function BridgeContent() {
                         <div className="space-y-2">
                             <Label>To (Stacks Testnet)</Label>
                             {stacksAddress ? (
-                                <div className="p-3 bg-secondary/50 rounded-md font-mono text-xs break-all border">
+                                <div className="p-4 bg-secondary/50 rounded-md font-mono text-xs break-all border">
                                     {stacksAddress}
                                 </div>
                             ) : (
-                                <div className="p-3 bg-destructive/10 text-destructive text-sm rounded-md border border-destructive/20 text-center">
+                                <div className="p-4 bg-destructive/10 text-destructive text-sm rounded-md border border-destructive/20 text-center">
                                     Please sign in with Stacks Wallet (top right)
                                 </div>
                             )}
@@ -311,15 +311,15 @@ function BridgeContent() {
 
                 {/* WITHDRAW TAB */}
                 <TabsContent value="withdraw">
-                    <CardContent className="space-y-6 pt-6">
+                    <CardContent className="space-y-8 p-8">
                          <div className="space-y-2">
                             <Label>From (Stacks Testnet)</Label>
                             {stacksAddress ? (
-                                <div className="p-3 bg-secondary/50 rounded-md font-mono text-xs break-all border">
+                                <div className="p-4 bg-secondary/50 rounded-md font-mono text-xs break-all border">
                                     {stacksAddress}
                                 </div>
                             ) : (
-                                <div className="p-3 bg-destructive/10 text-destructive text-sm rounded-md border border-destructive/20 text-center">
+                                <div className="p-4 bg-destructive/10 text-destructive text-sm rounded-md border border-destructive/20 text-center">
                                     Please sign in with Stacks Wallet
                                 </div>
                             )}
@@ -332,7 +332,7 @@ function BridgeContent() {
                         <div className="space-y-2">
                             <Label>To (Ethereum Sepolia)</Label>
                             {ethAddress ? (
-                                <div className="p-3 bg-secondary/50 rounded-md font-mono text-xs break-all border">
+                                <div className="p-4 bg-secondary/50 rounded-md font-mono text-xs break-all border">
                                     {ethAddress}
                                 </div>
                             ) : (
