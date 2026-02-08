@@ -4,6 +4,23 @@ import { AppConfig, UserSession } from '@stacks/connect';
 export const appConfig = new AppConfig(['store_write', 'publish_data']);
 export const userSession = new UserSession({ appConfig });
 
+/**
+ * Safely check if user is signed in, handling session data version errors
+ */
+export const isUserSignedIn = (): boolean => {
+  try {
+    return userSession.isUserSignedIn();
+  } catch (error) {
+    console.error('Session error:', error);
+    // Clear invalid session data
+    if (typeof window !== 'undefined') {
+      localStorage.removeItem('blockstack-session');
+      localStorage.removeItem('stacks-session');
+    }
+    return false;
+  }
+};
+
 export const APP_DETAILS = {
   name: 'PredictStack',
   icon: typeof window !== 'undefined' ? `${window.location.origin}/icon.png` : '/icon.png',

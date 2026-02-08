@@ -8,7 +8,7 @@ import { ArrowRight, Trophy, Zap, Shield, Wallet, BarChart3, CheckCircle, Github
 import { MarketsList } from "@/components/markets-list";
 import { useEffect, useState } from "react";
 import { getPlatformStats } from "@/lib/stacks-api";
-import { userSession } from "@/lib/constants";
+import { isUserSignedIn } from "@/lib/constants";
 import { useRouter } from "next/navigation";
 import { Footer } from "@/components/footer";
 
@@ -17,7 +17,7 @@ export default function Home() {
   const router = useRouter();
 
   useEffect(() => {
-    if (userSession.isUserSignedIn()) {
+    if (isUserSignedIn()) {
       router.replace('/dashboard');
     } else {
       getPlatformStats().then(setStats);

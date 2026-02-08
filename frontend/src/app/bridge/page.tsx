@@ -8,7 +8,7 @@ import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
 import { useConnect } from '@stacks/connect-react';
-import { userSession } from '@/lib/constants';
+import { userSession, isUserSignedIn } from '@/lib/constants';
 import { createWalletClient, custom, createPublicClient, http, formatUnits, parseUnits, type Hex } from 'viem';
 import { BRIDGE_CONFIG, ERC20_ABI, X_RESERVE_ABI, encodeStacksAddressToBytes32, encodeEthAddressToBytes32 } from '@/lib/bridge-utils';
 import { toast } from 'sonner';
@@ -57,14 +57,9 @@ function BridgeContent() {
 
   // Load Stacks User
   useEffect(() => {
-    try {
-      if (userSession.isUserSignedIn()) {
+      if (isUserSignedIn()) {
         setStacksAddress(userSession.loadUserData().profile.stxAddress.testnet);
       }
-    } catch (error) {
-      console.error("Bridge session error:", error);
-      userSession.signUserOut();
-    }
   }, []);
 
   // Connect Ethereum Wallet
