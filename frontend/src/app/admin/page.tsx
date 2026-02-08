@@ -23,7 +23,6 @@ import {
     stringAsciiCV,
     someCV,
     noneCV,
-    contractPrincipalCV, 
     PostConditionMode, 
     AnchorMode 
 } from '@stacks/transactions';
@@ -165,7 +164,6 @@ function AdminDashboard() {
 
         try {
             setIsSubmitting(true);
-            const [tokenAddr, tokenName] = config.usdcx.split('.');
 
             await doContractCall({
                 contractAddress: config.deployer,
@@ -175,10 +173,7 @@ function AdminDashboard() {
                     stringAsciiCV(question),
                     description ? someCV(stringAsciiCV(description)) : noneCV(),
                     uintCV(estimatedBlock),
-                    noneCV(),
-                    stringAsciiCV(category),
                     imageUrl ? someCV(stringAsciiCV(imageUrl)) : noneCV(),
-                    contractPrincipalCV(tokenAddr, tokenName)
                 ],
                 postConditionMode: PostConditionMode.Deny,
                 anchorMode: AnchorMode.Any,
