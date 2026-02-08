@@ -2,6 +2,7 @@
 
 import { Navbar } from "@/components/navbar";
 import { Button } from "@/components/ui/button";
+import { Badge } from "@/components/ui/badge";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import Link from "next/link";
 import { ArrowRight, Trophy, Zap, Shield, Wallet, BarChart3 } from "lucide-react";
@@ -104,11 +105,17 @@ export default function Home() {
 
       {/* FAQ Section */}
       <section className="bg-muted/30">
-        <div className="container flex min-h-[400px] items-center justify-center px-6 py-16 md:py-24">
-          <div className="flex flex-col items-start gap-x-12 gap-y-6 md:flex-row">
-            <h2 className="font-semibold text-4xl leading-[1.15] tracking-[-0.035em] lg:text-5xl">
-              Frequently Asked <br /> Questions
-            </h2>
+        <div className="container px-6 py-16 md:py-24">
+          <div className="flex justify-center mb-4">
+            <Badge className="rounded-full border-border py-1" variant="secondary">
+              FAQ
+            </Badge>
+          </div>
+          <div className="flex min-h-[400px] items-center justify-center">
+            <div className="flex flex-col items-start gap-x-12 gap-y-6 md:flex-row">
+              <h2 className="font-semibold text-4xl leading-[1.15] tracking-[-0.035em] lg:text-5xl">
+                Frequently Asked <br /> Questions
+              </h2>
 
             <Accordion className="max-w-xl" defaultValue="question-0" type="single">
               <AccordionItem value="question-0">
@@ -165,6 +172,7 @@ export default function Home() {
                 </AccordionContent>
               </AccordionItem>
             </Accordion>
+          </div>
           </div>
         </div>
       </section>
