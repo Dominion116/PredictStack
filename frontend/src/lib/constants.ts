@@ -7,7 +7,7 @@ export const userSession = new UserSession({ appConfig });
 /**
  * Safely check if user is signed in, handling session data version errors
  */
-export const isUserSignedIn = (): boolean => {
+export function isUserSignedIn(): boolean {
   try {
     return userSession.isUserSignedIn();
   } catch (error) {
@@ -19,7 +19,7 @@ export const isUserSignedIn = (): boolean => {
     }
     return false;
   }
-};
+}
 
 export const APP_DETAILS = {
   name: 'PredictStack',
