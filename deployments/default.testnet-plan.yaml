@@ -9,10 +9,24 @@ plan:
     - id: 0
       transactions:
         - contract-publish:
+            contract-name: sip010-trait-v1
+            expected-sender: ST30VGN68PSGVWGNMD0HH2WQMM5T486EK3WBNTHCY
+            cost: 8860
+            path: contracts/sip010-trait.clar
+            anchor-block-only: true
+            clarity-version: 1
+        - contract-publish:
             contract-name: prediction-market-v3
             expected-sender: ST30VGN68PSGVWGNMD0HH2WQMM5T486EK3WBNTHCY
-            cost: 30050
+            cost: 271710
             path: contracts/prediction-market-v3.clar
+            anchor-block-only: true
+            clarity-version: 1
+        - contract-publish:
+            contract-name: usdcx-v1
+            expected-sender: ST30VGN68PSGVWGNMD0HH2WQMM5T486EK3WBNTHCY
+            cost: 16470
+            path: contracts/usdcx.clar
             anchor-block-only: true
             clarity-version: 1
       epoch: "2.05"

@@ -17,6 +17,10 @@ path = "contracts/usdcx.clar"
 [contracts.prediction-market-v3]
 path = "contracts/prediction-market-v3.clar"
 
+# Main Prediction Market Contract V4 (Latest)
+[contracts.prediction-market-v4]
+path = "contracts/prediction-market-v4.clar"
+
 [repl.analysis]
 passes = ["check_checker"]
 check_checker = { trusted_sender = false, trusted_caller = false, callee_filter = false }
