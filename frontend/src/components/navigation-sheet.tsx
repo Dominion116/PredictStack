@@ -56,13 +56,13 @@ export function NavigationSheet({
                   <Badge variant="outline" className="font-mono text-sm">
                     {truncatedAddress}
                   </Badge>
-                  <Button variant="outline" size="sm" onClick={onDisconnect}>
+                  <Button variant="outline" size="sm" onClick={onDisconnect} className="rounded-full shadow-none">
                     <LogOut className="mr-2 h-4 w-4" />
                     Disconnect
                   </Button>
                 </div>
               ) : (
-                <Button onClick={onConnect} className="w-full">
+                <Button onClick={onConnect} className="w-full rounded-full">
                   <Wallet className="mr-2 h-4 w-4" />
                   Connect Wallet
                 </Button>
