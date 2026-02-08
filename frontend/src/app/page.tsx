@@ -13,6 +13,12 @@ import { useRouter } from "next/navigation";
 import { Footer } from "@/components/footer";
 import Hero from "@/components/hero";
 import Features from "@/components/features";
+import {
+  Accordion,
+  AccordionContent,
+  AccordionItem,
+  AccordionTrigger,
+} from "@/components/ui/accordion";
 
 export default function Home() {
   const [stats, setStats] = useState<any>(null);
@@ -98,86 +104,67 @@ export default function Home() {
 
       {/* FAQ Section */}
       <section className="bg-muted/30">
-        <div className="container py-16 md:py-24">
-          <div className="text-center mb-12">
-            <h2 className="text-3xl font-bold tracking-tighter sm:text-4xl mb-4">Frequently Asked Questions</h2>
-            <p className="text-muted-foreground max-w-2xl mx-auto">
-              Everything you need to know about PredictStack.
-            </p>
-          </div>
-          
-          <div className="max-w-3xl mx-auto space-y-4">
-            <details className="group bg-background rounded-lg p-6">
-              <summary className="font-semibold cursor-pointer list-none flex justify-between items-center">
-                What is PredictStack?
-                <span className="transition group-open:rotate-180">
-                  <svg fill="none" height="24" shapeRendering="geometricPrecision" stroke="currentColor" strokeLinecap="round" strokeLinejoin="round" strokeWidth="1.5" viewBox="0 0 24 24" width="24"><path d="M6 9l6 6 6-6"></path></svg>
-                </span>
-              </summary>
-              <p className="text-muted-foreground mt-4">
-                PredictStack is a decentralized prediction market platform built on Stacks. Users can bet on future events using USDCx tokens, with all transactions secured by Bitcoin through Stacks&apos; Proof-of-Transfer consensus.
-              </p>
-            </details>
+        <div className="container flex min-h-[400px] items-center justify-center px-6 py-16 md:py-24">
+          <div className="flex flex-col items-start gap-x-12 gap-y-6 md:flex-row">
+            <h2 className="font-semibold text-4xl leading-[1.15] tracking-[-0.035em] lg:text-5xl">
+              Frequently Asked <br /> Questions
+            </h2>
 
-            <details className="group bg-background rounded-lg p-6">
-              <summary className="font-semibold cursor-pointer list-none flex justify-between items-center">
-                How do I get started?
-                <span className="transition group-open:rotate-180">
-                  <svg fill="none" height="24" shapeRendering="geometricPrecision" stroke="currentColor" strokeLinecap="round" strokeLinejoin="round" strokeWidth="1.5" viewBox="0 0 24 24" width="24"><path d="M6 9l6 6 6-6"></path></svg>
-                </span>
-              </summary>
-              <p className="text-muted-foreground mt-4">
-                First, connect a Stacks wallet like Leather or Xverse. Then, bridge some USDC to get USDCx tokens. Finally, browse our markets and place your first prediction!
-              </p>
-            </details>
+            <Accordion className="max-w-xl" defaultValue="question-0" type="single">
+              <AccordionItem value="question-0">
+                <AccordionTrigger className="text-left text-lg">
+                  What is PredictStack?
+                </AccordionTrigger>
+                <AccordionContent className="text-base text-muted-foreground">
+                  PredictStack is a decentralized prediction market platform built on Stacks. Users can bet on future events using USDCx tokens, with all transactions secured by Bitcoin through Stacks&apos; Proof-of-Transfer consensus.
+                </AccordionContent>
+              </AccordionItem>
 
-            <details className="group bg-background rounded-lg p-6">
-              <summary className="font-semibold cursor-pointer list-none flex justify-between items-center">
-                What is USDCx?
-                <span className="transition group-open:rotate-180">
-                  <svg fill="none" height="24" shapeRendering="geometricPrecision" stroke="currentColor" strokeLinecap="round" strokeLinejoin="round" strokeWidth="1.5" viewBox="0 0 24 24" width="24"><path d="M6 9l6 6 6-6"></path></svg>
-                </span>
-              </summary>
-              <p className="text-muted-foreground mt-4">
-                USDCx is a bridged version of USDC on the Stacks blockchain. It maintains a 1:1 peg with USDC and can be bridged back to Ethereum at any time through our bridge interface.
-              </p>
-            </details>
+              <AccordionItem value="question-1">
+                <AccordionTrigger className="text-left text-lg">
+                  How do I get started?
+                </AccordionTrigger>
+                <AccordionContent className="text-base text-muted-foreground">
+                  First, connect a Stacks wallet like Leather or Xverse. Then, bridge some USDC to get USDCx tokens. Finally, browse our markets and place your first prediction!
+                </AccordionContent>
+              </AccordionItem>
 
-            <details className="group bg-background rounded-lg p-6">
-              <summary className="font-semibold cursor-pointer list-none flex justify-between items-center">
-                How are markets resolved?
-                <span className="transition group-open:rotate-180">
-                  <svg fill="none" height="24" shapeRendering="geometricPrecision" stroke="currentColor" strokeLinecap="round" strokeLinejoin="round" strokeWidth="1.5" viewBox="0 0 24 24" width="24"><path d="M6 9l6 6 6-6"></path></svg>
-                </span>
-              </summary>
-              <p className="text-muted-foreground mt-4">
-                Markets are resolved by trusted oracles after the event concludes. Once resolved, winnings are automatically distributed to the correct predictions. All resolutions are recorded on-chain for transparency.
-              </p>
-            </details>
+              <AccordionItem value="question-2">
+                <AccordionTrigger className="text-left text-lg">
+                  What is USDCx?
+                </AccordionTrigger>
+                <AccordionContent className="text-base text-muted-foreground">
+                  USDCx is a bridged version of USDC on the Stacks blockchain. It maintains a 1:1 peg with USDC and can be bridged back to Ethereum at any time through our bridge interface.
+                </AccordionContent>
+              </AccordionItem>
 
-            <details className="group bg-background rounded-lg p-6">
-              <summary className="font-semibold cursor-pointer list-none flex justify-between items-center">
-                Are my funds safe?
-                <span className="transition group-open:rotate-180">
-                  <svg fill="none" height="24" shapeRendering="geometricPrecision" stroke="currentColor" strokeLinecap="round" strokeLinejoin="round" strokeWidth="1.5" viewBox="0 0 24 24" width="24"><path d="M6 9l6 6 6-6"></path></svg>
-                </span>
-              </summary>
-              <p className="text-muted-foreground mt-4">
-                Yes! PredictStack is non-custodial, meaning your funds are held in smart contracts, not by us. All contracts are open source and secured by Bitcoin through Stacks&apos; unique architecture.
-              </p>
-            </details>
+              <AccordionItem value="question-3">
+                <AccordionTrigger className="text-left text-lg">
+                  How are markets resolved?
+                </AccordionTrigger>
+                <AccordionContent className="text-base text-muted-foreground">
+                  Markets are resolved by trusted oracles after the event concludes. Once resolved, winnings are automatically distributed to the correct predictions. All resolutions are recorded on-chain for transparency.
+                </AccordionContent>
+              </AccordionItem>
 
-            <details className="group bg-background rounded-lg p-6">
-              <summary className="font-semibold cursor-pointer list-none flex justify-between items-center">
-                What fees does PredictStack charge?
-                <span className="transition group-open:rotate-180">
-                  <svg fill="none" height="24" shapeRendering="geometricPrecision" stroke="currentColor" strokeLinecap="round" strokeLinejoin="round" strokeWidth="1.5" viewBox="0 0 24 24" width="24"><path d="M6 9l6 6 6-6"></path></svg>
-                </span>
-              </summary>
-              <p className="text-muted-foreground mt-4">
-                We charge a small platform fee (typically 2-3%) on winning bets. This fee helps maintain the platform and oracle infrastructure. There are no fees for placing bets or withdrawing funds.
-              </p>
-            </details>
+              <AccordionItem value="question-4">
+                <AccordionTrigger className="text-left text-lg">
+                  Are my funds safe?
+                </AccordionTrigger>
+                <AccordionContent className="text-base text-muted-foreground">
+                  Yes! PredictStack is non-custodial, meaning your funds are held in smart contracts, not by us. All contracts are open source and secured by Bitcoin through Stacks&apos; unique architecture.
+                </AccordionContent>
+              </AccordionItem>
+
+              <AccordionItem value="question-5">
+                <AccordionTrigger className="text-left text-lg">
+                  What fees does PredictStack charge?
+                </AccordionTrigger>
+                <AccordionContent className="text-base text-muted-foreground">
+                  We charge a small platform fee (typically 2-3%) on winning bets. This fee helps maintain the platform and oracle infrastructure. There are no fees for placing bets or withdrawing funds.
+                </AccordionContent>
+              </AccordionItem>
+            </Accordion>
           </div>
         </div>
       </section>
