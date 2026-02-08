@@ -58,45 +58,41 @@ export default function Home() {
         </div>
       </section>
 
-      {/* Feature Grid - Why PredictStack */}
+      {/* How it works */}
       <section className="container py-16 md:py-24">
-          <div className="text-center mb-12">
-            <h2 className="text-3xl font-bold tracking-tighter sm:text-4xl mb-4">Why PredictStack?</h2>
-            <p className="text-muted-foreground max-w-2xl mx-auto">
-              Built on Stacks, secured by Bitcoin. The most transparent prediction market.
-            </p>
-          </div>
+          <div>
+            <h2 className="text-center font-semibold text-4xl tracking-tight sm:text-5xl">How it works</h2>
+            <div className="mt-10 grid gap-6 sm:mt-16 sm:grid-cols-2 lg:grid-cols-3">
+              <div className="flex flex-col rounded-xl border px-5 py-6">
+                <div className="mb-4 flex h-10 w-10 items-center justify-center rounded-full bg-orange-500/10">
+                  <Wallet className="size-5 text-orange-500" />
+                </div>
+                <span className="font-semibold text-lg">1. Connect & Fund</span>
+                <p className="mt-1 text-[15px] text-foreground/80">
+                  Connect your Stacks wallet and bridge USDC from Ethereum to get USDCx tokens for betting.
+                </p>
+              </div>
 
-          <div className="grid gap-8 md:grid-cols-3">
-              <Card className="bg-card/30 border-none shadow-none">
-                  <CardHeader>
-                      <Zap className="h-10 w-10 text-yellow-500 mb-4" />
-                      <CardTitle>Instant Settlement</CardTitle>
-                  </CardHeader>
-                  <CardContent className="text-muted-foreground">
-                      Markets resolve automatically via trusted oracles, sending funds directly to your wallet.
-                  </CardContent>
-              </Card>
-              
-              <Card className="bg-card/30 border-none shadow-none">
-                  <CardHeader>
-                       <Trophy className="h-10 w-10 text-orange-500 mb-4" />
-                      <CardTitle>USDCx Betting</CardTitle>
-                  </CardHeader>
-                  <CardContent className="text-muted-foreground">
-                      Use stablecoins for low volatility. Bridge your USDC from Ethereum seamlessly.
-                  </CardContent>
-              </Card>
-              
-               <Card className="bg-card/30 border-none shadow-none">
-                  <CardHeader>
-                      <Shield className="h-10 w-10 text-blue-500 mb-4" />
-                      <CardTitle>Bitcoin Security</CardTitle>
-                  </CardHeader>
-                  <CardContent className="text-muted-foreground">
-                      Secured by Proof-of-Transfer. Your predictions are recorded on Stacks, anchored to Bitcoin.
-                  </CardContent>
-              </Card>
+              <div className="flex flex-col rounded-xl border px-5 py-6">
+                <div className="mb-4 flex h-10 w-10 items-center justify-center rounded-full bg-orange-500/10">
+                  <BarChart3 className="size-5 text-orange-500" />
+                </div>
+                <span className="font-semibold text-lg">2. Browse & Bet</span>
+                <p className="mt-1 text-[15px] text-foreground/80">
+                  Explore prediction markets, analyze odds, and place bets on outcomes you believe in.
+                </p>
+              </div>
+
+              <div className="flex flex-col rounded-xl border px-5 py-6">
+                <div className="mb-4 flex h-10 w-10 items-center justify-center rounded-full bg-orange-500/10">
+                  <Trophy className="size-5 text-orange-500" />
+                </div>
+                <span className="font-semibold text-lg">3. Win & Withdraw</span>
+                <p className="mt-1 text-[15px] text-foreground/80">
+                  When markets resolve, winnings are automatically sent to your wallet. Withdraw anytime.
+                </p>
+              </div>
+            </div>
           </div>
       </section>
 
