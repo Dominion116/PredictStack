@@ -35,7 +35,7 @@ export const NETWORK_ENV = process.env.NEXT_PUBLIC_NETWORK || 'testnet'; // Defa
 export const CONTRACTS = {
   testnet: {
     deployer: DEPLOYER_TESTNET,
-    predictionMarket: 'prediction-market-v3',
+    predictionMarket: 'prediction-market-v4',
     usdcx: `${DEPLOYER_TESTNET}.usdcx-v1`, 
     sip010Trait: 'sip010-trait-v1',
   },
@@ -47,7 +47,7 @@ export const CONTRACTS = {
   },
   devnet: {
     deployer: 'ST1PQHQKV0RJXZFY1DGX8MNSNYVE3VGZJSRTPGZGM',
-    predictionMarket: 'prediction-market-v3',
+    predictionMarket: 'prediction-market-v4',
     usdcx: 'ST1PQHQKV0RJXZFY1DGX8MNSNYVE3VGZJSRTPGZGM.usdcx',
     sip010Trait: 'sip010-trait',
   }
