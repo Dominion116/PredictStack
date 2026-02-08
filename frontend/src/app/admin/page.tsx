@@ -11,7 +11,7 @@ import { Input } from '@/components/ui/input';
 import { Textarea } from '@/components/ui/textarea';
 import { Label } from '@/components/ui/label';
 import { useConnect } from '@stacks/connect-react';
-import { getContractConfig, userSession } from '@/lib/constants';
+import { getContractConfig, userSession, isUserSignedIn } from '@/lib/constants';
 import { getRecentMarkets } from '@/lib/stacks-api';
 import { Loader2, ShieldAlert, CheckCircle, XCircle, Gavel, Filter } from 'lucide-react';
 import { Footer } from "@/components/footer";
@@ -34,7 +34,7 @@ export default function AdminPage() {
 
     useEffect(() => {
         setMounted(true);
-        if (userSession.isUserSignedIn()) {
+        if (isUserSignedIn()) {
             const userData = userSession.loadUserData();
             const userAddress = userData.profile.stxAddress.testnet;
             const config = getContractConfig();

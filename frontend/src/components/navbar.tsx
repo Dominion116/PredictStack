@@ -3,7 +3,7 @@
 import { useConnect } from '@stacks/connect-react';
 import { Button } from '@/components/ui/button';
 import { Badge } from '@/components/ui/badge';
-import { userSession, getContractConfig } from '@/lib/constants';
+import { userSession, getContractConfig, isUserSignedIn } from '@/lib/constants';
 import { useEffect, useState } from 'react';
 import { LogOut, Wallet, Sun, Moon, Menu, X } from 'lucide-react';
 import Link from 'next/link';
@@ -38,18 +38,13 @@ function NavbarContent() {
   const { theme, setTheme } = useTheme();
 
   useEffect(() => {
-    try {
-      if (userSession.isUserSignedIn()) {
-        setIsSignedIn(true);
-        const userAddress = userSession.loadUserData().profile.stxAddress.testnet;
-        setAddress(userAddress);
-        
-        const config = getContractConfig();
-        setIsAdmin(userAddress === config.deployer);
-      }
-    } catch (error) {
-      console.error("Session data corrupted, clearing...", error);
-      userSession.signUserOut();
+    if (isUserSignedIn()) {
+      setIsSignedIn(true);
+      const userAddress = userSession.loadUserData().profile.stxAddress.testnet;
+      setAddress(userAddress);
+      
+      const config = getContractConfig();
+      setIsAdmin(userAddress === config.deployer);
     }
   }, []);
 

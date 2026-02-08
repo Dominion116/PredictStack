@@ -15,7 +15,7 @@ import { Tabs, TabsList, TabsTrigger } from '@/components/ui/tabs';
 import { Loader2, TrendingUp, Clock, AlertCircle, Trophy, Wallet, CheckCircle } from 'lucide-react';
 import { toast } from 'sonner';
 import { useConnect } from '@stacks/connect-react';
-import { userSession, getContractConfig } from '@/lib/constants';
+import { userSession, getContractConfig, isUserSignedIn } from '@/lib/constants';
 import { 
     PostConditionMode, 
     AnchorMode,
@@ -43,7 +43,7 @@ export default function MarketPage() {
                 const data = await getMarket(marketId);
                 setMarket(data);
 
-                if (userSession.isUserSignedIn()) {
+                if (isUserSignedIn()) {
                     const userData = userSession.loadUserData();
                     const address = userData.profile.stxAddress.testnet;
                     
@@ -65,7 +65,7 @@ export default function MarketPage() {
     }, [marketId]);
 
     const handleBet = async () => {
-        if (!userSession.isUserSignedIn()) {
+        if (!isUserSignedIn()) {
             toast.error("Please connect your wallet first");
             return;
         }
@@ -124,7 +124,7 @@ export default function MarketPage() {
     };
 
     const handleClaim = async () => {
-        if (!userSession.isUserSignedIn()) return;
+        if (!isUserSignedIn()) return;
         
         setIsSubmitting(true);
         const config = getContractConfig();
@@ -379,7 +379,7 @@ export default function MarketPage() {
                         </Card>
 
                         {/* User Position Card */}
-                        {userSession.isUserSignedIn() && userPosition && (
+                        {isUserSignedIn() && userPosition && (
                             <Card className="mt-6 border-primary/20 bg-primary/5">
                                 <CardHeader className="pb-2">
                                     <CardTitle className="text-sm font-medium flex items-center gap-2">

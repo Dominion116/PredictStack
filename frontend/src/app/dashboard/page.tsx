@@ -7,7 +7,7 @@ import { Button } from '@/components/ui/button';
 import { Badge } from '@/components/ui/badge';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { Loader2, Wallet, TrendingUp, AlertCircle, RefreshCcw, CheckCircle } from 'lucide-react';
-import { userSession, getContractConfig } from '@/lib/constants';
+import { userSession, getContractConfig, isUserSignedIn } from '@/lib/constants';
 import { getUSDCxBalance, getUserMarkets, getMarket, getUserPosition } from '@/lib/stacks-api';
 import { useConnect } from '@stacks/connect-react';
 import { Cl, PostConditionMode, AnchorMode } from '@stacks/transactions';
@@ -38,7 +38,7 @@ function DashboardContent() {
     const { doContractCall } = useConnect();
 
     useEffect(() => {
-        if (userSession.isUserSignedIn()) {
+        if (isUserSignedIn()) {
             setUserData(userSession.loadUserData());
             loadDashboardData();
         } else {
@@ -126,7 +126,7 @@ function DashboardContent() {
 
 
 
-    if (!userSession.isUserSignedIn()) {
+    if (!isUserSignedIn()) {
         return (
              <main className="min-h-screen flex flex-col bg-background">
                 <Navbar />
