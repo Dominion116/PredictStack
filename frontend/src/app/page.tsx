@@ -171,25 +171,22 @@ export default function Home() {
 
       {/* CTA Section */}
       <section className="container py-20 md:py-32">
-        <div className="text-center">
-          <h2 className="text-3xl md:text-4xl font-bold tracking-tighter sm:text-5xl mb-6">
-            Ready to Predict the Future?
-          </h2>
-          <p className="text-muted-foreground text-lg mb-8 max-w-2xl mx-auto">
-            Join thousands of users making predictions on PredictStack. 
-            Start with as little as $1 USDCx.
-          </p>
-          <div className="flex flex-col sm:flex-row gap-4 justify-center">
-            <Link href="/markets">
-              <Button size="lg" className="h-12 px-8 text-lg">
-                Explore Markets <ArrowRight className="ml-2 h-4 w-4" />
+        <div className="relative rounded-3xl bg-orange-500 px-8 py-16 md:px-16 md:py-24">
+          <div className="relative z-10">
+            <h2 className="font-bold text-4xl text-white tracking-tight md:text-5xl lg:text-6xl">
+              Ready to Predict the Future?
+            </h2>
+            <p className="mt-4 text-lg text-white/90 md:text-xl">
+              Join thousands of users making predictions on PredictStack. 
+              Start with as little as $1 USDCx.
+            </p>
+            <div className="mt-8 flex flex-col gap-4 sm:flex-row">
+              <Button asChild className="rounded-full bg-white text-base text-black hover:bg-white/90" size="lg">
+                <Link href="/markets">
+                  Explore Markets <ArrowRight className="ml-2 h-5 w-5" />
+                </Link>
               </Button>
-            </Link>
-            <Link href="/bridge">
-              <Button variant="outline" size="lg" className="h-12 px-8 text-lg">
-                Get USDCx
-              </Button>
-            </Link>
+            </div>
           </div>
         </div>
       </section>
