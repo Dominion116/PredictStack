@@ -6,6 +6,7 @@ import {
   Zap,
   Users,
 } from "lucide-react";
+import { Badge } from "@/components/ui/badge";
 
 const features = [
   {
@@ -50,6 +51,11 @@ const Features = () => {
   return (
     <div className="container py-16 md:py-24">
       <div>
+        <div className="flex justify-center mb-4">
+          <Badge className="rounded-full border-border py-1" variant="secondary">
+            Features
+          </Badge>
+        </div>
         <h2 className="text-center font-semibold text-4xl tracking-tight sm:text-5xl">
           Why Choose PredictStack?
         </h2>
