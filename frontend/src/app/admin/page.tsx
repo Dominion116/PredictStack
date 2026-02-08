@@ -23,8 +23,7 @@ import {
     stringAsciiCV,
     someCV,
     noneCV,
-    PostConditionMode, 
-    AnchorMode 
+    PostConditionMode
 } from '@stacks/transactions';
 
 export default function AdminPage() {
@@ -166,6 +165,7 @@ function AdminDashboard() {
             setIsSubmitting(true);
 
             await doContractCall({
+                network: 'testnet',
                 contractAddress: config.deployer,
                 contractName: config.predictionMarket,
                 functionName: 'create-market',
@@ -175,8 +175,7 @@ function AdminDashboard() {
                     uintCV(estimatedBlock),
                     imageUrl ? someCV(stringAsciiCV(imageUrl)) : noneCV(),
                 ],
-                postConditionMode: PostConditionMode.Deny,
-                anchorMode: AnchorMode.Any,
+                postConditionMode: PostConditionMode.Allow,
                 onFinish: (data) => {
                     toast.success('Market created successfully!');
                     setQuestion('');
@@ -202,12 +201,12 @@ function AdminDashboard() {
         const config = getContractConfig();
         try {
             await doContractCall({
+                network: 'testnet',
                 contractAddress: config.deployer,
                 contractName: config.predictionMarket,
                 functionName: 'resolve-market',
                 functionArgs: [uintCV(marketId), outcome ? trueCV() : falseCV()],
-                postConditionMode: PostConditionMode.Deny,
-                anchorMode: AnchorMode.Any,
+                postConditionMode: PostConditionMode.Allow,
                 onFinish: (data) => {
                     toast.success(`Market ${marketId} resolved as ${outcome ? 'YES' : 'NO'}!`);
                     setProcessingId(null);

@@ -21,6 +21,14 @@ path = "contracts/prediction-market-v3.clar"
 [contracts.prediction-market-v4]
 path = "contracts/prediction-market-v4.clar"
 
+# Main Prediction Market Contract V5 (Fixed initialization)
+[contracts.prediction-market-v5]
+path = "contracts/prediction-market-v5.clar"
+
+# Main Prediction Market Contract V6 (Latest)
+[contracts.prediction-market-v6]
+path = "contracts/prediction-market-v6.clar"
+
 [repl.analysis]
 passes = ["check_checker"]
 check_checker = { trusted_sender = false, trusted_caller = false, callee_filter = false }

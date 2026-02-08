@@ -1,10 +1,10 @@
-import { makeContractCall, broadcastTransaction, AnchorMode, PostConditionMode, uintCV, principalCV, TransactionVersion, AddressVersion, fetchCallReadOnlyFunction } from "@stacks/transactions";
+import { makeContractCall, broadcastTransaction, AnchorMode, PostConditionMode, uintCV, principalCV, fetchCallReadOnlyFunction } from "@stacks/transactions";
 import { STACKS_TESTNET } from "@stacks/network";
 import { generateWallet, getStxAddress } from "@stacks/wallet-sdk";
 
 const MNEMONIC = "REDACTED_MNEMONIC";
 const DEPLOYER = "ST30VGN68PSGVWGNMD0HH2WQMM5T486EK3WBNTHCY";
-const CONTRACT = "prediction-market-v4";
+const CONTRACT = "prediction-market-v5";
 
 async function checkInitialized(): Promise<boolean> {
   try {
@@ -17,9 +17,9 @@ async function checkInitialized(): Promise<boolean> {
       senderAddress: DEPLOYER,
     });
     console.log("is-initialized result:", result);
-    return result.type === "bool" && (result as any).value === true;
+    return result.type === "ok" && (result as any).value?.type === "true";
   } catch (e) {
-    console.log("Read error:", e);
+    console.log("Read error (contract may not be deployed yet):", e);
     return false;
   }
 }
@@ -40,16 +40,18 @@ async function init() {
   const account = wallet.accounts[0];
   const network = STACKS_TESTNET;
   
-  console.log("Deployer address:", DEPLOYER);
+  // IMPORTANT: Use the hardcoded testnet address, not derived one
+  // This ensures we use ST format (testnet) not SP format (mainnet)
+  console.log("Admin/Oracle/Treasury address:", DEPLOYER);
   
   const txOptions = {
     contractAddress: DEPLOYER,
     contractName: CONTRACT,
     functionName: "initialize",
     functionArgs: [
-      principalCV(DEPLOYER),  // admin
-      principalCV(DEPLOYER),  // oracle
-      principalCV(DEPLOYER),  // treasury
+      principalCV(DEPLOYER),  // admin - using hardcoded ST address
+      principalCV(DEPLOYER),  // oracle - using hardcoded ST address
+      principalCV(DEPLOYER),  // treasury - using hardcoded ST address
       uintCV(200),            // fee-bps (2%)
       uintCV(1000000),        // min-bet (1 USDCx)
     ],
