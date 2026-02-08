@@ -12,6 +12,7 @@ import { isUserSignedIn } from "@/lib/constants";
 import { useRouter } from "next/navigation";
 import { Footer } from "@/components/footer";
 import Hero from "@/components/hero";
+import Features from "@/components/features";
 
 export default function Home() {
   const [stats, setStats] = useState<any>(null);
@@ -35,47 +36,8 @@ export default function Home() {
       {/* Hero */}
       <Hero />
 
-      {/* How It Works */}
-      <section className="container py-16 md:py-24">
-        <div className="text-center mb-12">
-          <h2 className="text-3xl font-bold tracking-tighter sm:text-4xl mb-4">How It Works</h2>
-          <p className="text-muted-foreground max-w-2xl mx-auto">
-            Start predicting in three simple steps. No complex setup required.
-          </p>
-        </div>
-        
-        <div className="grid md:grid-cols-3 gap-8">
-          <div className="text-center">
-            <div className="w-16 h-16 rounded-full bg-orange-500/10 flex items-center justify-center mx-auto mb-4">
-              <Wallet className="h-8 w-8 text-orange-500" />
-            </div>
-            <h3 className="text-xl font-semibold mb-2">1. Connect Wallet</h3>
-            <p className="text-muted-foreground">
-              Connect your Stacks wallet like Leather or Xverse to get started.
-            </p>
-          </div>
-          
-          <div className="text-center">
-            <div className="w-16 h-16 rounded-full bg-orange-500/10 flex items-center justify-center mx-auto mb-4">
-              <BarChart3 className="h-8 w-8 text-orange-500" />
-            </div>
-            <h3 className="text-xl font-semibold mb-2">2. Choose a Market</h3>
-            <p className="text-muted-foreground">
-              Browse markets across Crypto, Politics, Sports, and more.
-            </p>
-          </div>
-          
-          <div className="text-center">
-            <div className="w-16 h-16 rounded-full bg-orange-500/10 flex items-center justify-center mx-auto mb-4">
-              <Trophy className="h-8 w-8 text-orange-500" />
-            </div>
-            <h3 className="text-xl font-semibold mb-2">3. Predict & Win</h3>
-            <p className="text-muted-foreground">
-              Place your bet, and if you&apos;re right, collect your winnings automatically.
-            </p>
-          </div>
-        </div>
-      </section>
+      {/* Features */}
+      <Features />
 
       {/* Featured Markets */}
       <section className="bg-muted/30">
