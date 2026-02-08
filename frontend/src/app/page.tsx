@@ -35,32 +35,6 @@ export default function Home() {
       {/* Hero */}
       <Hero />
 
-      {/* Stats Section */}
-      <section className="bg-muted/30">
-        <div className="container py-12">
-          <div className="grid grid-cols-2 md:grid-cols-4 gap-8 text-center">
-            <div>
-              <div className="text-3xl md:text-4xl font-bold text-orange-500">
-                ${totalVolume.toLocaleString(undefined, { maximumFractionDigits: 0 })}
-              </div>
-              <div className="text-sm text-muted-foreground mt-1">Total Volume</div>
-            </div>
-            <div>
-              <div className="text-3xl md:text-4xl font-bold text-orange-500">{totalMarkets}</div>
-              <div className="text-sm text-muted-foreground mt-1">Active Markets</div>
-            </div>
-            <div>
-              <div className="text-3xl md:text-4xl font-bold text-orange-500">{totalMarkets * 12}+</div>
-              <div className="text-sm text-muted-foreground mt-1">Predictions Made</div>
-            </div>
-            <div>
-              <div className="text-3xl md:text-4xl font-bold text-orange-500">100%</div>
-              <div className="text-sm text-muted-foreground mt-1">On-Chain</div>
-            </div>
-          </div>
-        </div>
-      </section>
-
       {/* How It Works */}
       <section className="container py-16 md:py-24">
         <div className="text-center mb-12">

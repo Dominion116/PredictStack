@@ -5,7 +5,7 @@ import { Button } from "@/components/ui/button";
 
 export default function Hero() {
   return (
-    <div className="flex min-h-96 items-center justify-center px-6 py-8">
+    <div className="flex min-h-screen items-center justify-center px-6 py-20 md:py-32">
       <div className="max-w-3xl text-center">
         <Badge
           asChild
