@@ -3,7 +3,12 @@ import { STACKS_TESTNET } from "@stacks/network";
 import { generateWallet } from "@stacks/wallet-sdk";
 import * as fs from "fs";
 
-const MNEMONIC = "REDACTED_MNEMONIC";
+const MNEMONIC = process.env.MNEMONIC;
+if (!MNEMONIC) {
+  console.error("Error: MNEMONIC environment variable not set");
+  console.error("Run: export MNEMONIC='your seed phrase here'");
+  process.exit(1);
+}
 const DEPLOYER = "ST30VGN68PSGVWGNMD0HH2WQMM5T486EK3WBNTHCY";
 const CONTRACT_NAME = "prediction-market-v6";
 

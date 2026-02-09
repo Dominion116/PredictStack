@@ -45,3 +45,8 @@ coverage/
 seed_output*.txt
 transactions.json
 .agent/
+
+# Secrets
+.env
+.env.local
+*.env

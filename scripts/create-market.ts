@@ -2,7 +2,12 @@ import { makeContractCall, broadcastTransaction, AnchorMode, PostConditionMode, 
 import { STACKS_TESTNET } from "@stacks/network";
 import { generateWallet, getStxAddress } from "@stacks/wallet-sdk";
 
-const MNEMONIC = "REDACTED_MNEMONIC";
+const MNEMONIC = process.env.MNEMONIC;
+if (!MNEMONIC) {
+  console.error("Error: MNEMONIC environment variable not set");
+  console.error("Run: export MNEMONIC='your seed phrase here'");
+  process.exit(1);
+}
 const DEPLOYER = "ST30VGN68PSGVWGNMD0HH2WQMM5T486EK3WBNTHCY";
 const CONTRACT = "prediction-market-v6";
 
