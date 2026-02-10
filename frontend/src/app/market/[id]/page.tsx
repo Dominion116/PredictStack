@@ -3,6 +3,8 @@
 
 import { useEffect, useState } from 'react';
 import { useParams } from 'next/navigation';
+import { motion } from 'framer-motion';
+import { fadeInUp, staggerContainer, defaultTransition } from '@/lib/animations';
 import { Navbar } from "@/components/navbar";
 import { getMarket, getUSDCxBalance, getUserPosition } from '@/lib/stacks-api';
 import { Footer } from "@/components/footer";
@@ -223,7 +225,12 @@ export default function MarketPage() {
                 <div className="grid grid-cols-1 lg:grid-cols-3 gap-8">
                     
                     {/* Market Details (Left Column) */}
-                    <div className="lg:col-span-2 space-y-6">
+                    <motion.div 
+                        className="lg:col-span-2 space-y-6"
+                        initial={{ opacity: 0, y: 20 }}
+                        animate={{ opacity: 1, y: 0 }}
+                        transition={defaultTransition}
+                    >
                         {/* Header Image */}
                         <div className="relative rounded-2xl overflow-hidden aspect-video md:aspect-[2.5/1] bg-muted">
                             {imageUrl ? (
@@ -292,10 +299,15 @@ export default function MarketPage() {
                                 {market.description || "No specific details provided for this market. Resolution will be based on the general consensus of the oracle/admin."}
                             </p>
                         </div>
-                    </div>
+                    </motion.div>
 
                     {/* Betting Panel (Right Column) */}
-                    <div className="lg:col-span-1">
+                    <motion.div 
+                        className="lg:col-span-1"
+                        initial={{ opacity: 0, y: 20 }}
+                        animate={{ opacity: 1, y: 0 }}
+                        transition={{ ...defaultTransition, delay: 0.15 }}
+                    >
                         <Card className="sticky top-24 shadow-lg border-primary/10">
                             <CardHeader>
                                 <CardTitle className="flex items-center gap-2">
@@ -416,7 +428,7 @@ export default function MarketPage() {
                                 </CardContent>
                             </Card>
                         )}
-                    </div>
+                    </motion.div>
 
                 </div>
             </div>

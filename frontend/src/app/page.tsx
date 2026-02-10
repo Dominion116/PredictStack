@@ -14,6 +14,8 @@ import { useRouter } from "next/navigation";
 import { Footer } from "@/components/footer";
 import Hero from "@/components/hero";
 import Features from "@/components/features";
+import { motion } from "framer-motion";
+import { fadeInUp, staggerContainer, defaultTransition } from "@/lib/animations";
 import {
   Accordion,
   AccordionContent,
@@ -49,7 +51,13 @@ export default function Home() {
       {/* Featured Markets */}
       <section className="bg-muted/30">
         <div className="container py-16 md:py-24">
-          <div className="flex flex-col md:flex-row justify-between items-end mb-10 gap-4">
+          <motion.div 
+            className="flex flex-col md:flex-row justify-between items-end mb-10 gap-4"
+            initial={{ opacity: 0, y: 20 }}
+            whileInView={{ opacity: 1, y: 0 }}
+            viewport={{ once: true }}
+            transition={defaultTransition}
+          >
               <div className="space-y-2">
                   <h2 className="text-3xl font-bold tracking-tighter sm:text-4xl">Trending Markets</h2>
                   <p className="text-muted-foreground">The most active predictions right now on PredictStack.</p>
@@ -59,7 +67,7 @@ export default function Home() {
                     View all markets <ArrowRight className="ml-2 h-4 w-4" />
                 </Button>
               </Link>
-          </div>
+          </motion.div>
 
           <MarketsList />
         </div>
@@ -67,10 +75,27 @@ export default function Home() {
 
       {/* How it works */}
       <section className="container py-16 md:py-24">
-          <div>
-            <h2 className="text-center font-semibold text-4xl tracking-tight sm:text-5xl">How it works</h2>
+          <motion.div
+            initial="initial"
+            whileInView="animate"
+            viewport={{ once: true, margin: "-100px" }}
+            variants={staggerContainer}
+          >
+            <motion.h2 
+              className="text-center font-semibold text-4xl tracking-tight sm:text-5xl"
+              variants={fadeInUp}
+            >
+              How it works
+            </motion.h2>
             <div className="mt-10 grid gap-6 sm:mt-16 sm:grid-cols-2 lg:grid-cols-3">
-              <div className="flex flex-col rounded-xl border px-5 py-6">
+              <motion.div 
+                className="flex flex-col rounded-xl border px-5 py-6 hover:border-primary/50 transition-colors"
+                initial={{ opacity: 0, y: 20 }}
+                whileInView={{ opacity: 1, y: 0 }}
+                viewport={{ once: true }}
+                transition={{ ...defaultTransition, delay: 0 }}
+                whileHover={{ y: -4 }}
+              >
                 <div className="mb-4 flex h-10 w-10 items-center justify-center rounded-full bg-primary/10">
                   <Wallet className="size-5 text-primary" />
                 </div>
@@ -78,9 +103,16 @@ export default function Home() {
                 <p className="mt-1 text-[15px] text-foreground/80">
                   Connect your Stacks wallet and bridge USDC from Ethereum to get USDCx tokens for betting.
                 </p>
-              </div>
+              </motion.div>
 
-              <div className="flex flex-col rounded-xl border px-5 py-6">
+              <motion.div 
+                className="flex flex-col rounded-xl border px-5 py-6 hover:border-primary/50 transition-colors"
+                initial={{ opacity: 0, y: 20 }}
+                whileInView={{ opacity: 1, y: 0 }}
+                viewport={{ once: true }}
+                transition={{ ...defaultTransition, delay: 0.1 }}
+                whileHover={{ y: -4 }}
+              >
                 <div className="mb-4 flex h-10 w-10 items-center justify-center rounded-full bg-primary/10">
                   <BarChart3 className="size-5 text-primary" />
                 </div>
@@ -88,9 +120,16 @@ export default function Home() {
                 <p className="mt-1 text-[15px] text-foreground/80">
                   Explore prediction markets, analyze odds, and place bets on outcomes you believe in.
                 </p>
-              </div>
+              </motion.div>
 
-              <div className="flex flex-col rounded-xl border px-5 py-6">
+              <motion.div 
+                className="flex flex-col rounded-xl border px-5 py-6 hover:border-primary/50 transition-colors"
+                initial={{ opacity: 0, y: 20 }}
+                whileInView={{ opacity: 1, y: 0 }}
+                viewport={{ once: true }}
+                transition={{ ...defaultTransition, delay: 0.2 }}
+                whileHover={{ y: -4 }}
+              >
                 <div className="mb-4 flex h-10 w-10 items-center justify-center rounded-full bg-primary/10">
                   <Trophy className="size-5 text-primary" />
                 </div>
@@ -98,21 +137,33 @@ export default function Home() {
                 <p className="mt-1 text-[15px] text-foreground/80">
                   When markets resolve, winnings are automatically sent to your wallet. Withdraw anytime.
                 </p>
-              </div>
+              </motion.div>
             </div>
-          </div>
+          </motion.div>
       </section>
 
       {/* FAQ Section */}
       <section className="bg-muted/30">
         <div className="container px-6 py-16 md:py-24">
-          <div className="flex justify-center mb-4">
+          <motion.div
+            initial={{ opacity: 0, y: 20 }}
+            whileInView={{ opacity: 1, y: 0 }}
+            viewport={{ once: true }}
+            transition={defaultTransition}
+            className="flex justify-center mb-4"
+          >
             <Badge className="rounded-full border-border py-1" variant="secondary">
               FAQ
             </Badge>
-          </div>
+          </motion.div>
           <div className="flex min-h-[400px] items-center justify-center">
-            <div className="flex flex-col items-start gap-x-12 gap-y-6 md:flex-row">
+            <motion.div 
+              className="flex flex-col items-start gap-x-12 gap-y-6 md:flex-row"
+              initial={{ opacity: 0, y: 30 }}
+              whileInView={{ opacity: 1, y: 0 }}
+              viewport={{ once: true }}
+              transition={{ ...defaultTransition, delay: 0.1 }}
+            >
               <h2 className="font-semibold text-4xl leading-[1.15] tracking-[-0.035em] lg:text-5xl">
                 Frequently Asked <br /> Questions
               </h2>
@@ -172,31 +223,55 @@ export default function Home() {
                 </AccordionContent>
               </AccordionItem>
             </Accordion>
-          </div>
+          </motion.div>
           </div>
         </div>
       </section>
 
       {/* CTA Section */}
       <section className="container py-20 md:py-32">
-        <div className="relative rounded-3xl bg-primary px-8 py-16 md:px-16 md:py-24">
+        <motion.div 
+          className="relative rounded-3xl bg-primary px-8 py-16 md:px-16 md:py-24"
+          initial={{ opacity: 0, scale: 0.95 }}
+          whileInView={{ opacity: 1, scale: 1 }}
+          viewport={{ once: true }}
+          transition={{ ...defaultTransition, duration: 0.5 }}
+        >
           <div className="relative z-10">
-            <h2 className="font-bold text-4xl text-white tracking-tight md:text-5xl lg:text-6xl">
+            <motion.h2 
+              className="font-bold text-4xl text-white tracking-tight md:text-5xl lg:text-6xl"
+              initial={{ opacity: 0, y: 20 }}
+              whileInView={{ opacity: 1, y: 0 }}
+              viewport={{ once: true }}
+              transition={{ ...defaultTransition, delay: 0.1 }}
+            >
               Ready to Predict the Future?
-            </h2>
-            <p className="mt-4 text-lg text-white/90 md:text-xl">
+            </motion.h2>
+            <motion.p 
+              className="mt-4 text-lg text-white/90 md:text-xl"
+              initial={{ opacity: 0, y: 20 }}
+              whileInView={{ opacity: 1, y: 0 }}
+              viewport={{ once: true }}
+              transition={{ ...defaultTransition, delay: 0.2 }}
+            >
               Join thousands of users making predictions on PredictStack. 
               Start with as little as $1 USDCx.
-            </p>
-            <div className="mt-8 flex flex-col gap-4 sm:flex-row">
+            </motion.p>
+            <motion.div 
+              className="mt-8 flex flex-col gap-4 sm:flex-row"
+              initial={{ opacity: 0, y: 20 }}
+              whileInView={{ opacity: 1, y: 0 }}
+              viewport={{ once: true }}
+              transition={{ ...defaultTransition, delay: 0.3 }}
+            >
               <Button asChild className="rounded-full bg-white text-base text-black hover:bg-white/90" size="lg">
                 <Link href="/markets">
                   Explore Markets <ArrowRight className="ml-2 h-5 w-5" />
                 </Link>
               </Button>
-            </div>
+            </motion.div>
           </div>
-        </div>
+        </motion.div>
       </section>
 
       {/* Footer */}

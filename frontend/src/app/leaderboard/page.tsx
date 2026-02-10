@@ -1,6 +1,8 @@
 'use client';
 
 import { useState, useEffect } from 'react';
+import { motion } from 'framer-motion';
+import { fadeInUp, staggerContainer, defaultTransition } from '@/lib/animations';
 import { Navbar } from "@/components/navbar";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Badge } from '@/components/ui/badge';
@@ -75,7 +77,12 @@ export default function LeaderboardPage() {
             <Navbar />
             
             <section className="container py-12 flex-1">
-                <div className="flex justify-between items-start mb-10">
+                <motion.div 
+                    className="flex justify-between items-start mb-10"
+                    initial={{ opacity: 0, y: 20 }}
+                    animate={{ opacity: 1, y: 0 }}
+                    transition={defaultTransition}
+                >
                     <div className="space-y-2">
                         <h1 className="text-3xl font-bold tracking-tighter sm:text-4xl">Leaderboard</h1>
                         <p className="text-muted-foreground max-w-2xl">
@@ -86,42 +93,58 @@ export default function LeaderboardPage() {
                         <RefreshCcw className={`h-4 w-4 mr-2 ${loading ? 'animate-spin' : ''}`} />
                         Refresh
                     </Button>
-                </div>
+                </motion.div>
 
                 {/* Stats Cards */}
-                <div className="grid grid-cols-1 md:grid-cols-3 gap-4 mb-8">
-                    <Card>
-                        <CardHeader className="pb-2">
-                            <CardTitle className="text-sm font-medium text-muted-foreground">Top Earner</CardTitle>
-                        </CardHeader>
-                        <CardContent>
-                            <div className="text-2xl font-bold">{topEarner?.address || '--'}</div>
-                            <p className="text-sm text-green-500 font-medium">
-                                {topEarner ? `+$${topEarner.totalProfit.toLocaleString()}` : '--'}
-                            </p>
-                        </CardContent>
-                    </Card>
-                    <Card>
-                        <CardHeader className="pb-2">
-                            <CardTitle className="text-sm font-medium text-muted-foreground">Highest Win Rate</CardTitle>
-                        </CardHeader>
-                        <CardContent>
-                            <div className="text-2xl font-bold">{topEarner?.winRate || 0}%</div>
-                            <p className="text-sm text-muted-foreground">{topEarner?.address || '--'}</p>
-                        </CardContent>
-                    </Card>
-                    <Card>
-                        <CardHeader className="pb-2">
-                            <CardTitle className="text-sm font-medium text-muted-foreground">Total Predictors</CardTitle>
-                        </CardHeader>
-                        <CardContent>
-                            <div className="text-2xl font-bold">{leaderboard.length}</div>
-                            <p className="text-sm text-muted-foreground">Active users</p>
-                        </CardContent>
-                    </Card>
-                </div>
+                <motion.div 
+                    className="grid grid-cols-1 md:grid-cols-3 gap-4 mb-8"
+                    initial="initial"
+                    animate="animate"
+                    variants={staggerContainer}
+                >
+                    <motion.div variants={fadeInUp}>
+                        <Card>
+                            <CardHeader className="pb-2">
+                                <CardTitle className="text-sm font-medium text-muted-foreground">Top Earner</CardTitle>
+                            </CardHeader>
+                            <CardContent>
+                                <div className="text-2xl font-bold">{topEarner?.address || '--'}</div>
+                                <p className="text-sm text-green-500 font-medium">
+                                    {topEarner ? `+$${topEarner.totalProfit.toLocaleString()}` : '--'}
+                                </p>
+                            </CardContent>
+                        </Card>
+                    </motion.div>
+                    <motion.div variants={fadeInUp}>
+                        <Card>
+                            <CardHeader className="pb-2">
+                                <CardTitle className="text-sm font-medium text-muted-foreground">Highest Win Rate</CardTitle>
+                            </CardHeader>
+                            <CardContent>
+                                <div className="text-2xl font-bold">{topEarner?.winRate || 0}%</div>
+                                <p className="text-sm text-muted-foreground">{topEarner?.address || '--'}</p>
+                            </CardContent>
+                        </Card>
+                    </motion.div>
+                    <motion.div variants={fadeInUp}>
+                        <Card>
+                            <CardHeader className="pb-2">
+                                <CardTitle className="text-sm font-medium text-muted-foreground">Total Predictors</CardTitle>
+                            </CardHeader>
+                            <CardContent>
+                                <div className="text-2xl font-bold">{leaderboard.length}</div>
+                                <p className="text-sm text-muted-foreground">Active users</p>
+                            </CardContent>
+                        </Card>
+                    </motion.div>
+                </motion.div>
 
                 {/* Leaderboard Table */}
+                <motion.div
+                    initial={{ opacity: 0, y: 20 }}
+                    animate={{ opacity: 1, y: 0 }}
+                    transition={{ ...defaultTransition, delay: 0.3 }}
+                >
                 <Card>
                     <CardContent className="p-0">
                         {loading ? (
@@ -180,6 +203,7 @@ export default function LeaderboardPage() {
                         )}
                     </CardContent>
                 </Card>
+                </motion.div>
 
                 {/* Pagination */}
                 {totalPages > 1 && (

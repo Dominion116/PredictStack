@@ -7,12 +7,15 @@ import { Button } from '@/components/ui/button';
 import { TrendingUp, Clock } from 'lucide-react';
 import Link from 'next/link';
 import { blockToDate, formatResolutionDate } from '@/lib/date-utils';
+import { motion } from 'framer-motion';
+import { cardHover } from '@/lib/animations';
 
 interface MarketCardProps {
     market: any;
+    index?: number;
 }
 
-export function MarketCard({ market }: MarketCardProps) {
+export function MarketCard({ market, index = 0 }: MarketCardProps) {
     // Market data is now clean values from stacks-api
     const question = market.question || 'Unknown Market';
     const imageUrl = market['image-url'];
@@ -39,7 +42,14 @@ export function MarketCard({ market }: MarketCardProps) {
     const timeDisplay = resolutionDate ? formatResolutionDate(resolutionDate) : "Active";
 
     return (
-        <Card className="overflow-hidden bg-card/50 backdrop-blur hover:border-primary/50 transition-all group flex flex-col">
+        <motion.div
+            initial={{ opacity: 0, y: 20 }}
+            animate={{ opacity: 1, y: 0 }}
+            transition={{ duration: 0.4, delay: index * 0.1 }}
+            whileHover={{ y: -4 }}
+            whileTap={{ scale: 0.98 }}
+        >
+            <Card className="overflow-hidden bg-card/50 backdrop-blur hover:border-primary/50 transition-all group flex flex-col h-full">
             {/* Image/Header Section */}
             {imageUrl ? (
                 <div className="relative h-40 w-full overflow-hidden">
@@ -132,6 +142,7 @@ export function MarketCard({ market }: MarketCardProps) {
                 </Link>
             </CardFooter>
         </Card>
+        </motion.div>
     );
 }
 

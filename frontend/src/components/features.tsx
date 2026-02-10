@@ -1,3 +1,5 @@
+'use client';
+
 import {
   Wallet,
   BarChart3,
@@ -7,6 +9,8 @@ import {
   Users,
 } from "lucide-react";
 import { Badge } from "@/components/ui/badge";
+import { motion } from "framer-motion";
+import { fadeInUp, staggerContainer, defaultTransition } from "@/lib/animations";
 
 const features = [
   {
@@ -50,20 +54,33 @@ const features = [
 const Features = () => {
   return (
     <div className="container py-16 md:py-24">
-      <div>
-        <div className="flex justify-center mb-4">
+      <motion.div
+        initial="initial"
+        whileInView="animate"
+        viewport={{ once: true, margin: "-100px" }}
+        variants={staggerContainer}
+      >
+        <motion.div className="flex justify-center mb-4" variants={fadeInUp}>
           <Badge className="rounded-full border-border py-1" variant="secondary">
             Features
           </Badge>
-        </div>
-        <h2 className="text-center font-semibold text-4xl tracking-tight sm:text-5xl">
+        </motion.div>
+        <motion.h2 
+          className="text-center font-semibold text-4xl tracking-tight sm:text-5xl"
+          variants={fadeInUp}
+        >
           Why Choose PredictStack?
-        </h2>
+        </motion.h2>
         <div className="mt-10 grid gap-6 sm:mt-16 sm:grid-cols-2 lg:grid-cols-3">
-          {features.map((feature) => (
-            <div
-              className="flex flex-col rounded-xl border px-5 py-6"
+          {features.map((feature, index) => (
+            <motion.div
+              className="flex flex-col rounded-xl border px-5 py-6 hover:border-primary/50 transition-colors"
               key={feature.title}
+              initial={{ opacity: 0, y: 20 }}
+              whileInView={{ opacity: 1, y: 0 }}
+              viewport={{ once: true }}
+              transition={{ ...defaultTransition, delay: index * 0.1 }}
+              whileHover={{ y: -4 }}
             >
               <div className="mb-4 flex h-10 w-10 items-center justify-center rounded-full bg-primary/10">
                 <feature.icon className="size-5 text-primary" />
@@ -72,10 +89,10 @@ const Features = () => {
               <p className="mt-1 text-[15px] text-foreground/80">
                 {feature.description}
               </p>
-            </div>
+            </motion.div>
           ))}
         </div>
-      </div>
+      </motion.div>
     </div>
   );
 };
