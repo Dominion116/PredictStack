@@ -13,6 +13,8 @@ interface MarketCardProps {
 }
 
 export function MarketCard({ market }: MarketCardProps) {
+    console.log('[DEBUG] MarketCard market:', JSON.stringify(market, null, 2));
+    
     // Market data is now clean values from stacks-api
     const question = market.question || 'Unknown Market';
     const imageUrl = market['image-url'];

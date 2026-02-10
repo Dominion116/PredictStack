@@ -15,6 +15,27 @@ const config = getContractConfig();
 const network = createNetwork(NETWORK_ENV === 'mainnet' ? STACKS_MAINNET : STACKS_TESTNET);
 
 /**
+ * Helper function to extract actual values from Clarity value objects,
+ * handling optional types and nested structures.
+ */
+function extractValue(clarityValue: any): any {
+    if (!clarityValue) return null;
+    if (typeof clarityValue !== 'object') return clarityValue;
+    
+    // If it has a 'value' property and a 'type' property, it's a Clarity value object
+    if ('value' in clarityValue && 'type' in clarityValue) {
+        // For none/null optional
+        if (clarityValue.type === 'none') {
+            return null;
+        }
+        // Recursively extract the value
+        return extractValue(clarityValue.value);
+    }
+    
+    return clarityValue;
+}
+
+/**
  * Fetches a single market's details from the Stacks contract.
  */
 export async function getMarket(marketId: number) {
@@ -29,33 +50,36 @@ export async function getMarket(marketId: number) {
         });
         
         const json: any = cvToJSON(response);
+        console.log('[DEBUG] getMarket raw response:', JSON.stringify(json, null, 2));
         if (json.success && json.value && json.value.value) {
             const marketData = json.value.value;
             // Extract actual values from Clarity value objects
-            const resolved = marketData.resolved?.value || false;
-            const cancelled = marketData.cancelled?.value || false;
+            const resolved = extractValue(marketData.resolved) || false;
+            const cancelled = extractValue(marketData.cancelled) || false;
             
             // Determine status
             let status = 'active';
             if (cancelled) status = 'cancelled';
             else if (resolved) status = 'resolved';
             
-            return { 
+            const result = { 
                 id: marketId,
-                question: marketData.question?.value || '',
-                description: marketData.description?.value || '',
-                'resolve-date': Number(marketData['resolve-date']?.value || 0),
-                'yes-pool': Number(marketData['yes-pool']?.value || 0),
-                'no-pool': Number(marketData['no-pool']?.value || 0),
+                question: extractValue(marketData.question) || '',
+                description: extractValue(marketData.description) || '',
+                'resolve-date': Number(extractValue(marketData['resolve-date']) || 0),
+                'yes-pool': Number(extractValue(marketData['yes-pool']) || 0),
+                'no-pool': Number(extractValue(marketData['no-pool']) || 0),
                 resolved,
-                outcome: marketData.outcome?.value || false,
+                outcome: extractValue(marketData.outcome) || false,
                 cancelled,
                 status,
-                creator: marketData.creator?.value || '',
-                'ipfs-hash': marketData['ipfs-hash']?.value || null,
-                category: marketData.category?.value || 'General',
-                'image-url': marketData['image-url']?.value || null
+                creator: extractValue(marketData.creator) || '',
+                'ipfs-hash': extractValue(marketData['ipfs-hash']) || null,
+                category: extractValue(marketData.category) || 'General',
+                'image-url': extractValue(marketData['image-url']) || null
             };
+            console.log('[DEBUG] getMarket extracted result:', JSON.stringify(result, null, 2));
+            return result;
         }
         return null;
     } catch (error) {
@@ -82,8 +106,8 @@ export async function getPlatformStats() {
         if (json.success && json.value) {
             const stats = json.value.value;
             return {
-                'total-markets': Number(stats['total-markets']?.value || 0),
-                'total-volume': Number(stats['total-volume']?.value || 0)
+                'total-markets': Number(extractValue(stats['total-markets']) || 0),
+                'total-volume': Number(extractValue(stats['total-volume']) || 0)
             };
         }
         return { 'total-markets': 0, 'total-volume': 0 };
@@ -135,7 +159,7 @@ export async function getUSDCxBalance(address: string) {
         const json: any = cvToJSON(response);
         if (json.success && json.value) {
             // SIP-010 get-balance returns (response uint uint)
-            return Number(json.value.value) / 1000000;
+            return Number(extractValue(json.value)) / 1000000;
         }
         return 0;
     } catch (error) {
@@ -163,9 +187,9 @@ export async function getUserPosition(address: string, marketId: number) {
             const position = json.value.value;
             // Extract actual values from Clarity value objects
             return {
-                'yes-amount': Number(position['yes-amount']?.value || 0),
-                'no-amount': Number(position['no-amount']?.value || 0),
-                claimed: position.claimed?.value || false
+                'yes-amount': Number(extractValue(position['yes-amount']) || 0),
+                'no-amount': Number(extractValue(position['no-amount']) || 0),
+                claimed: extractValue(position.claimed) || false
             };
         }
         return null;
@@ -191,7 +215,7 @@ export async function getUserMarkets(address: string) {
         const json: any = cvToJSON(response);
         if (json.success && json.value && json.value.value) {
             // value is a list of uints
-            return json.value.value.map((val: any) => Number(val.value));
+            return json.value.value.map((val: any) => Number(extractValue(val)));
         }
         return [];
     } catch (error) {

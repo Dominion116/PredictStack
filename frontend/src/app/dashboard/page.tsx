@@ -280,6 +280,8 @@ function DashboardContent() {
 }
 
 function BetHistoryCard({ bet, onClaim, isClaiming }: { bet: any, onClaim: any, isClaiming: boolean }) {
+    console.log('[DEBUG] BetHistoryCard bet:', JSON.stringify(bet, null, 2));
+    
     const yesAmount = Number(bet.position['yes-amount']) / 1000000;
     const noAmount = Number(bet.position['no-amount']) / 1000000;
     
@@ -287,9 +289,9 @@ function BetHistoryCard({ bet, onClaim, isClaiming }: { bet: any, onClaim: any, 
     const userOutcome = yesAmount > 0 ? "YES" : (noAmount > 0 ? "NO" : "NONE");
     const userStake = yesAmount + noAmount;
 
-    // Check if won
+    // Check if won - use 'outcome' not 'winning-outcome'
     const isResolved = bet.status !== "active";
-    const winningOutcome = bet['winning-outcome']; // boolean
+    const winningOutcome = bet.outcome; // was bet['winning-outcome']
     
     let isWinner = false;
     if (isResolved && winningOutcome !== undefined) {
