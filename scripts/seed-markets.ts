@@ -1,6 +1,7 @@
-import { makeContractCall, broadcastTransaction, AnchorMode, PostConditionMode, uintCV, stringAsciiCV, someCV, noneCV } from "@stacks/transactions";
+import { makeContractCall, broadcastTransaction, PostConditionMode, uintCV, stringAsciiCV, someCV, noneCV } from "@stacks/transactions";
 import { STACKS_TESTNET } from "@stacks/network";
 import { generateWallet } from "@stacks/wallet-sdk";
+import 'dotenv/config';
 
 const MNEMONIC = process.env.MNEMONIC;
 if (!MNEMONIC) {
@@ -8,6 +9,7 @@ if (!MNEMONIC) {
   console.error("Run: export MNEMONIC='your seed phrase here'");
   process.exit(1);
 }
+const mnemonic: string = MNEMONIC;
 const DEPLOYER = "ST30VGN68PSGVWGNMD0HH2WQMM5T486EK3WBNTHCY";
 const CONTRACT = "prediction-market-v6";
 
@@ -31,7 +33,7 @@ const MARKETS = [
 
 async function createMarkets() {
   const wallet = await generateWallet({
-    secretKey: MNEMONIC,
+    secretKey: mnemonic,
     password: "",
   });
   
@@ -64,7 +66,6 @@ async function createMarkets() {
       ],
       senderKey: account.stxPrivateKey,
       network,
-      anchorMode: AnchorMode.Any,
       postConditionMode: PostConditionMode.Allow,
       fee: 50000n,
     };

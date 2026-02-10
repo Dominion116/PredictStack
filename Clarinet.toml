@@ -13,18 +13,6 @@ path = "contracts/sip010-trait.clar"
 [contracts.usdcx-v1]
 path = "contracts/usdcx.clar"
 
-# Main Prediction Market Contract V3
-[contracts.prediction-market-v3]
-path = "contracts/prediction-market-v3.clar"
-
-# Main Prediction Market Contract V4 (Latest)
-[contracts.prediction-market-v4]
-path = "contracts/prediction-market-v4.clar"
-
-# Main Prediction Market Contract V5 (Fixed initialization)
-[contracts.prediction-market-v5]
-path = "contracts/prediction-market-v5.clar"
-
 # Main Prediction Market Contract V6 (Latest)
 [contracts.prediction-market-v6]
 path = "contracts/prediction-market-v6.clar"

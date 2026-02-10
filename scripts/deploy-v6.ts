@@ -1,7 +1,8 @@
-import { makeContractDeploy, makeContractCall, broadcastTransaction, AnchorMode, PostConditionMode, uintCV, principalCV } from "@stacks/transactions";
+import { makeContractDeploy, makeContractCall, broadcastTransaction, PostConditionMode, uintCV, principalCV } from "@stacks/transactions";
 import { STACKS_TESTNET } from "@stacks/network";
 import { generateWallet } from "@stacks/wallet-sdk";
 import * as fs from "fs";
+import 'dotenv/config';
 
 const MNEMONIC = process.env.MNEMONIC;
 if (!MNEMONIC) {
@@ -9,12 +10,13 @@ if (!MNEMONIC) {
   console.error("Run: export MNEMONIC='your seed phrase here'");
   process.exit(1);
 }
+const mnemonic: string = MNEMONIC;
 const DEPLOYER = "ST30VGN68PSGVWGNMD0HH2WQMM5T486EK3WBNTHCY";
 const CONTRACT_NAME = "prediction-market-v6";
 
 async function deployAndInit() {
   const wallet = await generateWallet({
-    secretKey: MNEMONIC,
+    secretKey: mnemonic,
     password: "",
   });
   
@@ -33,7 +35,6 @@ async function deployAndInit() {
     codeBody: contractCode,
     senderKey: account.stxPrivateKey,
     network,
-    anchorMode: AnchorMode.Any,
     postConditionMode: PostConditionMode.Allow,
     fee: 500000n, // Higher fee for faster confirmation
     clarityVersion: 2,
@@ -70,7 +71,6 @@ async function deployAndInit() {
     ],
     senderKey: account.stxPrivateKey,
     network,
-    anchorMode: AnchorMode.Any,
     postConditionMode: PostConditionMode.Allow,
     fee: 50000n,
   });
