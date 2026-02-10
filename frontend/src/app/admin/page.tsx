@@ -13,6 +13,7 @@ import { Label } from '@/components/ui/label';
 import { useConnect } from '@stacks/connect-react';
 import { getContractConfig, userSession, isUserSignedIn } from '@/lib/constants';
 import { getRecentMarkets } from '@/lib/stacks-api';
+import { blockToDate } from '@/lib/date-utils';
 import { Loader2, ShieldAlert, CheckCircle, XCircle, Gavel, Filter } from 'lucide-react';
 import { Footer } from "@/components/footer";
 import { toast } from 'sonner';
@@ -354,7 +355,7 @@ function AdminDashboard() {
                                                 {market.question}
                                                 <Badge variant="outline">ID: {market.id}</Badge>
                                             </CardTitle>
-                                            <CardDescription>Ends: {new Date(Number(market['resolve-date']) * 1000).toLocaleDateString()}</CardDescription>
+                                            <CardDescription>Ends: {blockToDate(market['resolve-date']).toLocaleDateString()}</CardDescription>
                                         </CardHeader>
                                         <CardContent>
                                             <div className="flex flex-col gap-4">

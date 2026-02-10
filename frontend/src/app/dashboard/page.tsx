@@ -9,6 +9,7 @@ import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { Loader2, Wallet, TrendingUp, AlertCircle, RefreshCcw, CheckCircle } from 'lucide-react';
 import { userSession, getContractConfig, isUserSignedIn } from '@/lib/constants';
 import { getUSDCxBalance, getUserMarkets, getMarket, getUserPosition } from '@/lib/stacks-api';
+import { blockToDate } from '@/lib/date-utils';
 import { useConnect } from '@stacks/connect-react';
 import { Cl, PostConditionMode, AnchorMode } from '@stacks/transactions';
 import { toast } from 'sonner';
@@ -328,8 +329,7 @@ function BetHistoryCard({ bet, onClaim, isClaiming }: { bet: any, onClaim: any, 
                     <div className="text-sm text-muted-foreground flex gap-4">
                         <span>You predicted: <strong className={userOutcome === "YES" ? "text-green-600" : "text-red-600"}>{userOutcome}</strong></span>
                         <span>Stake: <strong>${userStake.toLocaleString()}</strong></span>
-                        <span>End Date: {new Date(Number(bet['resolve-date']) * 1000).toLocaleDateString()}</span> 
-                         {/* Estimate block time if needed, assuming simple timestamp map for now or ignore exact date */}
+                        <span>End Date: {blockToDate(bet['resolve-date']).toLocaleDateString()}</span>
                     </div>
                 </div>
 

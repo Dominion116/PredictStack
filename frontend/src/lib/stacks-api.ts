@@ -32,6 +32,14 @@ export async function getMarket(marketId: number) {
         if (json.success && json.value && json.value.value) {
             const marketData = json.value.value;
             // Extract actual values from Clarity value objects
+            const resolved = marketData.resolved?.value || false;
+            const cancelled = marketData.cancelled?.value || false;
+            
+            // Determine status
+            let status = 'active';
+            if (cancelled) status = 'cancelled';
+            else if (resolved) status = 'resolved';
+            
             return { 
                 id: marketId,
                 question: marketData.question?.value || '',
@@ -39,9 +47,10 @@ export async function getMarket(marketId: number) {
                 'resolve-date': Number(marketData['resolve-date']?.value || 0),
                 'yes-pool': Number(marketData['yes-pool']?.value || 0),
                 'no-pool': Number(marketData['no-pool']?.value || 0),
-                resolved: marketData.resolved?.value || false,
+                resolved,
                 outcome: marketData.outcome?.value || false,
-                cancelled: marketData.cancelled?.value || false,
+                cancelled,
+                status,
                 creator: marketData.creator?.value || '',
                 'ipfs-hash': marketData['ipfs-hash']?.value || null,
                 category: marketData.category?.value || 'General',
@@ -89,7 +98,7 @@ export async function getPlatformStats() {
 export async function getRecentMarkets(limit: number = 6) {
     try {
         const stats = await getPlatformStats();
-        const totalMarkets = stats["total-markets"]?.value || 0;
+        const totalMarkets = stats["total-markets"] || 0;
         
         if (totalMarkets === 0) return [];
 
