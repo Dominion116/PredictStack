@@ -1,6 +1,8 @@
 'use client';
 
 import { useState, useEffect } from 'react';
+import { motion } from 'framer-motion';
+import { fadeInUp, staggerContainer, defaultTransition } from '@/lib/animations';
 import { Navbar } from "@/components/navbar";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
@@ -263,14 +265,25 @@ function BridgeContent() {
       <Navbar />
       
       <div className="container py-12 flex-1 flex flex-col items-center">
-        <div className="mb-8 max-w-2xl text-center">
+        <motion.div 
+            className="mb-8 max-w-2xl text-center"
+            initial={{ opacity: 0, y: 20 }}
+            animate={{ opacity: 1, y: 0 }}
+            transition={defaultTransition}
+        >
             <h1 className="text-3xl font-bold tracking-tight mb-2">Bridge USDC</h1>
             <p className="text-muted-foreground">
                 Move USDC between Ethereum Sepolia and Stacks Testnet. Powered by Circle's Cross-Chain Transfer Protocol (CCTP).
             </p>
-        </div>
+        </motion.div>
 
-        <Card className="w-full max-w-2xl shadow-lg border-muted">
+        <motion.div
+            initial={{ opacity: 0, y: 20 }}
+            animate={{ opacity: 1, y: 0 }}
+            transition={{ ...defaultTransition, delay: 0.15 }}
+            className="w-full max-w-2xl"
+        >
+        <Card className="shadow-lg border-muted">
             <Tabs defaultValue="deposit" className="w-full">
                 <div className="px-8 pt-8">
                     <TabsList className="grid w-full grid-cols-2 h-12">
@@ -439,10 +452,16 @@ function BridgeContent() {
                 )}
             </CardContent>
         </Card>
+        </motion.div>
 
-        <p className="mt-8 text-sm text-muted-foreground">
+        <motion.p 
+            className="mt-8 text-sm text-muted-foreground"
+            initial={{ opacity: 0 }}
+            animate={{ opacity: 1 }}
+            transition={{ ...defaultTransition, delay: 0.3 }}
+        >
             Note: This is a Testnet bridge. Do not use real Mainnet USDC. Get Sepolia ETH and Testnet USDC from faucets before starting.
-        </p>
+        </motion.p>
       </div>
       <Footer />
     </main>

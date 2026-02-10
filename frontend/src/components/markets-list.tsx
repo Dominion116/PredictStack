@@ -136,8 +136,8 @@ export function MarketsList() {
             ) : (
                 <>
                     <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
-                        {paginatedMarkets.map((market) => (
-                            <MarketCard key={market.id} market={market} />
+                        {paginatedMarkets.map((market, index) => (
+                            <MarketCard key={market.id} market={market} index={index} />
                         ))}
                     </div>
 

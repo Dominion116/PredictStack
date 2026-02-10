@@ -1,6 +1,8 @@
 'use client';
 
 import { useEffect, useState } from 'react';
+import { motion } from 'framer-motion';
+import { fadeInUp, staggerContainer, defaultTransition } from '@/lib/animations';
 import { Navbar } from "@/components/navbar";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
@@ -162,7 +164,12 @@ function DashboardContent() {
             <div className="container py-8 md:py-12 space-y-8 flex-1">
                 
                 {/* Header Section */}
-                <div className="flex flex-col md:flex-row justify-between items-start md:items-center gap-4">
+                <motion.div 
+                    className="flex flex-col md:flex-row justify-between items-start md:items-center gap-4"
+                    initial={{ opacity: 0, y: 20 }}
+                    animate={{ opacity: 1, y: 0 }}
+                    transition={defaultTransition}
+                >
                     <div>
                         <h1 className="text-3xl font-bold tracking-tight">Dashboard</h1>
                         <p className="text-muted-foreground">Manage your predictions and rewards</p>
@@ -171,50 +178,66 @@ function DashboardContent() {
                         <RefreshCcw className={`mr-2 h-4 w-4 ${loading ? 'animate-spin' : ''}`} />
                         Refresh Data
                     </Button>
-                </div>
+                </motion.div>
 
                 {/* Stats Grid */}
-                <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
-                    <Card>
-                        <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
-                            <CardTitle className="text-sm font-medium">USDCx Balance</CardTitle>
-                            <Wallet className="h-4 w-4 text-muted-foreground" />
-                        </CardHeader>
-                        <CardContent>
-                            <div className="text-2xl font-bold">${balance.toLocaleString()}</div>
-                            <p className="text-xs text-muted-foreground mt-1">
-                                Available to bet
-                            </p>
-                        </CardContent>
-                    </Card>
-                    <Card>
-                        <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
-                            <CardTitle className="text-sm font-medium">Active Predictions</CardTitle>
-                            <TrendingUp className="h-4 w-4 text-muted-foreground" />
-                        </CardHeader>
-                        <CardContent>
-                            <div className="text-2xl font-bold">{activeBets.length}</div>
-                            <p className="text-xs text-muted-foreground mt-1">
-                                In <strong>{activeBets.length + resolvedBets.length}</strong> total markets
-                            </p>
-                        </CardContent>
-                    </Card>
-                    <Card>
-                        <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
-                            <CardTitle className="text-sm font-medium">Total Invested</CardTitle>
-                            <AlertCircle className="h-4 w-4 text-muted-foreground" />
-                        </CardHeader>
-                        <CardContent>
-                            <div className="text-2xl font-bold">${totalInvested.toLocaleString()}</div>
-                            <p className="text-xs text-muted-foreground mt-1">
-                                Lifetime volume
-                            </p>
-                        </CardContent>
-                    </Card>
-                </div>
+                <motion.div 
+                    className="grid grid-cols-1 md:grid-cols-3 gap-4"
+                    initial="initial"
+                    animate="animate"
+                    variants={staggerContainer}
+                >
+                    <motion.div variants={fadeInUp}>
+                        <Card>
+                            <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
+                                <CardTitle className="text-sm font-medium">USDCx Balance</CardTitle>
+                                <Wallet className="h-4 w-4 text-muted-foreground" />
+                            </CardHeader>
+                            <CardContent>
+                                <div className="text-2xl font-bold">${balance.toLocaleString()}</div>
+                                <p className="text-xs text-muted-foreground mt-1">
+                                    Available to bet
+                                </p>
+                            </CardContent>
+                        </Card>
+                    </motion.div>
+                    <motion.div variants={fadeInUp}>
+                        <Card>
+                            <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
+                                <CardTitle className="text-sm font-medium">Active Predictions</CardTitle>
+                                <TrendingUp className="h-4 w-4 text-muted-foreground" />
+                            </CardHeader>
+                            <CardContent>
+                                <div className="text-2xl font-bold">{activeBets.length}</div>
+                                <p className="text-xs text-muted-foreground mt-1">
+                                    In <strong>{activeBets.length + resolvedBets.length}</strong> total markets
+                                </p>
+                            </CardContent>
+                        </Card>
+                    </motion.div>
+                    <motion.div variants={fadeInUp}>
+                        <Card>
+                            <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
+                                <CardTitle className="text-sm font-medium">Total Invested</CardTitle>
+                                <AlertCircle className="h-4 w-4 text-muted-foreground" />
+                            </CardHeader>
+                            <CardContent>
+                                <div className="text-2xl font-bold">${totalInvested.toLocaleString()}</div>
+                                <p className="text-xs text-muted-foreground mt-1">
+                                    Lifetime volume
+                                </p>
+                            </CardContent>
+                        </Card>
+                    </motion.div>
+                </motion.div>
 
                 {/* Main Content Grid */}
-                <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
+                <motion.div 
+                    className="grid grid-cols-1 lg:grid-cols-3 gap-6"
+                    initial={{ opacity: 0, y: 20 }}
+                    animate={{ opacity: 1, y: 0 }}
+                    transition={{ ...defaultTransition, delay: 0.3 }}
+                >
                     {/* Bets Section (2 columns) */}
                     <div className="lg:col-span-2">
                         {/* Bets Tabs */}
@@ -271,7 +294,7 @@ function DashboardContent() {
                     <div className="lg:col-span-1">
                         <RecentActivity />
                     </div>
-                </div>
+                </motion.div>
 
             </div>
             <Footer />

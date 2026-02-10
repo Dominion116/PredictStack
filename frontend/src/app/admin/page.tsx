@@ -2,6 +2,8 @@
 'use client';
 
 import { useState, useEffect, useMemo } from 'react';
+import { motion } from 'framer-motion';
+import { fadeInUp, staggerContainer, defaultTransition } from '@/lib/animations';
 import { Navbar } from "@/components/navbar";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
@@ -229,7 +231,12 @@ function AdminDashboard() {
             
             <div className="flex-1 flex flex-col md:flex-row">
                 {/* Sidebar */}
-                <aside className="w-full md:w-64 border-r bg-muted/20 p-6 flex flex-col gap-6">
+                <motion.aside 
+                    className="w-full md:w-64 border-r bg-muted/20 p-6 flex flex-col gap-6"
+                    initial={{ opacity: 0, x: -20 }}
+                    animate={{ opacity: 1, x: 0 }}
+                    transition={defaultTransition}
+                >
                     <div className="font-semibold text-lg px-2">Admin Dashboard</div>
                     <nav className="space-y-2">
                          <button 
@@ -251,10 +258,15 @@ function AdminDashboard() {
                             Resolve Betting
                         </button>
                     </nav>
-                </aside>
+                </motion.aside>
 
                 {/* Main Content */}
-                <div className="flex-1 p-8 space-y-8">
+                <motion.div 
+                    className="flex-1 p-8 space-y-8"
+                    initial={{ opacity: 0, y: 20 }}
+                    animate={{ opacity: 1, y: 0 }}
+                    transition={{ ...defaultTransition, delay: 0.1 }}
+                >
                     <Tabs value={activeTab} onValueChange={setActiveTab} className="w-full">
                         
                         <TabsContent value="create" className="space-y-6">
@@ -428,7 +440,7 @@ function AdminDashboard() {
                             </div>
                         </TabsContent>
                     </Tabs>
-                </div>
+                </motion.div>
             </div>
             <Footer />
         </main>
