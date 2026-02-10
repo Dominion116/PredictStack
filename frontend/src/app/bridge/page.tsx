@@ -13,8 +13,9 @@ import { createWalletClient, custom, createPublicClient, http, formatUnits, pars
 import { BRIDGE_CONFIG, ERC20_ABI, X_RESERVE_ABI, encodeStacksAddressToBytes32, encodeEthAddressToBytes32 } from '@/lib/bridge-utils';
 import { toast } from 'sonner';
 import { AnchorMode, PostConditionMode, Pc, Cl } from '@stacks/transactions';
-import { Loader2, ArrowRight } from 'lucide-react';
+import { Loader2, ArrowRight, Droplet } from 'lucide-react';
 import { Footer } from "@/components/footer";
+import { getContractConfig } from '@/lib/constants';
 
 // Default to testnet for now as per project setting
 const CURRENT_NETWORK = 'testnet';
@@ -54,6 +55,7 @@ function BridgeContent() {
   // Form State
   const [amount, setAmount] = useState('');
   const [isProcessing, setIsProcessing] = useState(false);
+  const [isFaucetLoading, setIsFaucetLoading] = useState(false);
 
   // Load Stacks User
   useEffect(() => {
@@ -221,6 +223,41 @@ function BridgeContent() {
     }
   };
 
+  // Handle USDCx Faucet (Testnet only)
+  const handleFaucet = async () => {
+    if (!stacksAddress) {
+      toast.error('Please connect your Stacks wallet first');
+      return;
+    }
+
+    setIsFaucetLoading(true);
+    try {
+      const config = getContractConfig();
+      const [tokenAddr, tokenName] = config.usdcx.split('.');
+
+      await doContractCall({
+        contractAddress: tokenAddr,
+        contractName: tokenName,
+        functionName: 'faucet',
+        functionArgs: [],
+        postConditionMode: PostConditionMode.Allow,
+        anchorMode: AnchorMode.Any,
+        onFinish: (data) => {
+          toast.success('Faucet request submitted!');
+          toast.info(`You'll receive 10,000 USDCx. TxID: ${data.txId.slice(0, 10)}...`);
+          setIsFaucetLoading(false);
+        },
+        onCancel: () => {
+          setIsFaucetLoading(false);
+        }
+      });
+    } catch (error: any) {
+      console.error(error);
+      toast.error(error.message || 'Faucet request failed');
+      setIsFaucetLoading(false);
+    }
+  };
+
   return (
     <main className="min-h-screen flex flex-col bg-background">
       <Navbar />
@@ -364,6 +401,43 @@ function BridgeContent() {
                     </CardContent>
                 </TabsContent>
             </Tabs>
+        </Card>
+
+        {/* Testnet Faucet Card */}
+        <Card className="w-full max-w-2xl mt-6 border-orange-500/20 bg-orange-500/5">
+            <CardHeader className="pb-4">
+                <CardTitle className="flex items-center gap-2 text-lg">
+                    <Droplet className="h-5 w-5 text-orange-500" />
+                    Testnet USDCx Faucet
+                </CardTitle>
+                <CardDescription>
+                    Get free test tokens to try out the platform. Mints 10,000 USDCx to your wallet.
+                </CardDescription>
+            </CardHeader>
+            <CardContent>
+                <Button 
+                    className="w-full bg-orange-500 hover:bg-orange-600 text-white"
+                    onClick={handleFaucet}
+                    disabled={!stacksAddress || isFaucetLoading}
+                >
+                    {isFaucetLoading ? (
+                        <>
+                            <Loader2 className="mr-2 h-4 w-4 animate-spin" />
+                            Requesting...
+                        </>
+                    ) : (
+                        <>
+                            <Droplet className="mr-2 h-4 w-4" />
+                            Get 10,000 USDCx
+                        </>
+                    )}
+                </Button>
+                {!stacksAddress && (
+                    <p className="text-xs text-muted-foreground text-center mt-2">
+                        Connect your Stacks wallet first
+                    </p>
+                )}
+            </CardContent>
         </Card>
 
         <p className="mt-8 text-sm text-muted-foreground">
