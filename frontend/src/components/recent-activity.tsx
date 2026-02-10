@@ -20,7 +20,7 @@ function getEventIcon(eventType: string) {
         case 'market-created':
             return <Gavel className="h-4 w-4 text-blue-500" />;
         case 'bet-placed':
-            return <TrendingUp className="h-4 w-4 text-orange-500" />;
+            return <TrendingUp className="h-4 w-4 text-primary" />;
         case 'market-resolved':
             return <Trophy className="h-4 w-4 text-green-500" />;
         case 'winnings-claimed':
