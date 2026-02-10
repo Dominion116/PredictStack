@@ -1,6 +1,6 @@
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
-import { Menu, X, LogOut, Wallet } from "lucide-react";
+import { Menu, X, LogOut } from "lucide-react";
 import Link from "next/link";
 import { useState } from "react";
 
@@ -63,7 +63,6 @@ export function NavigationSheet({
                 </div>
               ) : (
                 <Button onClick={onConnect} className="w-full rounded-full">
-                  <Wallet className="mr-2 h-4 w-4" />
                   Connect Wallet
                 </Button>
               )}

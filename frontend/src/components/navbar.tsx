@@ -5,7 +5,7 @@ import { Button } from '@/components/ui/button';
 import { Badge } from '@/components/ui/badge';
 import { userSession, getContractConfig, isUserSignedIn } from '@/lib/constants';
 import { useEffect, useState } from 'react';
-import { LogOut, Wallet, Sun, Moon } from 'lucide-react';
+import { LogOut, Sun, Moon } from 'lucide-react';
 import { useTheme } from 'next-themes';
 import { Logo } from '@/components/logo';
 import { NavMenu } from '@/components/nav-menu';
@@ -97,7 +97,6 @@ function NavbarContent() {
             </>
           ) : (
             <Button onClick={handleConnect} className="hidden sm:inline-flex rounded-full">
-              <Wallet className="mr-2 h-4 w-4" />
               Connect Wallet
             </Button>
           )}
