@@ -39,7 +39,7 @@ export function MarketsList() {
 
         if (tab !== 'all') {
             result = result.filter(market => {
-                const category = market.category?.value || market.category || 'General';
+                const category = market.category || 'General';
                 return category.toLowerCase() === tab.toLowerCase();
             });
         }
@@ -47,7 +47,7 @@ export function MarketsList() {
         if (query.trim()) {
             const lowerQuery = query.toLowerCase();
             result = result.filter(market => {
-                const question = (market.question?.value || market.question || '').toLowerCase();
+                const question = (market.question || '').toLowerCase();
                 return question.includes(lowerQuery);
             });
         }

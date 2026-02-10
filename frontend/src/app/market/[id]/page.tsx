@@ -194,16 +194,14 @@ export default function MarketPage() {
     }
 
     // Parse Data
-    const question = market.question?.value || market.question || 'Unknown Market';
-    const imageUrl = market['image-url']?.value || market['image-url'];
-    const category = market.category?.value || market.category || 'General';
-    const resolveBlock = market['resolve-date']?.value ? Number(market['resolve-date'].value) : 0;
+    const question = market.question || 'Unknown Market';
+    const imageUrl = market['image-url'];
+    const category = market.category || 'General';
+    const resolveBlock = market['resolve-date'] || 0;
     
     // Pools
-    const yesPoolRaw = market['yes-pool']?.value || market['yes-pool'] || 0;
-    const noPoolRaw = market['no-pool']?.value || market['no-pool'] || 0;
-    const yesPool = Number(yesPoolRaw) / 1000000;
-    const noPool = Number(noPoolRaw) / 1000000;
+    const yesPool = Number(market['yes-pool']) / 1000000;
+    const noPool = Number(market['no-pool']) / 1000000;
     const totalPool = yesPool + noPool;
 
     const yesPercent = totalPool > 0 ? (yesPool / totalPool) * 100 : 50;
@@ -291,7 +289,7 @@ export default function MarketPage() {
                         <div className="prose dark:prose-invert max-w-none">
                             <h3 className="text-lg font-semibold mb-2">Market Description</h3>
                             <p className="text-muted-foreground whitespace-pre-wrap">
-                                {market.description?.value || market.description || "No specific details provided for this market. Resolution will be based on the general consensus of the oracle/admin."}
+                                {market.description || "No specific details provided for this market. Resolution will be based on the general consensus of the oracle/admin."}
                             </p>
                         </div>
                     </div>
@@ -390,15 +388,15 @@ export default function MarketPage() {
                                 <CardContent className="space-y-3">
                                     <div className="flex justify-between text-sm">
                                         <span className="text-muted-foreground">YES Position</span>
-                                        <span className="font-semibold">${(Number(userPosition['yes-amount']?.value || 0) / 1000000).toLocaleString()}</span>
+                                        <span className="font-semibold">${(Number(userPosition['yes-amount']) / 1000000).toLocaleString()}</span>
                                     </div>
                                     <div className="flex justify-between text-sm">
                                         <span className="text-muted-foreground">NO Position</span>
-                                        <span className="font-semibold">${(Number(userPosition['no-amount']?.value || 0) / 1000000).toLocaleString()}</span>
+                                        <span className="font-semibold">${(Number(userPosition['no-amount']) / 1000000).toLocaleString()}</span>
                                     </div>
                                     
                                     {/* Claim Section */}
-                                    {market.status === 'resolved' && !userPosition.claimed?.value && (
+                                    {market.status === 'resolved' && !userPosition.claimed && (
                                         <div className="pt-2">
                                             <Button 
                                                 className="w-full bg-primary text-primary-foreground hover:bg-primary/90"
@@ -410,7 +408,7 @@ export default function MarketPage() {
                                             </Button>
                                         </div>
                                     )}
-                                    {userPosition.claimed?.value && (
+                                    {userPosition.claimed && (
                                         <div className="pt-2 text-center text-sm font-medium text-green-600">
                                             Winnings Claimed
                                         </div>

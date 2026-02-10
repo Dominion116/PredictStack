@@ -33,8 +33,8 @@ export default function Home() {
     }
   }, []);
 
-  const totalMarkets = stats?.['total-markets']?.value || 0;
-  const totalVolume = Number(stats?.['total-volume']?.value || 0) / 1000000;
+  const totalMarkets = stats?.['total-markets'] || 0;
+  const totalVolume = Number(stats?.['total-volume'] || 0) / 1000000;
 
   return (
     <main className="min-h-screen flex flex-col bg-background">

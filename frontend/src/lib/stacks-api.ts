@@ -31,10 +31,21 @@ export async function getMarket(marketId: number) {
         const json: any = cvToJSON(response);
         if (json.success && json.value && json.value.value) {
             const marketData = json.value.value;
+            // Extract actual values from Clarity value objects
             return { 
-                ...marketData, 
-                "image-url": marketData["image-url"]?.value,
-                category: marketData.category?.value
+                id: marketId,
+                question: marketData.question?.value || '',
+                description: marketData.description?.value || '',
+                'resolve-date': Number(marketData['resolve-date']?.value || 0),
+                'yes-pool': Number(marketData['yes-pool']?.value || 0),
+                'no-pool': Number(marketData['no-pool']?.value || 0),
+                resolved: marketData.resolved?.value || false,
+                outcome: marketData.outcome?.value || false,
+                cancelled: marketData.cancelled?.value || false,
+                creator: marketData.creator?.value || '',
+                'ipfs-hash': marketData['ipfs-hash']?.value || null,
+                category: marketData.category?.value || 'General',
+                'image-url': marketData['image-url']?.value || null
             };
         }
         return null;
@@ -60,11 +71,15 @@ export async function getPlatformStats() {
         
         const json: any = cvToJSON(response);
         if (json.success && json.value) {
-            return json.value.value;
+            const stats = json.value.value;
+            return {
+                'total-markets': Number(stats['total-markets']?.value || 0),
+                'total-volume': Number(stats['total-volume']?.value || 0)
+            };
         }
-        return { "total-markets": { value: 0 } };
+        return { 'total-markets': 0, 'total-volume': 0 };
     } catch (error) {
-        return { "total-markets": { value: 0 } };
+        return { 'total-markets': 0, 'total-volume': 0 };
     }
 }
 
@@ -136,7 +151,13 @@ export async function getUserPosition(address: string, marketId: number) {
 
         const json: any = cvToJSON(response);
         if (json.success && json.value && json.value.value) {
-            return json.value.value;
+            const position = json.value.value;
+            // Extract actual values from Clarity value objects
+            return {
+                'yes-amount': Number(position['yes-amount']?.value || 0),
+                'no-amount': Number(position['no-amount']?.value || 0),
+                claimed: position.claimed?.value || false
+            };
         }
         return null;
     } catch (error) {

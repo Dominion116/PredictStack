@@ -362,13 +362,13 @@ function AdminDashboard() {
                                                     <div className="flex-1 bg-green-50 p-3 rounded-md text-center border border-green-100">
                                                         <div className="text-xs text-muted-foreground uppercase mb-1">Yes Pool</div>
                                                         <div className="font-bold text-green-700">
-                                                            ${(Number(market['yes-pool']?.value || 0) / 1000000).toLocaleString()}
+                                                            ${(Number(market['yes-pool']) / 1000000).toLocaleString()}
                                                         </div>
                                                     </div>
                                                     <div className="flex-1 bg-red-50 p-3 rounded-md text-center border border-red-100">
                                                         <div className="text-xs text-muted-foreground uppercase mb-1">No Pool</div>
                                                         <div className="font-bold text-red-700">
-                                                            ${(Number(market['no-pool']?.value || 0) / 1000000).toLocaleString()}
+                                                            ${(Number(market['no-pool']) / 1000000).toLocaleString()}
                                                         </div>
                                                     </div>
                                                 </div>

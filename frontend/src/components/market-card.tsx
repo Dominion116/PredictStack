@@ -13,16 +13,14 @@ interface MarketCardProps {
 }
 
 export function MarketCard({ market }: MarketCardProps) {
-    // Try to get external-id from the market data structure
-    const question = market.question?.value || market.question || 'Unknown Market';
-    const imageUrl = market['image-url']?.value || market['image-url'];
-    const category = market.category?.value || market.category || 'General';
+    // Market data is now clean values from stacks-api
+    const question = market.question || 'Unknown Market';
+    const imageUrl = market['image-url'];
+    const category = market.category || 'General';
 
-    // Parse pool values safely
-    const yesPoolRaw = market['yes-pool']?.value || market['yes-pool'] || 0;
-    const noPoolRaw = market['no-pool']?.value || market['no-pool'] || 0;
-    const yesPool = Number(yesPoolRaw) / 1_000_000;
-    const noPool = Number(noPoolRaw) / 1_000_000;
+    // Parse pool values
+    const yesPool = Number(market['yes-pool']) / 1_000_000;
+    const noPool = Number(market['no-pool']) / 1_000_000;
     const totalPool = yesPool + noPool;
     
     // Calculate payout multipliers (how much you get back per $1 bet if you win)
@@ -34,7 +32,7 @@ export function MarketCard({ market }: MarketCardProps) {
     const noImpliedProb = totalPool > 0 ? ((noPool / totalPool) * 100).toFixed(1) : '50.0';
 
     // Calculate resolution date
-    const resolveBlock = market['resolve-date']?.value ? Number(market['resolve-date'].value) : 0;
+    const resolveBlock = market['resolve-date'] || 0;
     // For mocked markets without block data, we'll default to "Active"
     // In a real app with block data, we'd use:
     const resolutionDate = resolveBlock > 0 ? blockToDate(resolveBlock) : null;

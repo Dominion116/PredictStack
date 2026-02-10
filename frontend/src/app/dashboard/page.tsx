@@ -150,8 +150,8 @@ function DashboardContent() {
     
     // Calculate total potential value (very rough estimate)
     const totalInvested = userBets.reduce((acc, bet) => {
-        const yes = Number(bet.position['yes-amount']?.value || 0);
-        const no = Number(bet.position['no-amount']?.value || 0);
+        const yes = Number(bet.position['yes-amount']);
+        const no = Number(bet.position['no-amount']);
         return acc + ((yes + no) / 1000000);
     }, 0);
     return (
@@ -279,8 +279,8 @@ function DashboardContent() {
 }
 
 function BetHistoryCard({ bet, onClaim, isClaiming }: { bet: any, onClaim: any, isClaiming: boolean }) {
-    const yesAmount = Number(bet.position['yes-amount']?.value || 0) / 1000000;
-    const noAmount = Number(bet.position['no-amount']?.value || 0) / 1000000;
+    const yesAmount = Number(bet.position['yes-amount']) / 1000000;
+    const noAmount = Number(bet.position['no-amount']) / 1000000;
     
     // Determine user's outcome
     const userOutcome = yesAmount > 0 ? "YES" : (noAmount > 0 ? "NO" : "NONE");
@@ -288,7 +288,7 @@ function BetHistoryCard({ bet, onClaim, isClaiming }: { bet: any, onClaim: any, 
 
     // Check if won
     const isResolved = bet.status !== "active";
-    const winningOutcome = bet['winning-outcome']?.value; // boolean
+    const winningOutcome = bet['winning-outcome']; // boolean
     
     let isWinner = false;
     if (isResolved && winningOutcome !== undefined) {
@@ -296,7 +296,7 @@ function BetHistoryCard({ bet, onClaim, isClaiming }: { bet: any, onClaim: any, 
         if (winningOutcome === false && noAmount > 0) isWinner = true;
     }
 
-    const claimed = bet.position.claimed?.value;
+    const claimed = bet.position.claimed;
     const canClaim = isWinner && !claimed;
 
     return (
@@ -305,8 +305,8 @@ function BetHistoryCard({ bet, onClaim, isClaiming }: { bet: any, onClaim: any, 
                 
                 {/* Image */}
                 <div className="h-16 w-16 md:h-20 md:w-20 rounded-lg overflow-hidden bg-muted shrink-0">
-                     {bet['image-url']?.value || bet['image-url'] ? (
-                        <img src={bet['image-url']?.value || bet['image-url']} alt="" className="w-full h-full object-cover" />
+                     {bet['image-url'] ? (
+                        <img src={bet['image-url']} alt="" className="w-full h-full object-cover" />
                     ) : (
                         <div className="w-full h-full flex items-center justify-center bg-primary/10">
                             <TrendingUp className="h-8 w-8 text-primary/40" />
@@ -323,12 +323,12 @@ function BetHistoryCard({ bet, onClaim, isClaiming }: { bet: any, onClaim: any, 
                         <span className="text-xs text-muted-foreground">Make ID: {bet.id}</span>
                     </div>
                     <Link href={`/market/${bet.id}`} className="hover:underline">
-                        <h3 className="font-semibold text-lg leading-tight">{bet.question?.value || bet.question}</h3>
+                        <h3 className="font-semibold text-lg leading-tight">{bet.question}</h3>
                     </Link>
                     <div className="text-sm text-muted-foreground flex gap-4">
                         <span>You predicted: <strong className={userOutcome === "YES" ? "text-green-600" : "text-red-600"}>{userOutcome}</strong></span>
                         <span>Stake: <strong>${userStake.toLocaleString()}</strong></span>
-                        <span>End Date: {new Date(Number(bet['resolve-date']?.value) * 1000).toLocaleDateString()}</span> 
+                        <span>End Date: {new Date(Number(bet['resolve-date']) * 1000).toLocaleDateString()}</span> 
                          {/* Estimate block time if needed, assuming simple timestamp map for now or ignore exact date */}
                     </div>
                 </div>
