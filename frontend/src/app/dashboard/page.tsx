@@ -280,8 +280,6 @@ function DashboardContent() {
 }
 
 function BetHistoryCard({ bet, onClaim, isClaiming }: { bet: any, onClaim: any, isClaiming: boolean }) {
-    console.log('[DEBUG] BetHistoryCard bet:', JSON.stringify(bet, null, 2));
-    
     const yesAmount = Number(bet.position['yes-amount']) / 1000000;
     const noAmount = Number(bet.position['no-amount']) / 1000000;
     

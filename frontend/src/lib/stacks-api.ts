@@ -50,7 +50,6 @@ export async function getMarket(marketId: number) {
         });
         
         const json: any = cvToJSON(response);
-        console.log('[DEBUG] getMarket raw response:', JSON.stringify(json, null, 2));
         if (json.success && json.value && json.value.value) {
             const marketData = json.value.value;
             // Extract actual values from Clarity value objects
@@ -78,7 +77,6 @@ export async function getMarket(marketId: number) {
                 category: extractValue(marketData.category) || 'General',
                 'image-url': extractValue(marketData['image-url']) || null
             };
-            console.log('[DEBUG] getMarket extracted result:', JSON.stringify(result, null, 2));
             return result;
         }
         return null;
