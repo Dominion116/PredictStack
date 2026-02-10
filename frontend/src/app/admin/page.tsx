@@ -414,7 +414,7 @@ function AdminDashboard() {
                                         <CardTitle className="text-sm font-medium text-muted-foreground">Active Markets</CardTitle>
                                     </CardHeader>
                                     <CardContent>
-                                        <div className="text-2xl font-bold text-orange-500">{activeMarkets.length}</div>
+                                        <div className="text-2xl font-bold text-primary">{activeMarkets.length}</div>
                                     </CardContent>
                                 </Card>
                                 <Card>

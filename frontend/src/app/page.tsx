@@ -71,8 +71,8 @@ export default function Home() {
             <h2 className="text-center font-semibold text-4xl tracking-tight sm:text-5xl">How it works</h2>
             <div className="mt-10 grid gap-6 sm:mt-16 sm:grid-cols-2 lg:grid-cols-3">
               <div className="flex flex-col rounded-xl border px-5 py-6">
-                <div className="mb-4 flex h-10 w-10 items-center justify-center rounded-full bg-orange-500/10">
-                  <Wallet className="size-5 text-orange-500" />
+                <div className="mb-4 flex h-10 w-10 items-center justify-center rounded-full bg-primary/10">
+                  <Wallet className="size-5 text-primary" />
                 </div>
                 <span className="font-semibold text-lg">1. Connect & Fund</span>
                 <p className="mt-1 text-[15px] text-foreground/80">
@@ -81,8 +81,8 @@ export default function Home() {
               </div>
 
               <div className="flex flex-col rounded-xl border px-5 py-6">
-                <div className="mb-4 flex h-10 w-10 items-center justify-center rounded-full bg-orange-500/10">
-                  <BarChart3 className="size-5 text-orange-500" />
+                <div className="mb-4 flex h-10 w-10 items-center justify-center rounded-full bg-primary/10">
+                  <BarChart3 className="size-5 text-primary" />
                 </div>
                 <span className="font-semibold text-lg">2. Browse & Bet</span>
                 <p className="mt-1 text-[15px] text-foreground/80">
@@ -91,8 +91,8 @@ export default function Home() {
               </div>
 
               <div className="flex flex-col rounded-xl border px-5 py-6">
-                <div className="mb-4 flex h-10 w-10 items-center justify-center rounded-full bg-orange-500/10">
-                  <Trophy className="size-5 text-orange-500" />
+                <div className="mb-4 flex h-10 w-10 items-center justify-center rounded-full bg-primary/10">
+                  <Trophy className="size-5 text-primary" />
                 </div>
                 <span className="font-semibold text-lg">3. Win & Withdraw</span>
                 <p className="mt-1 text-[15px] text-foreground/80">
@@ -179,7 +179,7 @@ export default function Home() {
 
       {/* CTA Section */}
       <section className="container py-20 md:py-32">
-        <div className="relative rounded-3xl bg-orange-500 px-8 py-16 md:px-16 md:py-24">
+        <div className="relative rounded-3xl bg-primary px-8 py-16 md:px-16 md:py-24">
           <div className="relative z-10">
             <h2 className="font-bold text-4xl text-white tracking-tight md:text-5xl lg:text-6xl">
               Ready to Predict the Future?
