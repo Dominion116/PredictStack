@@ -16,12 +16,12 @@ plan:
             anchor-block-only: true
             clarity-version: 1
         - contract-publish:
-            contract-name: prediction-market-v3
+            contract-name: prediction-market-v6
             expected-sender: ST30VGN68PSGVWGNMD0HH2WQMM5T486EK3WBNTHCY
-            cost: 271710
-            path: contracts/prediction-market-v3.clar
+            cost: 300000
+            path: contracts/prediction-market-v6.clar
             anchor-block-only: true
-            clarity-version: 1
+            clarity-version: 2
         - contract-publish:
             contract-name: usdcx-v1
             expected-sender: ST30VGN68PSGVWGNMD0HH2WQMM5T486EK3WBNTHCY
