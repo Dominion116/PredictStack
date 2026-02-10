@@ -65,8 +65,8 @@ const Features = () => {
               className="flex flex-col rounded-xl border px-5 py-6"
               key={feature.title}
             >
-              <div className="mb-4 flex h-10 w-10 items-center justify-center rounded-full bg-orange-500/10">
-                <feature.icon className="size-5 text-orange-500" />
+              <div className="mb-4 flex h-10 w-10 items-center justify-center rounded-full bg-primary/10">
+                <feature.icon className="size-5 text-primary" />
               </div>
               <span className="font-semibold text-lg">{feature.title}</span>
               <p className="mt-1 text-[15px] text-foreground/80">

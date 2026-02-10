@@ -18,7 +18,7 @@ export default function Hero() {
         </Badge>
         <h1 className="mt-6 font-semibold text-4xl tracking-tighter sm:text-5xl md:text-6xl md:leading-[1.2] lg:text-7xl">
           Decentralized Prediction Markets on{" "}
-          <span className="text-orange-500">Stacks</span>
+          <span className="text-primary">Stacks</span>
         </h1>
         <p className="mt-6 text-foreground/80 md:text-lg">
           Bet on future events with USDCx. Transparent, secure, and secured by

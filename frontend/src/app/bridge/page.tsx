@@ -404,10 +404,10 @@ function BridgeContent() {
         </Card>
 
         {/* Testnet Faucet Card */}
-        <Card className="w-full max-w-2xl mt-6 border-orange-500/20 bg-orange-500/5">
+        <Card className="w-full max-w-2xl mt-6 border-primary/20 bg-primary/5">
             <CardHeader className="pb-4">
                 <CardTitle className="flex items-center gap-2 text-lg">
-                    <Droplet className="h-5 w-5 text-orange-500" />
+                    <Droplet className="h-5 w-5 text-primary" />
                     Testnet USDCx Faucet
                 </CardTitle>
                 <CardDescription>
@@ -416,7 +416,7 @@ function BridgeContent() {
             </CardHeader>
             <CardContent>
                 <Button 
-                    className="w-full bg-orange-500 hover:bg-orange-600 text-white"
+                    className="w-full bg-primary hover:bg-primary/90 text-primary-foreground"
                     onClick={handleFaucet}
                     disabled={!stacksAddress || isFaucetLoading}
                 >
