@@ -12,7 +12,7 @@ export default function Hero() {
   return (
     <div className="container flex min-h-[85vh] items-center justify-center py-20 md:py-32 relative overflow-hidden">
       <div className="absolute inset-0 z-0">
-        <RippleGrid relative z-10
+        <RippleGrid
           enableRainbow={false}
           gridColor="#e88d4e"
           rippleIntensity={0.03}
