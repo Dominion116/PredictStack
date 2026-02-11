@@ -170,7 +170,7 @@ export default function MarketPage() {
 
     if (loading) {
         return (
-            <main className="min-h-screen flex flex-col">
+            <main className="min-h-screen flex flex-col bg-background">
                 <Navbar />
                 <div className="flex-1 flex items-center justify-center">
                     <Loader2 className="h-8 w-8 animate-spin text-muted-foreground" />
@@ -218,7 +218,7 @@ export default function MarketPage() {
     const timeDisplay = resolutionDate ? formatResolutionDate(resolutionDate) : "Active";
 
     return (
-        <main className="min-h-screen flex flex-col">
+        <main className="min-h-screen flex flex-col bg-background">
             <Navbar />
             
             <div className="container py-8 md:py-12 flex-1">

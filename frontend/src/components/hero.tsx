@@ -6,10 +6,12 @@ import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
 import { motion } from "framer-motion";
 import { fadeInUp, staggerContainer, slowTransition } from "@/lib/animations";
+import { GradientBackground } from "@/components/gradient-background";
 
 export default function Hero() {
   return (
-    <div className="container flex min-h-[85vh] items-center justify-center py-20 md:py-32">
+    <div className="container flex min-h-[85vh] items-center justify-center py-20 md:py-32 relative">
+      <GradientBackground />
       <motion.div 
         className="max-w-3xl text-center"
         variants={staggerContainer}

@@ -47,7 +47,7 @@ export default function AdminPage() {
 
     if (!mounted) {
         return (
-            <main className="min-h-screen flex flex-col">
+            <main className="min-h-screen flex flex-col bg-background">
                 <Navbar />
                 <div className="container py-12 flex-1 flex flex-col items-center">
                     <Loader2 className="h-8 w-8 animate-spin text-muted-foreground" />
@@ -58,7 +58,7 @@ export default function AdminPage() {
 
     if (isAdmin === false) {
         return (
-            <main className="min-h-screen flex flex-col">
+            <main className="min-h-screen flex flex-col bg-background">
                 <Navbar />
                 <div className="container py-24 flex-1 flex flex-col items-center justify-center text-center">
                     <ShieldAlert className="h-16 w-16 text-destructive mb-4" />
@@ -226,7 +226,7 @@ function AdminDashboard() {
     };
 
     return (
-        <main className="min-h-screen flex flex-col">
+        <main className="min-h-screen flex flex-col bg-background">
             <Navbar />
             
             <div className="flex-1 flex flex-col md:flex-row">

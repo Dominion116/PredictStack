@@ -73,7 +73,7 @@ export default function LeaderboardPage() {
     const topEarner = leaderboard[0];
 
     return (
-        <main className="min-h-screen flex flex-col">
+        <main className="min-h-screen flex flex-col bg-background">
             <Navbar />
             
             <section className="container py-12 flex-1">
