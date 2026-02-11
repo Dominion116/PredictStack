@@ -4,6 +4,7 @@ import "./globals.css";
 import { Providers } from "@/components/providers";
 import { Toaster } from "@/components/ui/sonner";
 import { cn } from "@/lib/utils";
+import { GradientBackground } from "@/components/gradient-background";
 
 const geistSans = Geist({
   variable: "--font-sans",
@@ -29,11 +30,13 @@ export default function RootLayout({
     <html lang="en" suppressHydrationWarning>
       <body
         className={cn(
-          "min-h-screen bg-background font-mono antialiased",
+          "min-h-screen bg-background font-mono antialiased relative",
           geistSans.variable,
           geistMono.variable
         )}
       >
+        <GradientBackground />
+        
         <Providers>
           {children}
           <Toaster />

@@ -131,7 +131,7 @@ function DashboardContent() {
 
     if (!isUserSignedIn()) {
         return (
-             <main className="min-h-screen flex flex-col bg-background">
+             <main className="min-h-screen flex flex-col">
                 <Navbar />
                 <div className="flex-1 flex flex-col items-center justify-center p-4">
                     <Card className="max-w-md w-full text-center p-8">

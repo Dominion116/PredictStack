@@ -32,7 +32,7 @@ export default function BridgePage() {
 
     if (!mounted) {
         return (
-            <main className="min-h-screen flex flex-col bg-background">
+            <main className="min-h-screen flex flex-col">
                 <Navbar />
                 <div className="container py-12 flex-1 flex flex-col items-center justify-center">
                     <Loader2 className="h-8 w-8 animate-spin text-muted-foreground" />
@@ -261,7 +261,7 @@ function BridgeContent() {
   };
 
   return (
-    <main className="min-h-screen flex flex-col bg-background">
+    <main className="min-h-screen flex flex-col">
       <Navbar />
       
       <div className="container py-12 flex-1 flex flex-col items-center">

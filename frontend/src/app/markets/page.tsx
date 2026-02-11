@@ -7,7 +7,7 @@ import { Footer } from "@/components/footer";
 
 export default function MarketsPage() {
     return (
-        <main className="min-h-screen flex flex-col bg-background">
+        <main className="min-h-screen flex flex-col">
             <Navbar />
             
             <section className="container py-12 flex-1">
