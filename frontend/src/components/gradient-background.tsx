@@ -2,7 +2,7 @@
 
 export function GradientBackground() {
   return (
-    <div className="fixed inset-0 -z-10 overflow-hidden pointer-events-none">
+    <div className="absolute inset-0 -z-10 overflow-hidden pointer-events-none">
       {/* Grid pattern */}
       <div 
         className="absolute inset-0"
