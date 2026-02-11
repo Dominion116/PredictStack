@@ -1,6 +1,6 @@
 'use client';
 
-import { ArrowUpRight, Wallet } from "lucide-react";
+import { ArrowUpRight } from "lucide-react";
 import Link from "next/link";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
@@ -61,7 +61,7 @@ export default function Hero() {
             variant="outline"
           >
             <Link href="/bridge">
-              <Wallet className="size-5" /> Bridge USDCx
+              Bridge USDCx
             </Link>
           </Button>
         </motion.div>
