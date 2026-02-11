@@ -6,10 +6,25 @@ import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
 import { motion } from "framer-motion";
 import { fadeInUp, staggerContainer, slowTransition } from "@/lib/animations";
+import RippleGrid from "@/components/ripple-grid";
 
 export default function Hero() {
   return (
-    <div className="container flex min-h-[85vh] items-center justify-center py-20 md:py-32">
+    <div className="container flex min-h-[85vh] items-center justify-center py-20 md:py-32 relative overflow-hidden">
+      <div className="absolute inset-0 z-0">
+        <RippleGrid relative z-10
+          enableRainbow={false}
+          gridColor="#e88d4e"
+          rippleIntensity={0.03}
+          gridSize={8}
+          gridThickness={20}
+          mouseInteraction={true}
+          mouseInteractionRadius={1.5}
+          opacity={0.3}
+          glowIntensity={0.2}
+          vignetteStrength={1.8}
+        />
+      </div>
       <motion.div 
         className="max-w-3xl text-center"
         variants={staggerContainer}
