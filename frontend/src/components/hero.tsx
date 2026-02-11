@@ -49,21 +49,33 @@ export default function Hero() {
           variants={fadeInUp}
           transition={{ ...slowTransition, delay: 0.3 }}
         >
-          <Button asChild className="rounded-full text-base" size="lg">
-            <Link href="/markets">
-              Start Betting <ArrowUpRight className="size-5" />
-            </Link>
-          </Button>
-          <Button
-            asChild
-            className="rounded-full text-base shadow-none"
-            size="lg"
-            variant="outline"
+          <motion.div
+            whileHover={{ scale: 1.05 }}
+            whileTap={{ scale: 0.95 }}
+            transition={{ type: "spring", stiffness: 400, damping: 17 }}
           >
-            <Link href="/bridge">
-              Bridge USDCx
-            </Link>
-          </Button>
+            <Button asChild className="rounded-full text-base" size="lg">
+              <Link href="/markets">
+                Start Betting <ArrowUpRight className="size-5" />
+              </Link>
+            </Button>
+          </motion.div>
+          <motion.div
+            whileHover={{ scale: 1.05 }}
+            whileTap={{ scale: 0.95 }}
+            transition={{ type: "spring", stiffness: 400, damping: 17 }}
+          >
+            <Button
+              asChild
+              className="rounded-full text-base shadow-none"
+              size="lg"
+              variant="outline"
+            >
+              <Link href="/bridge">
+                Bridge USDCx
+              </Link>
+            </Button>
+          </motion.div>
         </motion.div>
       </motion.div>
     </div>
