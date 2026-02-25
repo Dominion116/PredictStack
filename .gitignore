@@ -50,3 +50,6 @@ transactions.json
 .env
 .env.local
 *.env
+
+chainhooks/predicates-state.json
+dist/
