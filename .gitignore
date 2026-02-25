@@ -52,3 +52,4 @@ transactions.json
 *.env
 
 chainhooks/predicates-state.json
+dist/
