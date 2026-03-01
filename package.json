@@ -16,7 +16,7 @@
     "check": "clarinet check",
     "console": "clarinet console",
     "chainhook:build": "tsc --project tsconfig.chainhook.json",
-    "chainhook:start": "tsc --project chainhooks/tsconfig.chainhook.json --skipLibCheck && node --require dotenv/config dist/chainhooks/observer.js"
+    "chainhook:start": "tsc --project chainhooks/tsconfig.chainhook.json --skipLibCheck && DOTENV_CONFIG_PATH=chainhooks/.env node --require dotenv/config dist/chainhooks/observer.js"
   },
   "author": "",
   "license": "MIT",
