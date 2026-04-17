@@ -5,14 +5,6 @@ authors = []
 telemetry = true
 cache_dir = "./.cache"
 
-# SIP-010 Trait Definition
-[contracts.sip010-trait-v1]
-path = "contracts/sip010-trait.clar"
-
-# USDCx Mock Token
-[contracts.usdcx-v1]
-path = "contracts/usdcx.clar"
-
 # Main Prediction Market Contract V6 (Latest)
 [contracts.prediction-market-v6]
 path = "contracts/prediction-market-v6.clar"

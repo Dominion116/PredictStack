@@ -1,6 +1,6 @@
-import { 
-    fetchCallReadOnlyFunction, 
-    cvToJSON, 
+import {
+    fetchCallReadOnlyFunction,
+    cvToJSON,
     uintCV,
     principalCV
 } from '@stacks/transactions';
@@ -140,26 +140,20 @@ export async function getRecentMarkets(limit: number = 6) {
 }
 
 /**
- * Fetches the user's USDCx balance.
+ * Fetches the user's STX balance.
  */
-export async function getUSDCxBalance(address: string) {
+export async function getStxBalance(address: string) {
     try {
-        const [tokenAddr, tokenName] = config.usdcx.split('.');
-        const response = await fetchCallReadOnlyFunction({
-            contractAddress: tokenAddr,
-            contractName: tokenName,
-            functionName: 'get-balance',
-            functionArgs: [principalCV(address)],
-            network,
-            senderAddress: address,
-        });
-
-        const json: any = cvToJSON(response);
-        if (json.success && json.value) {
-            // SIP-010 get-balance returns (response uint uint)
-            return Number(extractValue(json.value)) / 1000000;
+        const apiUrl = NETWORK_ENV === 'mainnet'
+            ? 'https://api.mainnet.hiro.so'
+            : 'https://api.testnet.hiro.so';
+        const response = await fetch(`${apiUrl}/extended/v1/address/${address}/stx`);
+        if (!response.ok) {
+            throw new Error(`Failed to fetch STX balance: ${response.status}`);
         }
-        return 0;
+
+        const data = await response.json();
+        return Number(data.balance || 0) / 1000000;
     } catch (error) {
         console.error("Error fetching balance:", error);
         return 0;

@@ -27,7 +27,6 @@ export function Footer() {
               <div className="font-semibold mb-4">Product</div>
               <ul className="space-y-2 text-sm text-muted-foreground">
                 <li><Link href="/markets" className="hover:text-foreground transition-colors">Markets</Link></li>
-                <li><Link href="/bridge" className="hover:text-foreground transition-colors">Bridge</Link></li>
                 <li><Link href="/create" className="hover:text-foreground transition-colors">Create Market</Link></li>
               </ul>
             </div>
