@@ -2,7 +2,7 @@
   "name": "predictstack",
   "version": "1.0.0",
   "description": "A peer-to-peer prediction market platform on Stacks blockchain using USDCx",
-  "private": true,
+  "private": false,
   "scripts": {
     "test": "vitest run",
     "test:report": "vitest run -- --coverage --costs",
