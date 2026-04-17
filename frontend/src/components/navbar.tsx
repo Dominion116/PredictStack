@@ -70,7 +70,6 @@ function NavbarContent() {
   const navLinks = [
     { href: '/markets', label: 'Markets' },
     { href: '/leaderboard', label: 'Leaderboard' },
-    { href: '/bridge', label: 'Bridge' },
     ...(isAdmin ? [{ href: '/admin', label: 'Admin' }] : []),
   ];
 

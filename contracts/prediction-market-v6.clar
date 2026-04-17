@@ -3,15 +3,9 @@
 ;; ============================================================================
 ;; Clarity 2 Compatible
 ;; A decentralized prediction market platform on Stacks blockchain
-;; Users can bet on binary outcomes (YES/NO) using USDCx tokens
+;; Users can bet on binary outcomes (YES/NO) using native STX
 ;; All funds are held in escrow and distributed to winners after resolution
 ;; ============================================================================
-
-;; ============================================================================
-;; TRAITS
-;; ============================================================================
-
-(use-trait sip010-trait .sip010-trait-v1.sip010-trait)
 
 ;; ============================================================================
 ;; CONSTANTS - ERROR CODES
@@ -65,7 +59,7 @@
 (define-data-var platform-oracle principal tx-sender)
 (define-data-var platform-treasury principal tx-sender)
 (define-data-var platform-fee-bps uint u200)      ;; 2% default fee
-(define-data-var min-bet-amount uint u1000000)    ;; 1 USDCx (6 decimals)
+(define-data-var min-bet-amount uint u1000000)    ;; 1 STX (microstx)
 (define-data-var platform-paused bool false)
 
 ;; Platform statistics
@@ -465,7 +459,6 @@
   (market-id uint) 
   (outcome bool) 
   (amount uint)
-  (token-contract <sip010-trait>)
 )
   (let
     (
@@ -481,8 +474,8 @@
     (asserts! (< block-height (get resolve-date market)) ERR-DEADLINE-PASSED)
     (asserts! (>= amount (var-get min-bet-amount)) ERR-INVALID-AMOUNT)
     
-    ;; Transfer tokens from user to contract
-    (try! (contract-call? token-contract transfer amount tx-sender (as-contract tx-sender) none))
+    ;; Transfer STX from user to contract
+    (try! (stx-transfer? amount tx-sender (as-contract tx-sender)))
     
     ;; Update user position
     (map-set user-positions
@@ -534,7 +527,6 @@
 ;; Claim winnings after market resolution
 (define-public (claim-winnings 
   (market-id uint)
-  (token-contract <sip010-trait>)
 )
   (let
     (
@@ -579,11 +571,11 @@
         (var-set total-fees-collected (+ (var-get total-fees-collected) platform-fee))
         
         ;; Transfer winnings to user
-        (try! (as-contract (contract-call? token-contract transfer total-payout tx-sender claimer none)))
+        (try! (as-contract (stx-transfer? total-payout tx-sender claimer)))
         
         ;; Transfer platform fee to treasury
         (if (> platform-fee u0)
-          (try! (as-contract (contract-call? token-contract transfer platform-fee tx-sender (var-get platform-treasury) none)))
+          (try! (as-contract (stx-transfer? platform-fee tx-sender (var-get platform-treasury))))
           true
         )
         
@@ -608,7 +600,6 @@
 ;; Claim refund if market was cancelled
 (define-public (claim-refund 
   (market-id uint)
-  (token-contract <sip010-trait>)
 )
   (let
     (
@@ -633,7 +624,7 @@
       )
       
       ;; Transfer refund to user
-      (try! (as-contract (contract-call? token-contract transfer total-refund tx-sender claimer none)))
+      (try! (as-contract (stx-transfer? total-refund tx-sender claimer)))
       
       (print {
         event: "refund-claimed",

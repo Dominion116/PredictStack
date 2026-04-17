@@ -10,7 +10,7 @@ import { Badge } from '@/components/ui/badge';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { Loader2, Wallet, TrendingUp, AlertCircle, RefreshCcw, CheckCircle } from 'lucide-react';
 import { userSession, getContractConfig, isUserSignedIn } from '@/lib/constants';
-import { getUSDCxBalance, getUserMarkets, getMarket, getUserPosition } from '@/lib/stacks-api';
+import { getStxBalance, getUserMarkets, getMarket, getUserPosition } from '@/lib/stacks-api';
 import { blockToDate } from '@/lib/date-utils';
 import { useConnect } from '@stacks/connect-react';
 import { Cl, PostConditionMode, AnchorMode } from '@stacks/transactions';
@@ -56,7 +56,7 @@ function DashboardContent() {
             const address = profile.stxAddress.testnet;
 
             // 1. Get Balance
-            const bal = await getUSDCxBalance(address);
+            const bal = await getStxBalance(address);
             setBalance(bal);
 
             // 2. Get User Markets
@@ -98,15 +98,12 @@ function DashboardContent() {
         const config = getContractConfig();
         
         try {
-             const [tokenAddr, tokenName] = config.usdcx.split('.');
-
             await doContractCall({
                 contractAddress: config.deployer,
                 contractName: config.predictionMarket,
                 functionName: 'claim-winnings',
                 functionArgs: [
-                    Cl.uint(marketId),
-                    Cl.contractPrincipal(tokenAddr, tokenName)
+                    Cl.uint(marketId)
                 ],
                 postConditionMode: PostConditionMode.Allow,
                 anchorMode: AnchorMode.Any,
@@ -190,7 +187,7 @@ function DashboardContent() {
                     <motion.div variants={fadeInUp}>
                         <Card>
                             <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
-                                <CardTitle className="text-sm font-medium">USDCx Balance</CardTitle>
+                                <CardTitle className="text-sm font-medium">STX Balance</CardTitle>
                                 <Wallet className="h-4 w-4 text-muted-foreground" />
                             </CardHeader>
                             <CardContent>

@@ -6,7 +6,7 @@ import { useParams } from 'next/navigation';
 import { motion } from 'framer-motion';
 import { fadeInUp, staggerContainer, defaultTransition } from '@/lib/animations';
 import { Navbar } from "@/components/navbar";
-import { getMarket, getUSDCxBalance, getUserPosition } from '@/lib/stacks-api';
+import { getMarket, getStxBalance, getUserPosition } from '@/lib/stacks-api';
 import { Footer } from "@/components/footer";
 import { blockToDate, formatResolutionDate } from '@/lib/date-utils';
 import { Button } from '@/components/ui/button';
@@ -50,7 +50,7 @@ export default function MarketPage() {
                     const address = userData.profile.stxAddress.testnet;
                     
                     const [balance, position] = await Promise.all([
-                        getUSDCxBalance(address),
+                        getStxBalance(address),
                         getUserPosition(address, marketId)
                     ]);
                     
@@ -79,18 +79,17 @@ export default function MarketPage() {
 
         setIsSubmitting(true);
         const config = getContractConfig();
-        const amountMicro = Math.floor(Number(betAmount) * 1000000); // USDCx is 6 decimals
+        const amountMicro = Math.floor(Number(betAmount) * 1000000); // STX in microstx
         
         try {
             const userData = userSession.loadUserData();
             const userAddress = userData.profile.stxAddress.testnet;
-            const [tokenAddr, tokenName] = config.usdcx.split('.');
             const outcome = selectedOutcome === 'YES';
 
-            // Define post-condition: user sends exactly amountMicro to the contract
+            // Define post-condition: user sends exactly amountMicro STX to the contract
             const postCondition = Pc.principal(userAddress)
                 .willSendEq(amountMicro)
-                .ft(`${tokenAddr}.${tokenName}`, 'usdcx');
+                .ustx();
             
             await doContractCall({
                 contractAddress: config.deployer,
@@ -99,8 +98,7 @@ export default function MarketPage() {
                 functionArgs: [
                     Cl.uint(marketId),
                     Cl.bool(outcome),
-                    Cl.uint(amountMicro),
-                    Cl.contractPrincipal(tokenAddr, tokenName)
+                    Cl.uint(amountMicro)
                 ],
                 postConditions: [postCondition],
                 postConditionMode: PostConditionMode.Deny,
@@ -111,7 +109,7 @@ export default function MarketPage() {
                     setBetAmount('');
                     // Update balance after a short delay
                     setTimeout(async () => {
-                        const newBalance = await getUSDCxBalance(userAddress);
+                        const newBalance = await getStxBalance(userAddress);
                         setUserBalance(newBalance);
                     }, 4000);
                 },
@@ -134,15 +132,13 @@ export default function MarketPage() {
         try {
             const userData = userSession.loadUserData();
             const userAddress = userData.profile.stxAddress.testnet;
-            const [tokenAddr, tokenName] = config.usdcx.split('.');
 
             await doContractCall({
                 contractAddress: config.deployer,
                 contractName: config.predictionMarket,
                 functionName: 'claim-winnings',
                 functionArgs: [
-                    Cl.uint(marketId),
-                    Cl.contractPrincipal(tokenAddr, tokenName)
+                    Cl.uint(marketId)
                 ],
                 postConditionMode: PostConditionMode.Allow,
                 anchorMode: AnchorMode.Any,
@@ -150,7 +146,7 @@ export default function MarketPage() {
                     toast.success("Winnings claimed! Processing...");
                     setTimeout(async () => {
                         const [newBalance, newPosition] = await Promise.all([
-                            getUSDCxBalance(userAddress),
+                            getStxBalance(userAddress),
                             getUserPosition(userAddress, marketId)
                         ]);
                         setUserBalance(newBalance);
@@ -315,7 +311,7 @@ export default function MarketPage() {
                                     Place Bet
                                 </CardTitle>
                                 <CardDescription>
-                                    Predict the outcome with USDCx
+                                    Predict the outcome with STX
                                 </CardDescription>
                             </CardHeader>
                             <CardContent className="space-y-6">
@@ -340,7 +336,7 @@ export default function MarketPage() {
                                     <div className="flex justify-between text-sm">
                                         <label className="font-medium">Amount</label>
                                         <span className="text-muted-foreground">
-                                            Balance: {userBalance !== null ? `${userBalance.toLocaleString()} USDCx` : '--'}
+                                            Balance: {userBalance !== null ? `${userBalance.toLocaleString()} STX` : '--'}
                                         </span>
                                     </div>
                                     <div className="relative">
