@@ -14,15 +14,11 @@
     "deploy:testnet": "clarinet deployment generate --testnet && clarinet deployment apply --testnet",
     "deploy:mainnet": "clarinet deployment generate --mainnet && clarinet deployment apply --mainnet",
     "check": "clarinet check",
-    "console": "clarinet console",
-    "chainhook:build": "tsc --project tsconfig.chainhook.json",
-    "chainhook:start": "tsc --project chainhooks/tsconfig.chainhook.json --skipLibCheck && DOTENV_CONFIG_PATH=chainhooks/.env node --require dotenv/config dist/chainhooks/observer.js",
-    "observer:start": "tsc --project chainhooks/tsconfig.chainhook.json --skipLibCheck && DOTENV_CONFIG_PATH=chainhooks/.env node --require dotenv/config dist/chainhooks/observer-polling.js"
+    "console": "clarinet console"
   },
   "author": "",
   "license": "MIT",
   "dependencies": {
-    "@hirosystems/chainhook-client": "^2.4.0",
     "@hirosystems/clarinet-sdk": "^3.0.0",
     "@sinclair/typebox": "^0.32.35",
     "@stacks/network": "^7.3.1",
@@ -43,10 +39,5 @@
   "devDependencies": {
     "@stacks/wallet-sdk": "^7.2.0",
     "ts-node": "^10.9.2"
-  },
-  "overrides": {
-    "@hirosystems/chainhook-client": {
-      "@sinclair/typebox": "0.32.35"
-    }
   }
 }
