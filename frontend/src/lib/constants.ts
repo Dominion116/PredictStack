@@ -36,20 +36,14 @@ export const CONTRACTS = {
   testnet: {
     deployer: DEPLOYER_TESTNET,
     predictionMarket: 'prediction-market-v6',
-    usdcx: `${DEPLOYER_TESTNET}.usdcx-v1`, 
-    sip010Trait: 'sip010-trait-v1',
   },
   mainnet: {
     deployer: DEPLOYER_MAINNET,
     predictionMarket: 'prediction-market-v3',
-    usdcx: 'SP120SBRBQJ00MCWS7TM5R8WJNTTKD5K0HFRC2CNE.usdcx',
-    sip010Trait: 'sip010-trait',
   },
   devnet: {
     deployer: 'ST1PQHQKV0RJXZFY1DGX8MNSNYVE3VGZJSRTPGZGM',
     predictionMarket: 'prediction-market-v4',
-    usdcx: 'ST1PQHQKV0RJXZFY1DGX8MNSNYVE3VGZJSRTPGZGM.usdcx',
-    sip010Trait: 'sip010-trait',
   }
 };
 
