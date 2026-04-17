@@ -101,7 +101,7 @@ export default function Home() {
                 </div>
                 <span className="font-semibold text-lg">1. Connect & Fund</span>
                 <p className="mt-1 text-[15px] text-foreground/80">
-                  Connect your Stacks wallet and bridge USDC from Ethereum to get USDCx tokens for betting.
+                  Connect your Stacks wallet and fund it with STX to start betting.
                 </p>
               </motion.div>
 
@@ -135,7 +135,7 @@ export default function Home() {
                 </div>
                 <span className="font-semibold text-lg">3. Win & Withdraw</span>
                 <p className="mt-1 text-[15px] text-foreground/80">
-                  When markets resolve, winnings are automatically sent to your wallet. Withdraw anytime.
+                  When markets resolve, winnings are automatically sent to your wallet in STX.
                 </p>
               </motion.div>
             </div>
@@ -174,7 +174,7 @@ export default function Home() {
                   What is PredictStack?
                 </AccordionTrigger>
                 <AccordionContent className="text-base text-muted-foreground">
-                  PredictStack is a decentralized prediction market platform built on Stacks. Users can bet on future events using USDCx tokens, with all transactions secured by Bitcoin through Stacks&apos; Proof-of-Transfer consensus.
+                  PredictStack is a decentralized prediction market platform built on Stacks. Users can bet on future events using STX, with all transactions secured by Bitcoin through Stacks&apos; Proof-of-Transfer consensus.
                 </AccordionContent>
               </AccordionItem>
 
@@ -183,16 +183,16 @@ export default function Home() {
                   How do I get started?
                 </AccordionTrigger>
                 <AccordionContent className="text-base text-muted-foreground">
-                  First, connect a Stacks wallet like Leather or Xverse. Then, bridge some USDC to get USDCx tokens. Finally, browse our markets and place your first prediction!
+                  First, connect a Stacks wallet like Leather or Xverse and make sure you have STX. Then browse markets and place your first prediction.
                 </AccordionContent>
               </AccordionItem>
 
               <AccordionItem value="question-2">
                 <AccordionTrigger className="text-left text-lg">
-                  What is USDCx?
+                  What token is used for betting?
                 </AccordionTrigger>
                 <AccordionContent className="text-base text-muted-foreground">
-                  USDCx is a bridged version of USDC on the Stacks blockchain. It maintains a 1:1 peg with USDC and can be bridged back to Ethereum at any time through our bridge interface.
+                  PredictStack uses native STX for all bets, payouts, and refunds.
                 </AccordionContent>
               </AccordionItem>
 
@@ -255,7 +255,7 @@ export default function Home() {
               transition={{ ...defaultTransition, delay: 0.2 }}
             >
               Join thousands of users making predictions on PredictStack. 
-              Start with as little as $1 USDCx.
+              Start with as little as 1 STX.
             </motion.p>
             <motion.div 
               className="mt-8 flex flex-col gap-4 sm:flex-row"
