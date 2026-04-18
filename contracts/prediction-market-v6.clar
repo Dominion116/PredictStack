@@ -37,7 +37,6 @@
 ;; CONSTANTS - PLATFORM CONFIGURATION
 ;; ============================================================================
 
-(define-constant MAX-FEE-BPS u1000)           ;; Max 10% fee
 (define-constant BPS-DENOMINATOR u10000)      ;; Basis points denominator
 (define-constant STATUS-ACTIVE u0)
 (define-constant STATUS-RESOLVED u1)
@@ -58,8 +57,9 @@
 (define-data-var platform-admin principal tx-sender)
 (define-data-var platform-oracle principal tx-sender)
 (define-data-var platform-treasury principal tx-sender)
-(define-data-var platform-fee-bps uint u200)      ;; 2% default fee
-(define-data-var min-bet-amount uint u1000000)    ;; 1 STX (microstx)
+(define-data-var platform-fee-amount uint u10000) ;; 0.01 STX fixed fee per bet
+(define-data-var min-bet-amount uint u20000)      ;; 0.02 STX (microstx)
+(define-data-var max-bet-amount uint u100000)     ;; 0.1 STX (microstx)
 (define-data-var platform-paused bool false)
 
 ;; Platform statistics
@@ -180,19 +180,22 @@
   (admin principal)
   (oracle principal)
   (treasury principal)
-  (fee-bps uint)
+  (fee-amount uint)
   (min-bet uint)
+  (max-bet uint)
 )
   (begin
     (asserts! (not (var-get contract-initialized)) ERR-ALREADY-INITIALIZED)
-    (asserts! (<= fee-bps MAX-FEE-BPS) ERR-INVALID-AMOUNT)
-    (asserts! (>= min-bet u1000000) ERR-INVALID-AMOUNT)
+    (asserts! (>= min-bet u20000) ERR-INVALID-AMOUNT)
+    (asserts! (>= max-bet min-bet) ERR-INVALID-AMOUNT)
+    (asserts! (<= fee-amount min-bet) ERR-INVALID-AMOUNT)
     
     (var-set platform-admin admin)
     (var-set platform-oracle oracle)
     (var-set platform-treasury treasury)
-    (var-set platform-fee-bps fee-bps)
+    (var-set platform-fee-amount fee-amount)
     (var-set min-bet-amount min-bet)
+    (var-set max-bet-amount max-bet)
     (var-set contract-initialized true)
     
     (print {
@@ -200,8 +203,9 @@
       admin: admin,
       oracle: oracle,
       treasury: treasury,
-      fee-bps: fee-bps,
+      fee-amount: fee-amount,
       min-bet: min-bet,
+      max-bet: max-bet,
       block-height: block-height
     })
     
@@ -210,18 +214,18 @@
 )
 
 ;; Update platform fee (admin only)
-(define-public (set-platform-fee (new-fee-bps uint))
+(define-public (set-platform-fee (new-fee-amount uint))
   (begin
     (asserts! (var-get contract-initialized) ERR-NOT-INITIALIZED)
     (asserts! (is-admin) ERR-NOT-AUTHORIZED)
-    (asserts! (<= new-fee-bps MAX-FEE-BPS) ERR-INVALID-AMOUNT)
+    (asserts! (<= new-fee-amount (var-get min-bet-amount)) ERR-INVALID-AMOUNT)
     
-    (let ((old-fee (var-get platform-fee-bps)))
-      (var-set platform-fee-bps new-fee-bps)
+    (let ((old-fee (var-get platform-fee-amount)))
+      (var-set platform-fee-amount new-fee-amount)
       (print {
         event: "fee-updated",
         old-fee: old-fee,
-        new-fee: new-fee-bps,
+        new-fee: new-fee-amount,
         updated-by: tx-sender
       })
     )
@@ -285,12 +289,29 @@
   (begin
     (asserts! (var-get contract-initialized) ERR-NOT-INITIALIZED)
     (asserts! (is-admin) ERR-NOT-AUTHORIZED)
-    (asserts! (>= new-min-bet u1000000) ERR-INVALID-AMOUNT)
+    (asserts! (>= new-min-bet u20000) ERR-INVALID-AMOUNT)
+    (asserts! (<= new-min-bet (var-get max-bet-amount)) ERR-INVALID-AMOUNT)
     
     (var-set min-bet-amount new-min-bet)
     (print {
       event: "min-bet-updated",
       new-min-bet: new-min-bet
+    })
+    (ok true)
+  )
+)
+
+;; Update maximum bet amount (admin only)
+(define-public (set-max-bet-amount (new-max-bet uint))
+  (begin
+    (asserts! (var-get contract-initialized) ERR-NOT-INITIALIZED)
+    (asserts! (is-admin) ERR-NOT-AUTHORIZED)
+    (asserts! (>= new-max-bet (var-get min-bet-amount)) ERR-INVALID-AMOUNT)
+
+    (var-set max-bet-amount new-max-bet)
+    (print {
+      event: "max-bet-updated",
+      new-max-bet: new-max-bet
     })
     (ok true)
   )
@@ -473,9 +494,19 @@
     (asserts! (is-eq (get status market) STATUS-ACTIVE) ERR-MARKET-RESOLVED)
     (asserts! (< block-height (get resolve-date market)) ERR-DEADLINE-PASSED)
     (asserts! (>= amount (var-get min-bet-amount)) ERR-INVALID-AMOUNT)
+    (asserts! (<= amount (var-get max-bet-amount)) ERR-INVALID-AMOUNT)
     
-    ;; Transfer STX from user to contract
-    (try! (stx-transfer? amount tx-sender (as-contract tx-sender)))
+    ;; Transfer stake + fixed protocol fee from user to contract
+    (try! (stx-transfer? (+ amount (var-get platform-fee-amount)) tx-sender (as-contract tx-sender)))
+
+    ;; Forward protocol fee to treasury immediately
+    (if (> (var-get platform-fee-amount) u0)
+      (begin
+        (try! (as-contract (stx-transfer? (var-get platform-fee-amount) tx-sender (var-get platform-treasury))))
+        (var-set total-fees-collected (+ (var-get total-fees-collected) (var-get platform-fee-amount)))
+      )
+      true
+    )
     
     ;; Update user position
     (map-set user-positions
@@ -554,12 +585,10 @@
         (
           ;; Calculate user's share of losing pool
           (user-share (safe-mul-div user-winning-stake losing-pool winning-pool))
-          ;; Calculate platform fee
-          (platform-fee (safe-mul-div user-share (var-get platform-fee-bps) BPS-DENOMINATOR))
-          ;; Net winnings after fee
-          (net-winnings (- user-share platform-fee))
-          ;; Total payout = original stake + net winnings
-          (total-payout (+ user-winning-stake net-winnings))
+            ;; Net winnings (protocol fee is charged at bet time)
+            (net-winnings user-share)
+            ;; Total payout = original stake + winnings share
+            (total-payout (+ user-winning-stake user-share))
         )
         ;; Mark position as claimed BEFORE transfers
         (map-set user-positions
@@ -567,17 +596,8 @@
           (merge position { claimed: true })
         )
         
-        ;; Update total fees collected
-        (var-set total-fees-collected (+ (var-get total-fees-collected) platform-fee))
-        
         ;; Transfer winnings to user
         (try! (as-contract (stx-transfer? total-payout tx-sender claimer)))
-        
-        ;; Transfer platform fee to treasury
-        (if (> platform-fee u0)
-          (try! (as-contract (stx-transfer? platform-fee tx-sender (var-get platform-treasury))))
-          true
-        )
         
         (print {
           event: "winnings-claimed",
@@ -585,7 +605,7 @@
           user: claimer,
           winning-stake: user-winning-stake,
           profit-share: user-share,
-          platform-fee: platform-fee,
+          platform-fee: u0,
           net-winnings: net-winnings,
           total-payout: total-payout,
           block-height: block-height
@@ -730,9 +750,9 @@
           (safe-mul-div bet-amount losing-pool winning-pool)
           u0
         ))
-        (platform-fee (safe-mul-div user-share (var-get platform-fee-bps) BPS-DENOMINATOR))
-        (net-profit (- user-share platform-fee))
-        (total-payout (+ bet-amount net-profit))
+        (entry-fee (var-get platform-fee-amount))
+        (net-profit user-share)
+        (total-payout (+ bet-amount user-share))
         (roi-bps (if (> bet-amount u0)
           (safe-mul-div net-profit BPS-DENOMINATOR bet-amount)
           u0
@@ -743,7 +763,7 @@
         outcome: outcome,
         potential-profit: net-profit,
         potential-payout: total-payout,
-        platform-fee: platform-fee,
+        entry-fee: entry-fee,
         roi-bps: roi-bps,
         current-yes-pool: current-yes-pool,
         current-no-pool: current-no-pool
@@ -759,8 +779,9 @@
     total-markets: (var-get total-markets-created),
     total-volume: (var-get total-volume),
     total-fees-collected: (var-get total-fees-collected),
-    platform-fee-bps: (var-get platform-fee-bps),
+    platform-fee-amount: (var-get platform-fee-amount),
     min-bet-amount: (var-get min-bet-amount),
+    max-bet-amount: (var-get max-bet-amount),
     platform-paused: (var-get platform-paused)
   })
 )
@@ -771,8 +792,9 @@
     admin: (var-get platform-admin),
     oracle: (var-get platform-oracle),
     treasury: (var-get platform-treasury),
-    fee-bps: (var-get platform-fee-bps),
+    fee-amount: (var-get platform-fee-amount),
     min-bet-amount: (var-get min-bet-amount),
+    max-bet-amount: (var-get max-bet-amount),
     paused: (var-get platform-paused),
     initialized: (var-get contract-initialized)
   })

@@ -7,8 +7,8 @@
     "test": "vitest run",
     "test:report": "vitest run -- --coverage --costs",
     "test:watch": "chokidar \"tests/**/*.ts\" \"contracts/**/*.clar\" -c \"npm run test:report\"",
-    "deploy:testnet": "clarinet deployment generate --testnet && clarinet deployment apply --testnet",
-    "deploy:mainnet": "clarinet deployment generate --mainnet && clarinet deployment apply --mainnet",
+    "deploy:testnet": "clarinet deployments generate --testnet --medium-cost && clarinet deployments apply --testnet --use-on-disk-deployment-plan --no-dashboard",
+    "deploy:mainnet": "clarinet deployments generate --mainnet --medium-cost && clarinet deployments apply --mainnet --use-on-disk-deployment-plan --no-dashboard",
     "check": "clarinet check",
     "console": "clarinet console"
   },

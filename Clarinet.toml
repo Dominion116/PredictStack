@@ -5,8 +5,8 @@ authors = []
 telemetry = true
 cache_dir = "./.cache"
 
-# Main Prediction Market Contract V6 (Latest)
-[contracts.prediction-market-v6]
+# Main Prediction Market Contract V7 (Latest)
+[contracts.prediction-market-v7]
 path = "contracts/prediction-market-v6.clar"
 
 [repl.analysis]
