@@ -25,6 +25,10 @@ import {
     Pc
 } from '@stacks/transactions';
 
+const MIN_BET_STX = 0.02;
+const MAX_BET_STX = 0.1;
+const FIXED_FEE_STX = 0.01;
+
 export default function MarketPage() {
     const params = useParams();
     const marketId = Number(params.id);
@@ -77,18 +81,24 @@ export default function MarketPage() {
             return;
         }
 
+        if (Number(betAmount) < MIN_BET_STX || Number(betAmount) > MAX_BET_STX) {
+            toast.error(`Bet amount must be between ${MIN_BET_STX} and ${MAX_BET_STX} STX`);
+            return;
+        }
+
         setIsSubmitting(true);
         const config = getContractConfig();
         const amountMicro = Math.floor(Number(betAmount) * 1000000); // STX in microstx
+        const totalMicro = amountMicro + Math.floor(FIXED_FEE_STX * 1000000);
         
         try {
             const userData = userSession.loadUserData();
             const userAddress = userData.profile.stxAddress.testnet;
             const outcome = selectedOutcome === 'YES';
 
-            // Define post-condition: user sends exactly amountMicro STX to the contract
+            // User sends stake plus fixed protocol fee to the contract
             const postCondition = Pc.principal(userAddress)
-                .willSendEq(amountMicro)
+                .willSendEq(totalMicro)
                 .ustx();
             
             await doContractCall({
@@ -340,23 +350,33 @@ export default function MarketPage() {
                                         </span>
                                     </div>
                                     <div className="relative">
-                                        <span className="absolute left-3 top-1/2 -translate-y-1/2 text-muted-foreground">$</span>
+                                        <span className="absolute left-3 top-1/2 -translate-y-1/2 text-muted-foreground">STX</span>
                                         <Input 
                                             type="number" 
                                             placeholder="0.00" 
                                             className="pl-7 text-lg h-12"
                                             value={betAmount}
+                                            min={MIN_BET_STX}
+                                            max={MAX_BET_STX}
+                                            step="0.01"
                                             onChange={(e) => setBetAmount(e.target.value)}
                                         />
                                     </div>
+                                    <p className="text-xs text-muted-foreground">
+                                        Bet range: {MIN_BET_STX} to {MAX_BET_STX} STX. Fixed fee: {FIXED_FEE_STX} STX.
+                                    </p>
                                 </div>
 
                                 <div className="bg-muted/50 rounded-lg p-4 space-y-2 text-sm">
                                     <div className="flex justify-between">
                                         <span className="text-muted-foreground">Potential Payout</span>
                                         <span className="font-semibold">
-                                            ${(Number(betAmount || 0) * Number(selectedOutcome === 'YES' ? yesMultiplier : noMultiplier)).toFixed(2)}
+                                            {(Number(betAmount || 0) * Number(selectedOutcome === 'YES' ? yesMultiplier : noMultiplier)).toFixed(4)} STX
                                         </span>
+                                    </div>
+                                    <div className="flex justify-between">
+                                        <span className="text-muted-foreground">Fixed Fee</span>
+                                        <span className="font-semibold">{FIXED_FEE_STX.toFixed(2)} STX</span>
                                     </div>
                                     <div className="flex justify-between">
                                         <span className="text-muted-foreground">Est. ROI</span>
@@ -396,11 +416,11 @@ export default function MarketPage() {
                                 <CardContent className="space-y-3">
                                     <div className="flex justify-between text-sm">
                                         <span className="text-muted-foreground">YES Position</span>
-                                        <span className="font-semibold">${(Number(userPosition['yes-amount']) / 1000000).toLocaleString()}</span>
+                                        <span className="font-semibold">{(Number(userPosition['yes-amount']) / 1000000).toLocaleString()} STX</span>
                                     </div>
                                     <div className="flex justify-between text-sm">
                                         <span className="text-muted-foreground">NO Position</span>
-                                        <span className="font-semibold">${(Number(userPosition['no-amount']) / 1000000).toLocaleString()}</span>
+                                        <span className="font-semibold">{(Number(userPosition['no-amount']) / 1000000).toLocaleString()} STX</span>
                                     </div>
                                     
                                     {/* Claim Section */}

@@ -1,7 +1,7 @@
 import { describe, expect, it } from "vitest";
 import { Cl, cvToString } from "@stacks/transactions";
 
-const CONTRACT = "prediction-market-v6";
+const CONTRACT = "prediction-market-v7";
 
 describe("prediction-market-v6 (STX-native)", () => {
   it("allows placing a bet and claiming winnings after resolution", () => {
@@ -17,8 +17,9 @@ describe("prediction-market-v6 (STX-native)", () => {
         Cl.standardPrincipal(deployer),
         Cl.standardPrincipal(deployer),
         Cl.standardPrincipal(deployer),
-        Cl.uint(200),
-        Cl.uint(1_000_000),
+        Cl.uint(10_000),
+        Cl.uint(20_000),
+        Cl.uint(100_000),
       ],
       deployer
     );
@@ -40,7 +41,7 @@ describe("prediction-market-v6 (STX-native)", () => {
     const betYes = simnet.callPublicFn(
       CONTRACT,
       "place-bet",
-      [Cl.uint(1), Cl.bool(true), Cl.uint(2_000_000)],
+      [Cl.uint(1), Cl.bool(true), Cl.uint(100_000)],
       wallet1
     );
     expect(cvToString(betYes.result)).toBe("(ok true)");
@@ -48,7 +49,7 @@ describe("prediction-market-v6 (STX-native)", () => {
     const betNo = simnet.callPublicFn(
       CONTRACT,
       "place-bet",
-      [Cl.uint(1), Cl.bool(false), Cl.uint(1_000_000)],
+      [Cl.uint(1), Cl.bool(false), Cl.uint(50_000)],
       wallet2
     );
     expect(cvToString(betNo.result)).toBe("(ok true)");
@@ -70,7 +71,7 @@ describe("prediction-market-v6 (STX-native)", () => {
       wallet1
     );
 
-    expect(cvToString(claim.result)).toBe("(ok u2980000)");
+    expect(cvToString(claim.result)).toBe("(ok u150000)");
   });
 
   it("returns refunds when an active market is cancelled", () => {
@@ -85,8 +86,9 @@ describe("prediction-market-v6 (STX-native)", () => {
         Cl.standardPrincipal(deployer),
         Cl.standardPrincipal(deployer),
         Cl.standardPrincipal(deployer),
-        Cl.uint(200),
-        Cl.uint(1_000_000),
+        Cl.uint(10_000),
+        Cl.uint(20_000),
+        Cl.uint(100_000),
       ],
       deployer
     );
@@ -108,7 +110,7 @@ describe("prediction-market-v6 (STX-native)", () => {
     const bet = simnet.callPublicFn(
       CONTRACT,
       "place-bet",
-      [Cl.uint(1), Cl.bool(true), Cl.uint(3_000_000)],
+      [Cl.uint(1), Cl.bool(true), Cl.uint(80_000)],
       wallet1
     );
     expect(cvToString(bet.result)).toBe("(ok true)");
@@ -127,6 +129,6 @@ describe("prediction-market-v6 (STX-native)", () => {
       [Cl.uint(1)],
       wallet1
     );
-    expect(cvToString(refund.result)).toBe("(ok u3000000)");
+    expect(cvToString(refund.result)).toBe("(ok u80000)");
   });
 });

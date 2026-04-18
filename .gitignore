@@ -33,9 +33,6 @@ coverage/
 .DS_Store
 
 # Environment & Documentation
-.env
-.env
-.env.*
 !.env.example
 # *.md
 !README.md
@@ -47,7 +44,6 @@ transactions.json
 .agent/
 
 # Secrets
-.env
-.env.local
 *.env
 dist/
+config.bat
