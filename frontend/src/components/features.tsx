@@ -46,6 +46,7 @@ const features = [
   {
     icon: Users,
     title: "Community-Driven",
+    comingSoon: true,
     description:
       "Create your own markets, participate in governance, and earn rewards for contributing to the platform.",
   },
@@ -85,7 +86,14 @@ const Features = () => {
               <div className="mb-4 flex h-10 w-10 items-center justify-center rounded-full bg-primary/10">
                 <feature.icon className="size-5 text-primary" />
               </div>
-              <span className="font-semibold text-lg">{feature.title}</span>
+              <div className="flex items-center gap-2">
+                <span className="font-semibold text-lg">{feature.title}</span>
+                {feature.comingSoon ? (
+                  <Badge variant="outline" className="rounded-full px-2 py-0 text-[10px] uppercase tracking-wide">
+                    Coming Soon
+                  </Badge>
+                ) : null}
+              </div>
               <p className="mt-1 text-[15px] text-foreground/80">
                 {feature.description}
               </p>
