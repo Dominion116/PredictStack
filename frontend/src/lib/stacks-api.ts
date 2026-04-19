@@ -2,7 +2,8 @@ import {
     fetchCallReadOnlyFunction,
     cvToJSON,
     uintCV,
-    principalCV
+    principalCV,
+    boolCV
 } from '@stacks/transactions';
 import { 
     STACKS_TESTNET,
@@ -387,5 +388,97 @@ export async function getLeaderboardData(limit: number = 15): Promise<Leaderboar
     } catch (error) {
         console.error("Error fetching leaderboard data:", error);
         return [];
+    }
+}
+
+// -----------------------------------
+// QUOTE FUNCTIONS
+// -----------------------------------
+
+interface QuotePrice {
+    currentPriceBps: number;
+    postTradePriceBps: number;
+    priceImpactBps: number;
+}
+
+interface QuoteShares {
+    poolShareBps: number;
+    projectedProfit: number;
+    projectedPayout: number;
+    entryFee: number;
+}
+
+/**
+ * Gets a price quote for a hypothetical bet amount.
+ * Returns current price, post-trade price, and price impact in basis points.
+ */
+export async function getQuotePrice(
+    marketId: number,
+    outcome: boolean,
+    amountMicro: number
+): Promise<QuotePrice | null> {
+    try {
+        const response = await fetchCallReadOnlyFunction({
+            contractAddress: config.deployer,
+            contractName: config.predictionMarket,
+            functionName: 'quote-price',
+            functionArgs: [uintCV(marketId), 
+                           boolCV(outcome), 
+                           uintCV(amountMicro)],
+            network,
+            senderAddress: config.deployer,
+        });
+
+        const json: any = cvToJSON(response);
+        if (json.success && json.value && json.value.value) {
+            const quote = json.value.value;
+            return {
+                currentPriceBps: Number(extractValue(quote['current-price-bps']) || 0),
+                postTradePriceBps: Number(extractValue(quote['post-trade-price-bps']) || 0),
+                priceImpactBps: Number(extractValue(quote['price-impact-bps']) || 0),
+            };
+        }
+        return null;
+    } catch (error) {
+        console.error("Error fetching price quote:", error);
+        return null;
+    }
+}
+
+/**
+ * Gets a shares quote for a hypothetical bet amount.
+ * Returns pool share, projected profit, and payout if the side wins.
+ */
+export async function getQuoteShares(
+    marketId: number,
+    outcome: boolean,
+    amountMicro: number
+): Promise<QuoteShares | null> {
+    try {
+        const response = await fetchCallReadOnlyFunction({
+            contractAddress: config.deployer,
+            contractName: config.predictionMarket,
+            functionName: 'quote-shares',
+            functionArgs: [uintCV(marketId), 
+                           boolCV(outcome), 
+                           uintCV(amountMicro)],
+            network,
+            senderAddress: config.deployer,
+        });
+
+        const json: any = cvToJSON(response);
+        if (json.success && json.value && json.value.value) {
+            const quote = json.value.value;
+            return {
+                poolShareBps: Number(extractValue(quote['pool-share-bps']) || 0),
+                projectedProfit: Number(extractValue(quote['projected-profit']) || 0) / 1000000,
+                projectedPayout: Number(extractValue(quote['projected-payout']) || 0) / 1000000,
+                entryFee: Number(extractValue(quote['entry-fee']) || 0) / 1000000,
+            };
+        }
+        return null;
+    } catch (error) {
+        console.error("Error fetching shares quote:", error);
+        return null;
     }
 }

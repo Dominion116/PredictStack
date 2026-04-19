@@ -6,7 +6,7 @@ import { useParams } from 'next/navigation';
 import { motion } from 'framer-motion';
 import { fadeInUp, staggerContainer, defaultTransition } from '@/lib/animations';
 import { Navbar } from "@/components/navbar";
-import { getMarket, getStxBalance, getUserPosition } from '@/lib/stacks-api';
+import { getMarket, getStxBalance, getUserPosition, getQuotePrice, getQuoteShares } from '@/lib/stacks-api';
 import { Footer } from "@/components/footer";
 import { blockToDate, formatResolutionDate } from '@/lib/date-utils';
 import { Button } from '@/components/ui/button';
@@ -42,6 +42,9 @@ export default function MarketPage() {
     const [isSubmitting, setIsSubmitting] = useState(false);
     const [userBalance, setUserBalance] = useState<number | null>(null);
     const [userPosition, setUserPosition] = useState<any>(null);
+    const [quotePrice, setQuotePrice] = useState<any>(null);
+    const [quoteShares, setQuoteShares] = useState<any>(null);
+    const [quotesLoading, setQuotesLoading] = useState(false);
 
     useEffect(() => {
         const loadData = async () => {
@@ -70,6 +73,32 @@ export default function MarketPage() {
         };
         loadData();
     }, [marketId]);
+
+    // Fetch quotes when bet amount or outcome changes
+    useEffect(() => {
+        const fetchQuotes = async () => {
+            if (!market || !betAmount || isNaN(Number(betAmount))) {
+                setQuotePrice(null);
+                setQuoteShares(null);
+                return;
+            }
+
+            setQuotesLoading(true);
+            const amountMicro = Math.floor(Number(betAmount) * 1000000);
+            const outcome = selectedOutcome === 'YES';
+
+            const [price, shares] = await Promise.all([
+                getQuotePrice(marketId, outcome, amountMicro),
+                getQuoteShares(marketId, outcome, amountMicro)
+            ]);
+
+            setQuotePrice(price);
+            setQuoteShares(shares);
+            setQuotesLoading(false);
+        };
+
+        fetchQuotes();
+    }, [betAmount, selectedOutcome, market, marketId]);
 
     const handleBet = async () => {
         if (!isUserSignedIn()) {
@@ -381,21 +410,40 @@ export default function MarketPage() {
 
                                 <div className="bg-muted/50 rounded-lg p-4 space-y-2 text-sm">
                                     <div className="flex justify-between">
-                                        <span className="text-muted-foreground">Potential Payout</span>
+                                        <span className="text-muted-foreground">Current Price</span>
                                         <span className="font-semibold">
-                                            {(Number(betAmount || 0) * Number(selectedOutcome === 'YES' ? yesMultiplier : noMultiplier)).toFixed(4)} STX
+                                            {quotePrice ? `${(quotePrice.currentPriceBps / 100).toFixed(2)}%` : '--'}
+                                        </span>
+                                    </div>
+                                    <div className="flex justify-between">
+                                        <span className="text-muted-foreground">Post-Trade Price</span>
+                                        <span className={`font-semibold ${quotePrice && quotePrice.priceImpactBps > 0 ? 'text-orange-500' : ''}`}>
+                                            {quotePrice ? `${(quotePrice.postTradePriceBps / 100).toFixed(2)}%` : '--'}
+                                        </span>
+                                    </div>
+                                    {quotePrice && quotePrice.priceImpactBps > 0 && (
+                                        <div className="flex justify-between pt-2 border-t border-muted">
+                                            <span className="text-muted-foreground text-xs">Price Impact</span>
+                                            <span className="font-semibold text-orange-500 text-xs">
+                                                {(quotePrice.priceImpactBps / 100).toFixed(2)}%
+                                            </span>
+                                        </div>
+                                    )}
+                                    <div className="flex justify-between pt-2 border-t border-muted">
+                                        <span className="text-muted-foreground">Projected Payout</span>
+                                        <span className="font-semibold">
+                                            {quoteShares ? `${quoteShares.projectedPayout.toFixed(4)} STX` : '--'}
+                                        </span>
+                                    </div>
+                                    <div className="flex justify-between">
+                                        <span className="text-muted-foreground">Projected Profit</span>
+                                        <span className={`font-semibold ${quoteShares && quoteShares.projectedProfit > 0 ? 'text-green-500' : ''}`}>
+                                            {quoteShares ? `${quoteShares.projectedProfit.toFixed(4)} STX` : '--'}
                                         </span>
                                     </div>
                                     <div className="flex justify-between">
                                         <span className="text-muted-foreground">Fixed Fee</span>
                                         <span className="font-semibold">{FIXED_FEE_STX.toFixed(2)} STX</span>
-                                    </div>
-                                    <div className="flex justify-between">
-                                        <span className="text-muted-foreground">Est. ROI</span>
-                                        <span className={`font-semibold ${selectedOutcome === 'YES' ? 'text-green-500' : 'text-red-500'}`}>
-                                            +
-                                            {((Number(selectedOutcome === 'YES' ? yesMultiplier : noMultiplier) - 1) * 100).toFixed(0)}%
-                                        </span>
                                     </div>
                                 </div>
 
