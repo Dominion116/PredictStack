@@ -69,6 +69,7 @@ function NavbarContent() {
 
   const navLinks = [
     { href: '/markets', label: 'Markets' },
+    { href: '/dashboard', label: 'Dashboard' },
     { href: '/leaderboard', label: 'Leaderboard' },
     ...(isAdmin ? [{ href: '/admin', label: 'Admin' }] : []),
   ];
