@@ -81,6 +81,7 @@ function AdminDashboard() {
     const [markets, setMarkets] = useState<any[]>([]);
     const [loading, setLoading] = useState(true);
     const [processingId, setProcessingId] = useState<number | null>(null);
+    const [sidebarOpen, setSidebarOpen] = useState(true);
 
     // Form State
     const activeMarkets = markets.filter(m => m.status === 'active' || m.status === '0' || m.status === 0);
@@ -229,33 +230,56 @@ function AdminDashboard() {
         <main className="min-h-screen flex flex-col bg-background">
             <Navbar />
             
-            <div className="flex-1 flex flex-col md:flex-row">
+            <div className="flex-1 flex flex-col md:flex-row relative">
+                {/* Mobile/Desktop Sidebar Toggle */}
+                <Button
+                    onClick={() => setSidebarOpen(!sidebarOpen)}
+                    variant="ghost"
+                    size="icon"
+                    className="absolute top-4 left-4 z-50 md:hidden"
+                >
+                    {sidebarOpen ? <X className="h-5 w-5" /> : <Menu className="h-5 w-5" />}
+                </Button>
+
                 {/* Sidebar */}
                 <motion.aside 
-                    className="w-full md:w-64 border-r bg-muted/20 p-6 flex flex-col gap-6"
+                    className={`${sidebarOpen ? 'w-full md:w-64' : 'w-0 md:w-16'} border-r bg-muted/20 p-6 flex flex-col gap-6 overflow-hidden transition-all duration-300`}
                     initial={{ opacity: 0, x: -20 }}
                     animate={{ opacity: 1, x: 0 }}
                     transition={defaultTransition}
                 >
-                    <div className="font-semibold text-lg px-2">Admin Dashboard</div>
+                    <div className="flex items-center justify-between">
+                        {sidebarOpen && <div className="font-semibold text-lg px-2">Admin</div>}
+                        <Button
+                            onClick={() => setSidebarOpen(!sidebarOpen)}
+                            variant="ghost"
+                            size="icon"
+                            className="hidden md:inline-flex"
+                        >
+                            {sidebarOpen ? <X className="h-4 w-4" /> : <Menu className="h-4 w-4" />}
+                        </Button>
+                    </div>
                     <nav className="space-y-2">
-                         <button 
+                        <button 
                             onClick={() => setActiveTab('overview')}
                             className={`w-full text-left px-3 py-2 text-sm font-medium rounded-md transition-colors ${activeTab === 'overview' ? 'bg-primary/10 text-primary' : 'hover:bg-muted/50 text-muted-foreground'}`}
-                         >
-                            Overview
+                            title={!sidebarOpen ? 'Overview' : ''}
+                        >
+                            {sidebarOpen ? 'Overview' : '📊'}
                         </button>
                         <button 
                             onClick={() => setActiveTab('create')}
                             className={`w-full text-left px-3 py-2 text-sm font-medium rounded-md transition-colors flex justify-between items-center ${activeTab === 'create' ? 'bg-primary/10 text-primary' : 'hover:bg-muted/50 text-muted-foreground'}`}
+                            title={!sidebarOpen ? 'Create Market' : ''}
                         >
-                            Create Market
+                            {sidebarOpen ? 'Create Market' : '➕'}
                         </button>
                         <button 
                             onClick={() => setActiveTab('resolve')}
                             className={`w-full text-left px-3 py-2 text-sm font-medium rounded-md transition-colors ${activeTab === 'resolve' ? 'bg-primary/10 text-primary' : 'hover:bg-muted/50 text-muted-foreground'}`}
+                            title={!sidebarOpen ? 'Resolve Betting' : ''}
                         >
-                            Resolve Betting
+                            {sidebarOpen ? 'Resolve Betting' : '🏛️'}
                         </button>
                     </nav>
                 </motion.aside>
