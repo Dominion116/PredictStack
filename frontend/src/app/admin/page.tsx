@@ -20,12 +20,7 @@ import { Loader2, ShieldAlert, CheckCircle, XCircle, Gavel, Filter, Menu, X } fr
 import { Footer } from "@/components/footer";
 import { toast } from 'sonner';
 import { 
-    uintCV, 
-    trueCV, 
-    falseCV, 
-    stringAsciiCV,
-    someCV,
-    noneCV,
+    Cl,
     PostConditionMode
 } from '@stacks/transactions';
 
@@ -174,10 +169,10 @@ function AdminDashboard() {
                 contractName: config.predictionMarket,
                 functionName: 'create-market',
                 functionArgs: [
-                    stringAsciiCV(question),
-                    description ? someCV(stringAsciiCV(description)) : noneCV(),
-                    uintCV(estimatedBlock),
-                    imageUrl ? someCV(stringAsciiCV(imageUrl)) : noneCV(),
+                    Cl.stringAscii(question),
+                    description ? Cl.some(Cl.stringAscii(description)) : Cl.none(),
+                    Cl.uint(estimatedBlock),
+                    imageUrl ? Cl.some(Cl.stringAscii(imageUrl)) : Cl.none(),
                 ],
                 postConditionMode: PostConditionMode.Allow,
                 onFinish: (data) => {
@@ -209,7 +204,7 @@ function AdminDashboard() {
                 contractAddress: config.deployer,
                 contractName: config.predictionMarket,
                 functionName: 'resolve-market',
-                functionArgs: [uintCV(marketId), outcome ? trueCV() : falseCV()],
+                functionArgs: [Cl.uint(marketId), Cl.bool(outcome)],
                 postConditionMode: PostConditionMode.Allow,
                 onFinish: (data) => {
                     toast.success(`Market ${marketId} resolved as ${outcome ? 'YES' : 'NO'}!`);
