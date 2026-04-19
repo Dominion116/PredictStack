@@ -16,7 +16,7 @@ import { useConnect } from '@stacks/connect-react';
 import { getContractConfig, userSession, isUserSignedIn } from '@/lib/constants';
 import { getRecentMarkets } from '@/lib/stacks-api';
 import { blockToDate } from '@/lib/date-utils';
-import { Loader2, ShieldAlert, CheckCircle, XCircle, Gavel, Filter } from 'lucide-react';
+import { Loader2, ShieldAlert, CheckCircle, XCircle, Gavel, Filter, Menu, X } from 'lucide-react';
 import { Footer } from "@/components/footer";
 import { toast } from 'sonner';
 import { 
