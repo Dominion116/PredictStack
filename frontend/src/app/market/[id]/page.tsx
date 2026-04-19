@@ -28,6 +28,7 @@ import {
 const MIN_BET_STX = 0.02;
 const MAX_BET_STX = 0.1;
 const FIXED_FEE_STX = 0.01;
+const SLIPPAGE_TOLERANCE_BPS = 300; // 3%
 
 export default function MarketPage() {
     const params = useParams();
@@ -95,6 +96,16 @@ export default function MarketPage() {
             const userData = userSession.loadUserData();
             const userAddress = userData.profile.stxAddress.testnet;
             const outcome = selectedOutcome === 'YES';
+            const currentYesPoolMicro = Number(market?.['yes-pool'] ?? 0);
+            const currentNoPoolMicro = Number(market?.['no-pool'] ?? 0);
+            const postYesPoolMicro = outcome ? currentYesPoolMicro + amountMicro : currentYesPoolMicro;
+            const postNoPoolMicro = outcome ? currentNoPoolMicro : currentNoPoolMicro + amountMicro;
+            const postTotalPoolMicro = postYesPoolMicro + postNoPoolMicro;
+            const selectedPostPoolMicro = outcome ? postYesPoolMicro : postNoPoolMicro;
+            const selectedPostPriceBps = postTotalPoolMicro > 0
+                ? Math.floor((selectedPostPoolMicro * 10000) / postTotalPoolMicro)
+                : 5000;
+            const maxAcceptedPriceBps = Math.min(10000, selectedPostPriceBps + SLIPPAGE_TOLERANCE_BPS);
 
             // User sends stake plus fixed protocol fee to the contract
             const postCondition = Pc.principal(userAddress)
@@ -104,11 +115,12 @@ export default function MarketPage() {
             await doContractCall({
                 contractAddress: config.deployer,
                 contractName: config.predictionMarket,
-                functionName: 'place-bet',
+                functionName: 'place-bet-with-slippage',
                 functionArgs: [
                     Cl.uint(marketId),
                     Cl.bool(outcome),
-                    Cl.uint(amountMicro)
+                    Cl.uint(amountMicro),
+                    Cl.uint(maxAcceptedPriceBps)
                 ],
                 postConditions: [postCondition],
                 postConditionMode: PostConditionMode.Deny,

@@ -32,6 +32,7 @@
 (define-constant ERR-TRANSFER-FAILED (err u118))
 (define-constant ERR-ZERO-POOL (err u119))
 (define-constant ERR-MARKET-ACTIVE (err u120))
+(define-constant ERR-SLIPPAGE-EXCEEDED (err u121))
 
 ;; ============================================================================
 ;; CONSTANTS - PLATFORM CONFIGURATION
@@ -148,6 +149,109 @@
   (if (is-eq c u0)
     u0
     (/ (* a b) c)
+  )
+)
+
+;; Resolve outcome price in basis points (0-10000) from current pools
+(define-private (resolve-outcome-price-bps (yes-pool uint) (no-pool uint) (outcome bool))
+  (let ((total-pool (+ yes-pool no-pool)))
+    (if (is-eq total-pool u0)
+      (/ BPS-DENOMINATOR u2)
+      (if outcome
+        (/ (* yes-pool BPS-DENOMINATOR) total-pool)
+        (/ (* no-pool BPS-DENOMINATOR) total-pool)
+      )
+    )
+  )
+)
+
+;; Resolve selected outcome price after adding a bet amount
+(define-private (resolve-post-trade-price-bps (yes-pool uint) (no-pool uint) (outcome bool) (amount uint))
+  (let
+    (
+      (new-yes-pool (if outcome (+ yes-pool amount) yes-pool))
+      (new-no-pool (if outcome no-pool (+ no-pool amount)))
+    )
+    (resolve-outcome-price-bps new-yes-pool new-no-pool outcome)
+  )
+)
+
+;; Core bet execution path shared by all public bet entrypoints
+(define-private (execute-bet (market-id uint) (outcome bool) (amount uint) (max-price-bps uint))
+  (let
+    (
+      (market (unwrap! (map-get? markets { market-id: market-id }) ERR-MARKET-NOT-FOUND))
+      (existing-position (default-to
+        { yes-amount: u0, no-amount: u0, total-wagered: u0, last-bet-at: u0, claimed: false }
+        (map-get? user-positions { user: tx-sender, market-id: market-id })
+      ))
+      (post-trade-price-bps (resolve-post-trade-price-bps (get yes-pool market) (get no-pool market) outcome amount))
+      (new-yes-pool (if outcome (+ (get yes-pool market) amount) (get yes-pool market)))
+      (new-no-pool (if outcome (get no-pool market) (+ (get no-pool market) amount)))
+    )
+    (asserts! (var-get contract-initialized) ERR-NOT-INITIALIZED)
+    (asserts! (is-platform-active) ERR-PLATFORM-PAUSED)
+    (asserts! (is-eq (get status market) STATUS-ACTIVE) ERR-MARKET-RESOLVED)
+    (asserts! (< block-height (get resolve-date market)) ERR-DEADLINE-PASSED)
+    (asserts! (>= amount (var-get min-bet-amount)) ERR-INVALID-AMOUNT)
+    (asserts! (<= amount (var-get max-bet-amount)) ERR-INVALID-AMOUNT)
+    (asserts! (<= max-price-bps BPS-DENOMINATOR) ERR-INVALID-AMOUNT)
+    (asserts! (<= post-trade-price-bps max-price-bps) ERR-SLIPPAGE-EXCEEDED)
+
+    ;; Transfer stake + fixed protocol fee from user to contract
+    (try! (stx-transfer? (+ amount (var-get platform-fee-amount)) tx-sender (as-contract tx-sender)))
+
+    ;; Forward protocol fee to treasury immediately
+    (if (> (var-get platform-fee-amount) u0)
+      (begin
+        (try! (as-contract (stx-transfer? (var-get platform-fee-amount) tx-sender (var-get platform-treasury))))
+        (var-set total-fees-collected (+ (var-get total-fees-collected) (var-get platform-fee-amount)))
+      )
+      true
+    )
+
+    ;; Update user position
+    (map-set user-positions
+      { user: tx-sender, market-id: market-id }
+      {
+        yes-amount: (if outcome (+ (get yes-amount existing-position) amount) (get yes-amount existing-position)),
+        no-amount: (if outcome (get no-amount existing-position) (+ (get no-amount existing-position) amount)),
+        total-wagered: (+ (get total-wagered existing-position) amount),
+        last-bet-at: block-height,
+        claimed: false
+      }
+    )
+
+    ;; Update market pools
+    (map-set markets
+      { market-id: market-id }
+      (merge market {
+        yes-pool: new-yes-pool,
+        no-pool: new-no-pool,
+        total-bets: (+ (get total-bets market) u1)
+      })
+    )
+
+    ;; Add to user's market list
+    (add-market-to-user-list tx-sender market-id)
+
+    ;; Update platform volume
+    (var-set total-volume (+ (var-get total-volume) amount))
+
+    (print {
+      event: "bet-placed",
+      market-id: market-id,
+      user: tx-sender,
+      outcome: outcome,
+      amount: amount,
+      accepted-max-price-bps: max-price-bps,
+      execution-price-bps: post-trade-price-bps,
+      new-yes-pool: new-yes-pool,
+      new-no-pool: new-no-pool,
+      block-height: block-height
+    })
+
+    (ok true)
   )
 )
 
@@ -481,74 +585,18 @@
   (outcome bool) 
   (amount uint)
 )
-  (let
-    (
-      (market (unwrap! (map-get? markets { market-id: market-id }) ERR-MARKET-NOT-FOUND))
-      (existing-position (default-to 
-        { yes-amount: u0, no-amount: u0, total-wagered: u0, last-bet-at: u0, claimed: false }
-        (map-get? user-positions { user: tx-sender, market-id: market-id })
-      ))
-    )
-    (asserts! (var-get contract-initialized) ERR-NOT-INITIALIZED)
-    (asserts! (is-platform-active) ERR-PLATFORM-PAUSED)
-    (asserts! (is-eq (get status market) STATUS-ACTIVE) ERR-MARKET-RESOLVED)
-    (asserts! (< block-height (get resolve-date market)) ERR-DEADLINE-PASSED)
-    (asserts! (>= amount (var-get min-bet-amount)) ERR-INVALID-AMOUNT)
-    (asserts! (<= amount (var-get max-bet-amount)) ERR-INVALID-AMOUNT)
-    
-    ;; Transfer stake + fixed protocol fee from user to contract
-    (try! (stx-transfer? (+ amount (var-get platform-fee-amount)) tx-sender (as-contract tx-sender)))
+  (execute-bet market-id outcome amount BPS-DENOMINATOR)
+)
 
-    ;; Forward protocol fee to treasury immediately
-    (if (> (var-get platform-fee-amount) u0)
-      (begin
-        (try! (as-contract (stx-transfer? (var-get platform-fee-amount) tx-sender (var-get platform-treasury))))
-        (var-set total-fees-collected (+ (var-get total-fees-collected) (var-get platform-fee-amount)))
-      )
-      true
-    )
-    
-    ;; Update user position
-    (map-set user-positions
-      { user: tx-sender, market-id: market-id }
-      {
-        yes-amount: (if outcome (+ (get yes-amount existing-position) amount) (get yes-amount existing-position)),
-        no-amount: (if outcome (get no-amount existing-position) (+ (get no-amount existing-position) amount)),
-        total-wagered: (+ (get total-wagered existing-position) amount),
-        last-bet-at: block-height,
-        claimed: false
-      }
-    )
-    
-    ;; Update market pools
-    (map-set markets
-      { market-id: market-id }
-      (merge market {
-        yes-pool: (if outcome (+ (get yes-pool market) amount) (get yes-pool market)),
-        no-pool: (if outcome (get no-pool market) (+ (get no-pool market) amount)),
-        total-bets: (+ (get total-bets market) u1)
-      })
-    )
-    
-    ;; Add to user's market list
-    (add-market-to-user-list tx-sender market-id)
-    
-    ;; Update platform volume
-    (var-set total-volume (+ (var-get total-volume) amount))
-    
-    (print {
-      event: "bet-placed",
-      market-id: market-id,
-      user: tx-sender,
-      outcome: outcome,
-      amount: amount,
-      new-yes-pool: (if outcome (+ (get yes-pool market) amount) (get yes-pool market)),
-      new-no-pool: (if outcome (get no-pool market) (+ (get no-pool market) amount)),
-      block-height: block-height
-    })
-    
-    (ok true)
-  )
+;; Place a bet with slippage protection on the selected side price.
+;; max-price-bps is the maximum acceptable post-trade price (in basis points).
+(define-public (place-bet-with-slippage
+  (market-id uint)
+  (outcome bool)
+  (amount uint)
+  (max-price-bps uint)
+)
+  (execute-bet market-id outcome amount max-price-bps)
 )
 
 ;; ============================================================================
@@ -767,6 +815,78 @@
         roi-bps: roi-bps,
         current-yes-pool: current-yes-pool,
         current-no-pool: current-no-pool
+      })
+    )
+    ERR-MARKET-NOT-FOUND
+  )
+)
+
+;; Quote current side price and post-trade side price for a hypothetical amount.
+;; Prices are expressed in basis points (0-10000).
+(define-read-only (quote-price
+  (market-id uint)
+  (outcome bool)
+  (amount uint)
+)
+  (match (map-get? markets { market-id: market-id })
+    market (let
+      (
+        (yes-pool (get yes-pool market))
+        (no-pool (get no-pool market))
+        (current-price-bps (resolve-outcome-price-bps yes-pool no-pool outcome))
+        (post-trade-price-bps (resolve-post-trade-price-bps yes-pool no-pool outcome amount))
+      )
+      (ok {
+        market-id: market-id,
+        outcome: outcome,
+        amount: amount,
+        current-price-bps: current-price-bps,
+        post-trade-price-bps: post-trade-price-bps,
+        price-impact-bps: (if (>= post-trade-price-bps current-price-bps)
+          (- post-trade-price-bps current-price-bps)
+          u0
+        )
+      })
+    )
+    ERR-MARKET-NOT-FOUND
+  )
+)
+
+;; Quote effective pool share and payout projection if selected outcome wins.
+;; This model is escrow-backed (winner share of losing pool), no external treasury.
+(define-read-only (quote-shares
+  (market-id uint)
+  (outcome bool)
+  (amount uint)
+)
+  (match (map-get? markets { market-id: market-id })
+    market (let
+      (
+        (current-yes-pool (get yes-pool market))
+        (current-no-pool (get no-pool market))
+        (new-yes-pool (if outcome (+ current-yes-pool amount) current-yes-pool))
+        (new-no-pool (if outcome current-no-pool (+ current-no-pool amount)))
+        (winning-pool (if outcome new-yes-pool new-no-pool))
+        (losing-pool (if outcome new-no-pool new-yes-pool))
+        (pool-share-bps (if (> winning-pool u0)
+          (safe-mul-div amount BPS-DENOMINATOR winning-pool)
+          u0
+        ))
+        (projected-profit (if (> winning-pool u0)
+          (safe-mul-div amount losing-pool winning-pool)
+          u0
+        ))
+      )
+      (ok {
+        market-id: market-id,
+        outcome: outcome,
+        amount: amount,
+        pool-share-bps: pool-share-bps,
+        projected-profit: projected-profit,
+        projected-payout: (+ amount projected-profit),
+        entry-fee: (var-get platform-fee-amount),
+        post-yes-pool: new-yes-pool,
+        post-no-pool: new-no-pool
       })
     )
     ERR-MARKET-NOT-FOUND
