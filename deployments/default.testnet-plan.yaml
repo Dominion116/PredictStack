@@ -14,5 +14,5 @@ plan:
           cost: 316200
             path: contracts/prediction-market-v6.clar
             anchor-block-only: true
-          clarity-version: 2
-        epoch: "2.1"
+          clarity-version: 1
+        epoch: "2.05"
