@@ -26,6 +26,7 @@ import {
     stringAsciiCV,
     someCV,
     noneCV,
+    serializeCV,
     PostConditionMode
 } from '@stacks/transactions';
 
@@ -174,10 +175,10 @@ function AdminDashboard() {
                 contractName: config.predictionMarket,
                 functionName: 'create-market',
                 functionArgs: [
-                    stringAsciiCV(question),
-                    description ? someCV(stringAsciiCV(description)) : noneCV(),
-                    uintCV(estimatedBlock),
-                    imageUrl ? someCV(stringAsciiCV(imageUrl)) : noneCV(),
+                    serializeCV(stringAsciiCV(question)),
+                    serializeCV(description ? someCV(stringAsciiCV(description)) : noneCV()),
+                    serializeCV(uintCV(estimatedBlock)),
+                    serializeCV(imageUrl ? someCV(stringAsciiCV(imageUrl)) : noneCV()),
                 ],
                 postConditionMode: PostConditionMode.Allow,
                 onFinish: (data) => {
@@ -209,7 +210,10 @@ function AdminDashboard() {
                 contractAddress: config.deployer,
                 contractName: config.predictionMarket,
                 functionName: 'resolve-market',
-                functionArgs: [uintCV(marketId), outcome ? trueCV() : falseCV()],
+                functionArgs: [
+                    serializeCV(uintCV(marketId)),
+                    serializeCV(outcome ? trueCV() : falseCV())
+                ],
                 postConditionMode: PostConditionMode.Allow,
                 onFinish: (data) => {
                     toast.success(`Market ${marketId} resolved as ${outcome ? 'YES' : 'NO'}!`);
