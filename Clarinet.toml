@@ -6,7 +6,7 @@ telemetry = true
 cache_dir = "./.cache"
 
 # Main Prediction Market Contract V7 (Latest)
-[contracts.prediction-market-v7]
+[contracts.predictionmarketv7]
 path = "contracts/prediction-market-v6.clar"
 
 [repl.analysis]
