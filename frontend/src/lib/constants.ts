@@ -35,7 +35,7 @@ export const NETWORK_ENV = process.env.NEXT_PUBLIC_NETWORK || 'testnet'; // Defa
 export const CONTRACTS = {
   testnet: {
     deployer: DEPLOYER_TESTNET,
-    predictionMarket: 'prediction-market-v7',
+    predictionMarket: 'predictionmarketv7',
   },
   mainnet: {
     deployer: DEPLOYER_MAINNET,
