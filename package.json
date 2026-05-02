@@ -4,6 +4,7 @@
   "description": "A peer-to-peer prediction market platform on Stacks blockchain using STX",
   "private": false,
   "scripts": {
+    "backend": "node backend/server.mjs",
     "test": "vitest run",
     "test:report": "vitest run -- --coverage --costs",
     "test:watch": "chokidar \"tests/**/*.ts\" \"contracts/**/*.clar\" -c \"npm run test:report\"",
