@@ -1,7 +1,7 @@
 import { describe, expect, it } from "vitest";
 import { Cl, cvToString } from "@stacks/transactions";
 
-const CONTRACT = "prediction-market-v7";
+const CONTRACT = "predictionmarketv7";
 
 describe("prediction-market-v6 (STX-native)", () => {
   it("allows placing a bet and claiming winnings after resolution", () => {
