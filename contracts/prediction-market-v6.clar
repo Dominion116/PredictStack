@@ -76,8 +76,7 @@
 (define-map markets
   { market-id: uint }
   {
-    question: (string-ascii 256),
-    description: (optional (string-ascii 512)),
+    market-ref: (string-ascii 64),
     creator: principal,
     created-at: uint,
     resolve-date: uint,
@@ -86,8 +85,7 @@
     total-bets: uint,
     status: uint,
     winning-outcome: (optional bool),
-    resolved-at: (optional uint),
-    ipfs-hash: (optional (string-ascii 64))
+    resolved-at: (optional uint)
   }
 )
 
@@ -457,10 +455,8 @@
 
 ;; Create a new prediction market (admin/oracle only)
 (define-public (create-market 
-  (question (string-ascii 256))
-  (description (optional (string-ascii 512)))
+  (market-ref (string-ascii 64))
   (resolve-date uint)
-  (ipfs-hash (optional (string-ascii 64)))
 )
   (let
     (
@@ -469,14 +465,13 @@
     (asserts! (var-get contract-initialized) ERR-NOT-INITIALIZED)
     (asserts! (is-platform-active) ERR-PLATFORM-PAUSED)
     (asserts! (is-admin-or-oracle) ERR-NOT-AUTHORIZED)
-    (asserts! (> (len question) u0) ERR-INVALID-QUESTION)
+    (asserts! (> (len market-ref) u0) ERR-INVALID-QUESTION)
     (asserts! (> resolve-date block-height) ERR-DEADLINE-PASSED)
     
     (map-set markets
       { market-id: market-id }
       {
-        question: question,
-        description: description,
+        market-ref: market-ref,
         creator: tx-sender,
         created-at: block-height,
         resolve-date: resolve-date,
@@ -485,8 +480,7 @@
         total-bets: u0,
         status: STATUS-ACTIVE,
         winning-outcome: none,
-        resolved-at: none,
-        ipfs-hash: ipfs-hash
+        resolved-at: none
       }
     )
     
@@ -496,10 +490,9 @@
     (print {
       event: "market-created",
       market-id: market-id,
-      question: question,
+      market-ref: market-ref,
       creator: tx-sender,
       resolve-date: resolve-date,
-      ipfs-hash: ipfs-hash,
       block-height: block-height
     })
     
@@ -716,8 +709,7 @@
   (match (map-get? markets { market-id: market-id })
     market (ok {
       market-id: market-id,
-      question: (get question market),
-      description: (get description market),
+      market-ref: (get market-ref market),
       creator: (get creator market),
       created-at: (get created-at market),
       resolve-date: (get resolve-date market),
@@ -726,8 +718,7 @@
       total-bets: (get total-bets market),
       status: (status-to-string (get status market)),
       winning-outcome: (get winning-outcome market),
-      resolved-at: (get resolved-at market),
-      ipfs-hash: (get ipfs-hash market)
+      resolved-at: (get resolved-at market)
     })
     ERR-MARKET-NOT-FOUND
   )
