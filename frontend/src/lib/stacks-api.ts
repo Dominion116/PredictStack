@@ -1,484 +1,406 @@
 import {
-    fetchCallReadOnlyFunction,
-    cvToJSON,
-    uintCV,
-    principalCV,
-    boolCV
+  fetchCallReadOnlyFunction,
+  cvToJSON,
+  uintCV,
+  boolCV,
 } from '@stacks/transactions';
-import { 
-    STACKS_TESTNET,
-    STACKS_MAINNET,
-    createNetwork
+import {
+  STACKS_TESTNET,
+  STACKS_MAINNET,
+  createNetwork,
 } from '@stacks/network';
-import { getContractConfig, NETWORK_ENV } from './constants';
+import { BACKEND_BASE_URL, getContractConfig, NETWORK_ENV } from './constants';
 
 const config = getContractConfig();
 const network = createNetwork(NETWORK_ENV === 'mainnet' ? STACKS_MAINNET : STACKS_TESTNET);
 
-/**
- * Helper function to extract actual values from Clarity value objects,
- * handling optional types and nested structures.
- */
 function extractValue(clarityValue: any): any {
-    if (!clarityValue) return null;
-    if (typeof clarityValue !== 'object') return clarityValue;
-    
-    // If it has a 'value' property and a 'type' property, it's a Clarity value object
-    if ('value' in clarityValue && 'type' in clarityValue) {
-        // For none/null optional
-        if (clarityValue.type === 'none') {
-            return null;
-        }
-        // Recursively extract the value
-        return extractValue(clarityValue.value);
-    }
-    
-    return clarityValue;
+  if (!clarityValue) return null;
+  if (typeof clarityValue !== 'object') return clarityValue;
+  if ('value' in clarityValue && 'type' in clarityValue) {
+    if (clarityValue.type === 'none') return null;
+    return extractValue(clarityValue.value);
+  }
+  return clarityValue;
 }
 
-/**
- * Fetches a single market's details from the Stacks contract.
- */
+async function backendFetch<T>(pathname: string, init?: RequestInit): Promise<T> {
+  const response = await fetch(`${BACKEND_BASE_URL}${pathname}`, {
+    ...init,
+    headers: {
+      'Content-Type': 'application/json',
+      ...(init?.headers || {}),
+    },
+  });
+
+  if (!response.ok) {
+    let message = `Backend request failed with ${response.status}`;
+    try {
+      const data = await response.json();
+      message = data.error || message;
+    } catch {
+      // ignore parse errors
+    }
+    throw new Error(message);
+  }
+
+  return response.json();
+}
+
+export async function getBackendConfig() {
+  return backendFetch<{
+    network: string;
+    contractAddress: string;
+    contractName: string;
+    platformFeeMicro: number;
+  }>('/api/config');
+}
+
 export async function getMarket(marketId: number) {
-    try {
-        const response = await fetchCallReadOnlyFunction({
-            contractAddress: config.deployer,
-            contractName: config.predictionMarket,
-            functionName: 'get-market',
-            functionArgs: [uintCV(marketId)],
-            network,
-            senderAddress: config.deployer,
-        });
-        
-        const json: any = cvToJSON(response);
-        if (json.success && json.value && json.value.value) {
-            const marketData = json.value.value;
-            // Extract actual values from Clarity value objects
-            const resolved = extractValue(marketData.resolved) || false;
-            const cancelled = extractValue(marketData.cancelled) || false;
-            
-            // Determine status
-            let status = 'active';
-            if (cancelled) status = 'cancelled';
-            else if (resolved) status = 'resolved';
-            
-            const result = { 
-                id: marketId,
-                question: extractValue(marketData.question) || '',
-                description: extractValue(marketData.description) || '',
-                'resolve-date': Number(extractValue(marketData['resolve-date']) || 0),
-                'yes-pool': Number(extractValue(marketData['yes-pool']) || 0),
-                'no-pool': Number(extractValue(marketData['no-pool']) || 0),
-                resolved,
-                outcome: extractValue(marketData.outcome) || false,
-                cancelled,
-                status,
-                creator: extractValue(marketData.creator) || '',
-                'ipfs-hash': extractValue(marketData['ipfs-hash']) || null,
-                category: extractValue(marketData.category) || 'General',
-                'image-url': extractValue(marketData['image-url']) || null
-            };
-            return result;
-        }
-        return null;
-    } catch (error) {
-        console.error(`Error fetching market ${marketId}:`, error);
-        return null;
-    }
+  try {
+    const data = await backendFetch<{ market: any }>(`/api/markets/contract/${marketId}`);
+    const market = data.market;
+    return {
+      id: market.contractMarketId,
+      backendId: market.id,
+      question: market.question,
+      description: market.description,
+      category: market.category,
+      'image-url': market.imageUrl || null,
+      'resolve-date': market.resolveBlock,
+      'resolve-time-iso': market.resolveTimeIso,
+      'yes-pool': market.yesPoolMicro,
+      'no-pool': market.noPoolMicro,
+      status: market.status,
+      creator: market.chain?.creator || market.createdBy,
+      contractTxId: market.contractTxId,
+      resolutionTxId: market.resolutionTxId,
+      totalBets: market.totalBets,
+      outcome: market.winningOutcome ?? false,
+      winningOutcome: market.winningOutcome,
+      marketRef: market.marketRef,
+    };
+  } catch (error) {
+    console.error(`Error fetching market ${marketId}:`, error);
+    return null;
+  }
 }
 
-/**
- * Fetches platform stats (total markets, etc.)
- */
 export async function getPlatformStats() {
-    try {
-        const response = await fetchCallReadOnlyFunction({
-            contractAddress: config.deployer,
-            contractName: config.predictionMarket,
-            functionName: 'get-platform-stats',
-            functionArgs: [],
-            network,
-            senderAddress: config.deployer,
-        });
-        
-        const json: any = cvToJSON(response);
-        if (json.success && json.value) {
-            const stats = json.value.value;
-            return {
-                'total-markets': Number(extractValue(stats['total-markets']) || 0),
-                'total-volume': Number(extractValue(stats['total-volume']) || 0)
-            };
-        }
-        return { 'total-markets': 0, 'total-volume': 0 };
-    } catch (error) {
-        return { 'total-markets': 0, 'total-volume': 0 };
-    }
+  try {
+    const stats = await backendFetch<{
+      totalMarkets: number;
+      totalVolumeMicro: number;
+      totalUsers: number;
+      activeMarkets: number;
+    }>('/api/platform/stats');
+    return {
+      'total-markets': stats.totalMarkets,
+      'total-volume': stats.totalVolumeMicro,
+      'total-users': stats.totalUsers,
+      'active-markets': stats.activeMarkets,
+    };
+  } catch (error) {
+    return { 'total-markets': 0, 'total-volume': 0, 'total-users': 0, 'active-markets': 0 };
+  }
 }
 
-/**
- * Fetches recent markets from the contract.
- */
 export async function getRecentMarkets(limit: number = 6) {
-    try {
-        const stats = await getPlatformStats();
-        const totalMarkets = stats["total-markets"] || 0;
-        
-        if (totalMarkets === 0) return [];
-
-        const markets = [];
-        const startId = Math.max(1, totalMarkets - limit + 1);
-        
-        for (let id = totalMarkets; id >= startId; id--) {
-            const market = await getMarket(id);
-            if (market) markets.push({ ...market, id });
-        }
-        
-        return markets;
-    } catch (error) {
-        console.error("Error fetching recent markets:", error);
-        return [];
-    }
+  try {
+    const data = await backendFetch<{ markets: any[] }>(`/api/markets?limit=${limit}`);
+    return data.markets.map(market => ({
+      id: market.contractMarketId,
+      backendId: market.id,
+      question: market.question,
+      description: market.description,
+      category: market.category,
+      'image-url': market.imageUrl || null,
+      'resolve-date': market.resolveBlock,
+      'resolve-time-iso': market.resolveTimeIso,
+      'yes-pool': market.yesPoolMicro,
+      'no-pool': market.noPoolMicro,
+      status: market.status,
+      creator: market.chain?.creator || market.createdBy,
+      contractTxId: market.contractTxId,
+      resolutionTxId: market.resolutionTxId,
+      totalBets: market.totalBets,
+      outcome: market.winningOutcome ?? false,
+      winningOutcome: market.winningOutcome,
+      marketRef: market.marketRef,
+    }));
+  } catch (error) {
+    console.error('Error fetching recent markets:', error);
+    return [];
+  }
 }
 
-/**
- * Fetches the user's STX balance.
- */
 export async function getStxBalance(address: string) {
-    try {
-        const apiUrl = NETWORK_ENV === 'mainnet'
-            ? 'https://api.mainnet.hiro.so'
-            : 'https://api.testnet.hiro.so';
-        const response = await fetch(`${apiUrl}/extended/v1/address/${address}/stx`);
-        if (!response.ok) {
-            throw new Error(`Failed to fetch STX balance: ${response.status}`);
-        }
-
-        const data = await response.json();
-        return Number(data.balance || 0) / 1000000;
-    } catch (error) {
-        console.error("Error fetching balance:", error);
-        return 0;
+  try {
+    const apiUrl = NETWORK_ENV === 'mainnet'
+      ? 'https://api.mainnet.hiro.so'
+      : 'https://api.testnet.hiro.so';
+    const response = await fetch(`${apiUrl}/extended/v1/address/${address}/stx`);
+    if (!response.ok) {
+      throw new Error(`Failed to fetch STX balance: ${response.status}`);
     }
+
+    const data = await response.json();
+    return Number(data.balance || 0) / 1_000_000;
+  } catch (error) {
+    console.error('Error fetching balance:', error);
+    return 0;
+  }
 }
 
-/**
- * Fetches the user's position in a specific market.
- */
 export async function getUserPosition(address: string, marketId: number) {
-    try {
-        const response = await fetchCallReadOnlyFunction({
-            contractAddress: config.deployer,
-            contractName: config.predictionMarket,
-            functionName: 'get-user-position',
-            functionArgs: [principalCV(address), uintCV(marketId)],
-            network,
-            senderAddress: address,
-        });
-
-        const json: any = cvToJSON(response);
-        if (json.success && json.value && json.value.value) {
-            const position = json.value.value;
-            // Extract actual values from Clarity value objects
-            return {
-                'yes-amount': Number(extractValue(position['yes-amount']) || 0),
-                'no-amount': Number(extractValue(position['no-amount']) || 0),
-                claimed: extractValue(position.claimed) || false
-            };
-        }
-        return null;
-    } catch (error) {
-        return null;
-    }
+  try {
+    const data = await backendFetch<{ position: any }>(`/api/users/${address}/positions/${marketId}`);
+    return {
+      'yes-amount': data.position.yesAmountMicro,
+      'no-amount': data.position.noAmountMicro,
+      'total-wagered': data.position.totalWageredMicro,
+      claimed: data.position.claimed,
+    };
+  } catch {
+    return null;
+  }
 }
 
-/**
- * Fetches the list of market IDs a user has participated in.
- */
 export async function getUserMarkets(address: string) {
-    try {
-        const response = await fetchCallReadOnlyFunction({
-            contractAddress: config.deployer,
-            contractName: config.predictionMarket,
-            functionName: 'get-user-markets',
-            functionArgs: [principalCV(address)],
-            network,
-            senderAddress: address,
-        });
-
-        const json: any = cvToJSON(response);
-        if (json.success && json.value && json.value.value) {
-            // value is a list of uints
-            return json.value.value.map((val: any) => Number(extractValue(val)));
-        }
-        return [];
-    } catch (error) {
-        console.error("Error fetching user markets:", error);
-        return [];
-    }
+  try {
+    const data = await backendFetch<{ marketIds: number[] }>(`/api/users/${address}/markets`);
+    return data.marketIds;
+  } catch (error) {
+    console.error('Error fetching user markets:', error);
+    return [];
+  }
 }
 
-// -----------------------------------
-// CONTRACT EVENTS (Recent Activity)
-// -----------------------------------
+export async function getUserDashboard(address: string) {
+  return backendFetch<{
+    summary: any;
+    positions: Array<{ market: any; position: any }>;
+  }>(`/api/users/${address}/dashboard`);
+}
 
 interface ContractEvent {
-    event_type: string;
-    tx_id: string;
-    block_height: number;
-    timestamp: number;
-    data: any;
+  event_type: string;
+  tx_id: string;
+  block_height: number;
+  timestamp: number;
+  data: any;
 }
 
-/**
- * Fetches recent contract events from the Stacks API.
- * Used for "Recent Activity" feed on the dashboard.
- */
 export async function getContractEvents(limit: number = 20): Promise<ContractEvent[]> {
-    try {
-        const apiUrl = NETWORK_ENV === 'mainnet' 
-            ? 'https://api.mainnet.hiro.so' 
-            : 'https://api.testnet.hiro.so';
-        
-        const contractId = `${config.deployer}.${config.predictionMarket}`;
-        const url = `${apiUrl}/extended/v1/contract/${contractId}/events?limit=${limit}`;
-        
-        const response = await fetch(url);
-        if (!response.ok) {
-            throw new Error(`Failed to fetch events: ${response.status}`);
-        }
-        
-        const data = await response.json();
-        const events: ContractEvent[] = [];
-        
-        for (const event of data.results || []) {
-            if (event.event_type === 'smart_contract_log') {
-                try {
-                    // Parse the contract log data
-                    const logData = event.contract_log?.value?.repr;
-                    if (logData) {
-                        // Extract event type from the log
-                        let eventType = 'unknown';
-                        if (logData.includes('market-created')) eventType = 'market-created';
-                        else if (logData.includes('bet-placed')) eventType = 'bet-placed';
-                        else if (logData.includes('market-resolved')) eventType = 'market-resolved';
-                        else if (logData.includes('winnings-claimed')) eventType = 'winnings-claimed';
-                        else if (logData.includes('refund-claimed')) eventType = 'refund-claimed';
-                        
-                        events.push({
-                            event_type: eventType,
-                            tx_id: event.tx_id,
-                            block_height: event.block_height,
-                            timestamp: new Date(event.block_time_iso || Date.now()).getTime(),
-                            data: event.contract_log?.value
-                        });
-                    }
-                } catch (parseError) {
-                    // Skip unparseable events
-                }
-            }
-        }
-        
-        return events;
-    } catch (error) {
-        console.error("Error fetching contract events:", error);
-        return [];
-    }
-}
+  try {
+    const apiUrl = NETWORK_ENV === 'mainnet'
+      ? 'https://api.mainnet.hiro.so'
+      : 'https://api.testnet.hiro.so';
 
-// -----------------------------------
-// LEADERBOARD DATA
-// -----------------------------------
+    const contractId = `${config.deployer}.${config.predictionMarket}`;
+    const url = `${apiUrl}/extended/v1/contract/${contractId}/events?limit=${limit}`;
+
+    const response = await fetch(url);
+    if (!response.ok) {
+      throw new Error(`Failed to fetch events: ${response.status}`);
+    }
+
+    const data = await response.json();
+    const events: ContractEvent[] = [];
+
+    for (const event of data.results || []) {
+      if (event.event_type === 'smart_contract_log') {
+        try {
+          const logData = event.contract_log?.value?.repr;
+          if (logData) {
+            let eventType = 'unknown';
+            if (logData.includes('market-created')) eventType = 'market-created';
+            else if (logData.includes('bet-placed')) eventType = 'bet-placed';
+            else if (logData.includes('market-resolved')) eventType = 'market-resolved';
+            else if (logData.includes('winnings-claimed')) eventType = 'winnings-claimed';
+            else if (logData.includes('refund-claimed')) eventType = 'refund-claimed';
+
+            events.push({
+              event_type: eventType,
+              tx_id: event.tx_id,
+              block_height: event.block_height,
+              timestamp: new Date(event.block_time_iso || Date.now()).getTime(),
+              data: event.contract_log?.value,
+            });
+          }
+        } catch {
+          // Skip unparseable events
+        }
+      }
+    }
+
+    return events;
+  } catch (error) {
+    console.error('Error fetching contract events:', error);
+    return [];
+  }
+}
 
 interface LeaderboardEntry {
-    address: string;
-    totalProfit: number;
-    winRate: number;
-    totalBets: number;
-    rank: number;
+  address: string;
+  totalProfit: number;
+  winRate: number;
+  totalBets: number;
+  rank: number;
 }
 
-/**
- * Fetches leaderboard data by analyzing contract events.
- * This aggregates bet-placed and winnings-claimed events to calculate profits.
- */
 export async function getLeaderboardData(limit: number = 15): Promise<LeaderboardEntry[]> {
-    try {
-        const apiUrl = NETWORK_ENV === 'mainnet' 
-            ? 'https://api.mainnet.hiro.so' 
-            : 'https://api.testnet.hiro.so';
-        
-        const contractId = `${config.deployer}.${config.predictionMarket}`;
-        
-        // Fetch a larger set of events to aggregate
-        const url = `${apiUrl}/extended/v1/contract/${contractId}/events?limit=500`;
-        
-        const response = await fetch(url);
-        if (!response.ok) {
-            throw new Error(`Failed to fetch events: ${response.status}`);
-        }
-        
-        const data = await response.json();
-        
-        // Aggregate user stats
-        const userStats: Map<string, { bets: number, wins: number, totalBet: number, totalWon: number }> = new Map();
-        
-        for (const event of data.results || []) {
-            if (event.event_type === 'smart_contract_log') {
-                const logRepr = event.contract_log?.value?.repr || '';
-                
-                // Parse bet-placed events
-                if (logRepr.includes('bet-placed')) {
-                    const userMatch = logRepr.match(/user\s+([A-Z0-9]+)/i);
-                    const amountMatch = logRepr.match(/amount\s+u(\d+)/);
-                    
-                    if (userMatch && amountMatch) {
-                        const user = userMatch[1];
-                        const amount = parseInt(amountMatch[1]) / 1000000;
-                        
-                        const existing = userStats.get(user) || { bets: 0, wins: 0, totalBet: 0, totalWon: 0 };
-                        existing.bets += 1;
-                        existing.totalBet += amount;
-                        userStats.set(user, existing);
-                    }
-                }
-                
-                // Parse winnings-claimed events
-                if (logRepr.includes('winnings-claimed')) {
-                    const userMatch = logRepr.match(/user\s+([A-Z0-9]+)/i);
-                    const payoutMatch = logRepr.match(/total-payout\s+u(\d+)/);
-                    
-                    if (userMatch && payoutMatch) {
-                        const user = userMatch[1];
-                        const payout = parseInt(payoutMatch[1]) / 1000000;
-                        
-                        const existing = userStats.get(user) || { bets: 0, wins: 0, totalBet: 0, totalWon: 0 };
-                        existing.wins += 1;
-                        existing.totalWon += payout;
-                        userStats.set(user, existing);
-                    }
-                }
-            }
-        }
-        
-        // Convert to leaderboard entries
-        const leaderboard: LeaderboardEntry[] = [];
-        
-        userStats.forEach((stats, address) => {
-            const profit = stats.totalWon - stats.totalBet;
-            const winRate = stats.bets > 0 ? (stats.wins / stats.bets) * 100 : 0;
-            
-            leaderboard.push({
-                address: `${address.slice(0, 6)}...${address.slice(-4)}`,
-                totalProfit: Math.round(profit * 100) / 100,
-                winRate: Math.round(winRate * 10) / 10,
-                totalBets: stats.bets,
-                rank: 0 // Will be assigned after sorting
-            });
-        });
-        
-        // Sort by profit descending
-        leaderboard.sort((a, b) => b.totalProfit - a.totalProfit);
-        
-        // Assign ranks and limit
-        return leaderboard.slice(0, limit).map((entry, index) => ({
-            ...entry,
-            rank: index + 1
-        }));
-        
-    } catch (error) {
-        console.error("Error fetching leaderboard data:", error);
-        return [];
-    }
+  try {
+    const data = await backendFetch<{ leaderboard: LeaderboardEntry[] }>(`/api/leaderboard?limit=${limit}`);
+    return data.leaderboard.map(entry => ({
+      ...entry,
+      address: `${entry.address.slice(0, 6)}...${entry.address.slice(-4)}`,
+    }));
+  } catch (error) {
+    console.error('Error fetching leaderboard data:', error);
+    return [];
+  }
 }
-
-// -----------------------------------
-// QUOTE FUNCTIONS
-// -----------------------------------
 
 interface QuotePrice {
-    currentPriceBps: number;
-    postTradePriceBps: number;
-    priceImpactBps: number;
+  currentPriceBps: number;
+  postTradePriceBps: number;
+  priceImpactBps: number;
 }
 
 interface QuoteShares {
-    poolShareBps: number;
-    projectedProfit: number;
-    projectedPayout: number;
-    entryFee: number;
+  poolShareBps: number;
+  projectedProfit: number;
+  projectedPayout: number;
+  entryFee: number;
 }
 
-/**
- * Gets a price quote for a hypothetical bet amount.
- * Returns current price, post-trade price, and price impact in basis points.
- */
 export async function getQuotePrice(
-    marketId: number,
-    outcome: boolean,
-    amountMicro: number
+  marketId: number,
+  outcome: boolean,
+  amountMicro: number
 ): Promise<QuotePrice | null> {
-    try {
-        const response = await fetchCallReadOnlyFunction({
-            contractAddress: config.deployer,
-            contractName: config.predictionMarket,
-            functionName: 'quote-price',
-            functionArgs: [uintCV(marketId), 
-                           boolCV(outcome), 
-                           uintCV(amountMicro)],
-            network,
-            senderAddress: config.deployer,
-        });
+  try {
+    const response = await fetchCallReadOnlyFunction({
+      contractAddress: config.deployer,
+      contractName: config.predictionMarket,
+      functionName: 'quote-price',
+      functionArgs: [uintCV(marketId), boolCV(outcome), uintCV(amountMicro)],
+      network,
+      senderAddress: config.deployer,
+    });
 
-        const json: any = cvToJSON(response);
-        if (json.success && json.value && json.value.value) {
-            const quote = json.value.value;
-            return {
-                currentPriceBps: Number(extractValue(quote['current-price-bps']) || 0),
-                postTradePriceBps: Number(extractValue(quote['post-trade-price-bps']) || 0),
-                priceImpactBps: Number(extractValue(quote['price-impact-bps']) || 0),
-            };
-        }
-        return null;
-    } catch (error) {
-        console.error("Error fetching price quote:", error);
-        return null;
+    const json: any = cvToJSON(response);
+    if (json.success && json.value && json.value.value) {
+      const quote = json.value.value;
+      return {
+        currentPriceBps: Number(extractValue(quote['current-price-bps']) || 0),
+        postTradePriceBps: Number(extractValue(quote['post-trade-price-bps']) || 0),
+        priceImpactBps: Number(extractValue(quote['price-impact-bps']) || 0),
+      };
     }
+    return null;
+  } catch (error) {
+    console.error('Error fetching price quote:', error);
+    return null;
+  }
 }
 
-/**
- * Gets a shares quote for a hypothetical bet amount.
- * Returns pool share, projected profit, and payout if the side wins.
- */
 export async function getQuoteShares(
-    marketId: number,
-    outcome: boolean,
-    amountMicro: number
+  marketId: number,
+  outcome: boolean,
+  amountMicro: number
 ): Promise<QuoteShares | null> {
-    try {
-        const response = await fetchCallReadOnlyFunction({
-            contractAddress: config.deployer,
-            contractName: config.predictionMarket,
-            functionName: 'quote-shares',
-            functionArgs: [uintCV(marketId), 
-                           boolCV(outcome), 
-                           uintCV(amountMicro)],
-            network,
-            senderAddress: config.deployer,
-        });
+  try {
+    const response = await fetchCallReadOnlyFunction({
+      contractAddress: config.deployer,
+      contractName: config.predictionMarket,
+      functionName: 'quote-shares',
+      functionArgs: [uintCV(marketId), boolCV(outcome), uintCV(amountMicro)],
+      network,
+      senderAddress: config.deployer,
+    });
 
-        const json: any = cvToJSON(response);
-        if (json.success && json.value && json.value.value) {
-            const quote = json.value.value;
-            return {
-                poolShareBps: Number(extractValue(quote['pool-share-bps']) || 0),
-                projectedProfit: Number(extractValue(quote['projected-profit']) || 0) / 1000000,
-                projectedPayout: Number(extractValue(quote['projected-payout']) || 0) / 1000000,
-                entryFee: Number(extractValue(quote['entry-fee']) || 0) / 1000000,
-            };
-        }
-        return null;
-    } catch (error) {
-        console.error("Error fetching shares quote:", error);
-        return null;
+    const json: any = cvToJSON(response);
+    if (json.success && json.value && json.value.value) {
+      const quote = json.value.value;
+      return {
+        poolShareBps: Number(extractValue(quote['pool-share-bps']) || 0),
+        projectedProfit: Number(extractValue(quote['projected-profit']) || 0) / 1_000_000,
+        projectedPayout: Number(extractValue(quote['projected-payout']) || 0) / 1_000_000,
+        entryFee: Number(extractValue(quote['entry-fee']) || 0) / 1_000_000,
+      };
     }
+    return null;
+  } catch (error) {
+    console.error('Error fetching shares quote:', error);
+    return null;
+  }
+}
+
+export async function createMarketRecord(payload: {
+  question: string;
+  description: string;
+  category: string;
+  imageUrl: string;
+  resolveDate: string;
+  resolveBlock: number;
+  createdBy: string;
+}) {
+  return backendFetch<{ market: any }>('/api/markets', {
+    method: 'POST',
+    body: JSON.stringify(payload),
+  });
+}
+
+export async function resolveMarketRecord(backendMarketId: string, winningOutcome: boolean) {
+  return backendFetch<{ market: any }>(`/api/markets/${backendMarketId}/resolve`, {
+    method: 'POST',
+    body: JSON.stringify({ winningOutcome }),
+  });
+}
+
+export async function createBetIntent(payload: {
+  userAddress: string;
+  contractMarketId: number;
+  amountMicro: number;
+  outcome: boolean;
+}) {
+  return backendFetch<{
+    betId: string;
+    contractCall: {
+      contractAddress: string;
+      contractName: string;
+      functionName: string;
+      args: {
+        marketId: number;
+        outcome: boolean;
+        amountMicro: number;
+        maxAcceptedPriceBps: number;
+      };
+      postConditionAmountMicro: number;
+    };
+  }>('/api/bets/intents', {
+    method: 'POST',
+    body: JSON.stringify(payload),
+  });
+}
+
+export async function confirmBet(payload: { betId: string; txId: string }) {
+  return backendFetch<{ success: boolean }>('/api/bets/confirm', {
+    method: 'POST',
+    body: JSON.stringify(payload),
+  });
+}
+
+export async function confirmClaim(payload: {
+  userAddress: string;
+  contractMarketId: number;
+  txId: string;
+  type: 'winnings' | 'refund';
+}) {
+  return backendFetch<{ success: boolean; amountMicro: number }>('/api/claims/confirm', {
+    method: 'POST',
+    body: JSON.stringify(payload),
+  });
 }
