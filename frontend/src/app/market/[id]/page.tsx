@@ -6,7 +6,16 @@ import { useParams } from 'next/navigation';
 import { motion } from 'framer-motion';
 import { fadeInUp, staggerContainer, defaultTransition } from '@/lib/animations';
 import { Navbar } from "@/components/navbar";
-import { getMarket, getStxBalance, getUserPosition, getQuotePrice, getQuoteShares } from '@/lib/stacks-api';
+import {
+    confirmBet,
+    confirmClaim,
+    createBetIntent,
+    getMarket,
+    getStxBalance,
+    getUserPosition,
+    getQuotePrice,
+    getQuoteShares
+} from '@/lib/stacks-api';
 import { Footer } from "@/components/footer";
 import { blockToDate, formatResolutionDate } from '@/lib/date-utils';
 import { Button } from '@/components/ui/button';
@@ -28,7 +37,6 @@ import {
 const MIN_BET_STX = 0.02;
 const MAX_BET_STX = 0.1;
 const FIXED_FEE_STX = 0.01;
-const SLIPPAGE_TOLERANCE_BPS = 300; // 3%
 
 export default function MarketPage() {
     const params = useParams();
@@ -117,44 +125,38 @@ export default function MarketPage() {
         }
 
         setIsSubmitting(true);
-        const config = getContractConfig();
         const amountMicro = Math.floor(Number(betAmount) * 1000000); // STX in microstx
-        const totalMicro = amountMicro + Math.floor(FIXED_FEE_STX * 1000000);
         
         try {
             const userData = userSession.loadUserData();
             const userAddress = userData.profile.stxAddress.testnet;
             const outcome = selectedOutcome === 'YES';
-            const currentYesPoolMicro = Number(market?.['yes-pool'] ?? 0);
-            const currentNoPoolMicro = Number(market?.['no-pool'] ?? 0);
-            const postYesPoolMicro = outcome ? currentYesPoolMicro + amountMicro : currentYesPoolMicro;
-            const postNoPoolMicro = outcome ? currentNoPoolMicro : currentNoPoolMicro + amountMicro;
-            const postTotalPoolMicro = postYesPoolMicro + postNoPoolMicro;
-            const selectedPostPoolMicro = outcome ? postYesPoolMicro : postNoPoolMicro;
-            const selectedPostPriceBps = postTotalPoolMicro > 0
-                ? Math.floor((selectedPostPoolMicro * 10000) / postTotalPoolMicro)
-                : 5000;
-            const maxAcceptedPriceBps = Math.min(10000, selectedPostPriceBps + SLIPPAGE_TOLERANCE_BPS);
+            const intent = await createBetIntent({
+                userAddress,
+                contractMarketId: marketId,
+                amountMicro,
+                outcome,
+            });
 
-            // User sends stake plus fixed protocol fee to the contract
             const postCondition = Pc.principal(userAddress)
-                .willSendEq(totalMicro)
+                .willSendEq(intent.contractCall.postConditionAmountMicro)
                 .ustx();
             
             await doContractCall({
-                contractAddress: config.deployer,
-                contractName: config.predictionMarket,
-                functionName: 'place-bet-with-slippage',
+                contractAddress: intent.contractCall.contractAddress,
+                contractName: intent.contractCall.contractName,
+                functionName: intent.contractCall.functionName,
                 functionArgs: [
-                    Cl.uint(marketId),
-                    Cl.bool(outcome),
-                    Cl.uint(amountMicro),
-                    Cl.uint(maxAcceptedPriceBps)
+                    Cl.uint(intent.contractCall.args.marketId),
+                    Cl.bool(intent.contractCall.args.outcome),
+                    Cl.uint(intent.contractCall.args.amountMicro),
+                    Cl.uint(intent.contractCall.args.maxAcceptedPriceBps)
                 ],
                 postConditions: [postCondition],
                 postConditionMode: PostConditionMode.Deny,
                 anchorMode: AnchorMode.Any,
-                onFinish: (data) => {
+                onFinish: async (data) => {
+                    await confirmBet({ betId: intent.betId, txId: data.txId });
                     toast.success(`Bet submitted! ID: ${data.txId}`);
                     setIsSubmitting(false);
                     setBetAmount('');
@@ -183,17 +185,25 @@ export default function MarketPage() {
         try {
             const userData = userSession.loadUserData();
             const userAddress = userData.profile.stxAddress.testnet;
+            const claimType = market.status === 'cancelled' ? 'refund' : 'winnings';
+            const functionName = claimType === 'refund' ? 'claim-refund' : 'claim-winnings';
 
             await doContractCall({
                 contractAddress: config.deployer,
                 contractName: config.predictionMarket,
-                functionName: 'claim-winnings',
+                functionName,
                 functionArgs: [
                     Cl.uint(marketId)
                 ],
                 postConditionMode: PostConditionMode.Allow,
                 anchorMode: AnchorMode.Any,
-                onFinish: (data) => {
+                onFinish: async (data) => {
+                    await confirmClaim({
+                        userAddress,
+                        contractMarketId: marketId,
+                        txId: data.txId,
+                        type: claimType,
+                    });
                     toast.success("Winnings claimed! Processing...");
                     setTimeout(async () => {
                         const [newBalance, newPosition] = await Promise.all([
