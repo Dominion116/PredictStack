@@ -3,32 +3,21 @@
 
 import { useState, useEffect, useMemo } from 'react';
 import { motion } from 'framer-motion';
-import { fadeInUp, staggerContainer, defaultTransition } from '@/lib/animations';
+import { defaultTransition } from '@/lib/animations';
 import { Navbar } from "@/components/navbar";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
-import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
+import { Tabs, TabsContent } from "@/components/ui/tabs";
 import { Button } from '@/components/ui/button';
 import { Badge } from '@/components/ui/badge';
 import { Input } from '@/components/ui/input';
 import { Textarea } from '@/components/ui/textarea';
 import { Label } from '@/components/ui/label';
-import { useConnect } from '@stacks/connect-react';
 import { getContractConfig, userSession, isUserSignedIn } from '@/lib/constants';
-import { getRecentMarkets } from '@/lib/stacks-api';
+import { createMarketRecord, getRecentMarkets, resolveMarketRecord } from '@/lib/stacks-api';
 import { blockToDate } from '@/lib/date-utils';
-import { Loader2, ShieldAlert, CheckCircle, XCircle, Gavel, Filter, Menu, X } from 'lucide-react';
+import { Loader2, ShieldAlert, Gavel, Menu, X } from 'lucide-react';
 import { Footer } from "@/components/footer";
 import { toast } from 'sonner';
-import { 
-    uintCV,
-    trueCV,
-    falseCV,
-    stringAsciiCV,
-    someCV,
-    noneCV,
-    serializeCV,
-    PostConditionMode
-} from '@stacks/transactions';
 
 export default function AdminPage() {
     const [mounted, setMounted] = useState(false);
@@ -77,7 +66,6 @@ export default function AdminPage() {
 }
 
 function AdminDashboard() {
-    const { doContractCall } = useConnect();
     const [activeTab, setActiveTab] = useState('create');
     const [markets, setMarkets] = useState<any[]>([]);
     const [loading, setLoading] = useState(true);
@@ -154,8 +142,6 @@ function AdminDashboard() {
 
     const handleCreateMarket = async (e: React.FormEvent) => {
         e.preventDefault();
-        const config = getContractConfig();
-
         if (!question || !resolveDate) {
             toast.error('Question and Resolution Date are required');
             return;
@@ -168,33 +154,27 @@ function AdminDashboard() {
 
         try {
             setIsSubmitting(true);
+            const userData = userSession.loadUserData();
+            const createdBy = userData.profile.stxAddress.testnet;
 
-            await doContractCall({
-                network: 'testnet',
-                contractAddress: config.deployer,
-                contractName: config.predictionMarket,
-                functionName: 'create-market',
-                functionArgs: [
-                    serializeCV(stringAsciiCV(question)),
-                    serializeCV(description ? someCV(stringAsciiCV(description)) : noneCV()),
-                    serializeCV(uintCV(estimatedBlock)),
-                    serializeCV(imageUrl ? someCV(stringAsciiCV(imageUrl)) : noneCV()),
-                ],
-                postConditionMode: PostConditionMode.Allow,
-                onFinish: (data) => {
-                    toast.success('Market created successfully!');
-                    setQuestion('');
-                    setDescription('');
-                    setResolveDate('');
-                    setPreviewUrl(null);
-                    setImageUrl('');
-                    setIsSubmitting(false);
-                    setTimeout(loadData, 2000);
-                },
-                onCancel: () => {
-                    setIsSubmitting(false);
-                }
+            await createMarketRecord({
+                question,
+                description,
+                category,
+                imageUrl,
+                resolveDate,
+                resolveBlock: estimatedBlock,
+                createdBy,
             });
+
+            toast.success('Market stored and signed successfully!');
+            setQuestion('');
+            setDescription('');
+            setResolveDate('');
+            setPreviewUrl(null);
+            setImageUrl('');
+            setIsSubmitting(false);
+            setTimeout(loadData, 2000);
         } catch (error: any) {
             toast.error(error.message || 'Failed to create market');
             setIsSubmitting(false);
@@ -203,27 +183,15 @@ function AdminDashboard() {
 
     const handleResolve = async (marketId: number, outcome: boolean) => {
         setProcessingId(marketId);
-        const config = getContractConfig();
         try {
-            await doContractCall({
-                network: 'testnet',
-                contractAddress: config.deployer,
-                contractName: config.predictionMarket,
-                functionName: 'resolve-market',
-                functionArgs: [
-                    serializeCV(uintCV(marketId)),
-                    serializeCV(outcome ? trueCV() : falseCV())
-                ],
-                postConditionMode: PostConditionMode.Allow,
-                onFinish: (data) => {
-                    toast.success(`Market ${marketId} resolved as ${outcome ? 'YES' : 'NO'}!`);
-                    setProcessingId(null);
-                    setTimeout(loadData, 2000);
-                },
-                onCancel: () => {
-                    setProcessingId(null);
-                }
-            });
+            const market = markets.find(item => item.id === marketId);
+            if (!market?.backendId) {
+                throw new Error('Missing backend market reference');
+            }
+            await resolveMarketRecord(market.backendId, outcome);
+            toast.success(`Market ${marketId} resolved as ${outcome ? 'YES' : 'NO'}!`);
+            setProcessingId(null);
+            setTimeout(loadData, 2000);
         } catch (error: any) {
             toast.error(error.message || 'Failed to resolve market');
             setProcessingId(null);
