@@ -10,7 +10,7 @@ import { Badge } from '@/components/ui/badge';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { Loader2, Wallet, TrendingUp, AlertCircle, RefreshCcw, CheckCircle } from 'lucide-react';
 import { userSession, getContractConfig, isUserSignedIn } from '@/lib/constants';
-import { getStxBalance, getUserMarkets, getMarket, getUserPosition } from '@/lib/stacks-api';
+import { confirmClaim, getStxBalance, getUserDashboard } from '@/lib/stacks-api';
 import { blockToDate } from '@/lib/date-utils';
 import { useConnect } from '@stacks/connect-react';
 import { Cl, PostConditionMode, AnchorMode } from '@stacks/transactions';
@@ -59,31 +59,18 @@ function DashboardContent() {
             const bal = await getStxBalance(address);
             setBalance(bal);
 
-            // 2. Get User Markets
-            const marketIds = await getUserMarkets(address);
-            
-            // 3. Get Details for each market
-            const betPromises = marketIds.map(async (id: number) => {
-                try {
-                    const [market, position] = await Promise.all([
-                        getMarket(id),
-                        getUserPosition(address, id)
-                    ]);
-                    
-                    if (!market || !position) return null;
-
-                    return { 
-                        ...market, 
-                        position, 
-                        id 
-                    };
-                } catch (e) {
-                    return null;
-                }
-            });
-
-            const bets = (await Promise.all(betPromises)).filter(b => b !== null);
-            setUserBets(bets.reverse()); // Show newest first
+            const dashboard = await getUserDashboard(address);
+            const bets = dashboard.positions.map(item => ({
+                ...item.market,
+                position: {
+                    'yes-amount': item.position.yesAmountMicro,
+                    'no-amount': item.position.noAmountMicro,
+                    'total-wagered': item.position.totalWageredMicro,
+                    claimed: item.position.claimed,
+                },
+                id: item.market.contractMarketId,
+            }));
+            setUserBets(bets.reverse());
 
         } catch (error) {
             console.error(error);
@@ -98,6 +85,7 @@ function DashboardContent() {
         const config = getContractConfig();
         
         try {
+            const userAddress = userSession.loadUserData().profile.stxAddress.testnet;
             await doContractCall({
                 contractAddress: config.deployer,
                 contractName: config.predictionMarket,
@@ -107,7 +95,13 @@ function DashboardContent() {
                 ],
                 postConditionMode: PostConditionMode.Allow,
                 anchorMode: AnchorMode.Any,
-                onFinish: (data) => {
+                onFinish: async (data) => {
+                    await confirmClaim({
+                        userAddress,
+                        contractMarketId: marketId,
+                        txId: data.txId,
+                        type: 'winnings',
+                    });
                     toast.success("Winnings claimed successfully!");
                     setTimeout(() => {
                         loadDashboardData();
