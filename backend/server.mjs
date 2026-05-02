@@ -3,9 +3,12 @@ import 'dotenv/config';
 import { createServer } from 'node:http';
 import path from 'node:path';
 import { randomUUID } from 'node:crypto';
+import { readFile } from 'node:fs/promises';
+import swaggerUi from 'swagger-ui-express';
 
 import { JsonStore } from './store.mjs';
 import { createStacksClient } from './stacks.mjs';
+import { specs } from './swagger.js';
 
 const PORT = Number(process.env.PORT || 4000);
 const HOST = process.env.HOST || '127.0.0.1';
@@ -467,6 +470,65 @@ const server = createServer(async (req, res) => {
         contractName: CONTRACT_NAME,
         platformFeeMicro: PLATFORM_FEE_MICRO,
       });
+    }
+
+    if (req.method === 'GET' && pathname === '/api/swagger.json') {
+      return sendJson(res, 200, specs);
+    }
+
+    if (req.method === 'GET' && pathname.startsWith('/swagger-ui/')) {
+      const file = pathname.replace('/swagger-ui/', '');
+      const swaggerUiPath = path.join(process.cwd(), 'node_modules', 'swagger-ui-dist', file);
+      try {
+        const content = await readFile(swaggerUiPath);
+        const mimeTypes = {
+          '.js': 'application/javascript',
+          '.css': 'text/css',
+          '.png': 'image/png',
+          '.svg': 'image/svg+xml',
+          '.html': 'text/html',
+        };
+        const ext = path.extname(file);
+        const contentType = mimeTypes[ext] || 'application/octet-stream';
+        res.writeHead(200, { 'Content-Type': contentType });
+        res.end(content);
+        return;
+      } catch (error) {
+        return sendJson(res, 404, { error: 'Not found' });
+      }
+    }
+
+    if (req.method === 'GET' && pathname === '/api-docs') {
+      const html = `
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>PredictStack API Documentation</title>
+      <link rel="stylesheet" type="text/css" href="/swagger-ui/swagger-ui.css">
+</head>
+<body>
+  <div id="swagger-ui"></div>
+  <script src="/swagger-ui/swagger-ui-bundle.js"></script>
+  <script src="/swagger-ui/swagger-ui-standalone-preset.js"></script>
+  <script>
+    const ui = SwaggerUIBundle({
+      url: "/api/swagger.json",
+      dom_id: '#swagger-ui',
+      presets: [
+        SwaggerUIBundle.presets.apis,
+        SwaggerUIStandalonePreset
+      ],
+      layout: "StandaloneLayout"
+    });
+  </script>
+</body>
+</html>
+      `;
+      res.writeHead(200, { 'Content-Type': 'text/html' });
+      res.end(html);
+      return;
     }
 
     if (req.method === 'GET' && pathname === '/api/platform/stats') {
