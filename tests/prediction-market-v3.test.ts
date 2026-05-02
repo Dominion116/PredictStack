@@ -28,12 +28,7 @@ describe("prediction-market-v6 (STX-native)", () => {
     const create = simnet.callPublicFn(
       CONTRACT,
       "create-market",
-      [
-        Cl.stringAscii("Will STX close above $3 by Friday?"),
-        Cl.none(),
-        Cl.uint(50),
-        Cl.none(),
-      ],
+      [Cl.stringAscii("market-ref-1"), Cl.uint(50)],
       deployer
     );
     expect(cvToString(create.result)).toBe("(ok u1)");
@@ -97,12 +92,7 @@ describe("prediction-market-v6 (STX-native)", () => {
     const create = simnet.callPublicFn(
       CONTRACT,
       "create-market",
-      [
-        Cl.stringAscii("Will sBTC TVL exceed target this month?"),
-        Cl.none(),
-        Cl.uint(200),
-        Cl.none(),
-      ],
+      [Cl.stringAscii("market-ref-2"), Cl.uint(200)],
       deployer
     );
     expect(cvToString(create.result)).toBe("(ok u1)");
@@ -155,12 +145,7 @@ describe("prediction-market-v6 (STX-native)", () => {
     simnet.callPublicFn(
       CONTRACT,
       "create-market",
-      [
-        Cl.stringAscii("Test market"),
-        Cl.none(),
-        Cl.uint(50),
-        Cl.none(),
-      ],
+      [Cl.stringAscii("market-ref-3"), Cl.uint(50)],
       deployer
     );
 
@@ -210,12 +195,7 @@ describe("prediction-market-v6 (STX-native)", () => {
     simnet.callPublicFn(
       CONTRACT,
       "create-market",
-      [
-        Cl.stringAscii("Test market"),
-        Cl.none(),
-        Cl.uint(50),
-        Cl.none(),
-      ],
+      [Cl.stringAscii("market-ref-4"), Cl.uint(50)],
       deployer
     );
 
@@ -272,12 +252,7 @@ describe("prediction-market-v6 (STX-native)", () => {
     simnet.callPublicFn(
       CONTRACT,
       "create-market",
-      [
-        Cl.stringAscii("Test market"),
-        Cl.none(),
-        Cl.uint(50),
-        Cl.none(),
-      ],
+      [Cl.stringAscii("market-ref-5"), Cl.uint(50)],
       deployer
     );
 
@@ -323,12 +298,7 @@ describe("prediction-market-v6 (STX-native)", () => {
     simnet.callPublicFn(
       CONTRACT,
       "create-market",
-      [
-        Cl.stringAscii("Test market"),
-        Cl.none(),
-        Cl.uint(50),
-        Cl.none(),
-      ],
+      [Cl.stringAscii("market-ref-6"), Cl.uint(50)],
       deployer
     );
 
