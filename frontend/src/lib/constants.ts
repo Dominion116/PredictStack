@@ -26,27 +26,26 @@ export const APP_DETAILS = {
   icon: typeof window !== 'undefined' ? `${window.location.origin}/icon.png` : '/icon.png',
 };
 
-// Contract Configuration
-const DEPLOYER_TESTNET = 'ST30VGN68PSGVWGNMD0HH2WQMM5T486EK3WBNTHCY'; // Updated to your wallet address
-const DEPLOYER_MAINNET = 'SP...'; // To be filled
-
-export const NETWORK_ENV = process.env.NEXT_PUBLIC_NETWORK || 'testnet'; // Default to testnet
+export const NETWORK_ENV = process.env.NEXT_PUBLIC_NETWORK || 'testnet';
+export const BACKEND_BASE_URL = process.env.NEXT_PUBLIC_BACKEND_URL || 'http://localhost:4000';
+const CONTRACT_ADDRESS = process.env.NEXT_PUBLIC_CONTRACT_ADDRESS || 'ST30VGN68PSGVWGNMD0HH2WQMM5T486EK3WBNTHCY';
+const CONTRACT_NAME = process.env.NEXT_PUBLIC_CONTRACT_NAME || 'predictionmarketv7';
 
 export const CONTRACTS = {
   testnet: {
-    deployer: DEPLOYER_TESTNET,
-    predictionMarket: 'predictionmarketv7',
+    deployer: CONTRACT_ADDRESS,
+    predictionMarket: CONTRACT_NAME,
   },
   mainnet: {
-    deployer: DEPLOYER_MAINNET,
-    predictionMarket: 'prediction-market-v3',
+    deployer: CONTRACT_ADDRESS,
+    predictionMarket: CONTRACT_NAME,
   },
   devnet: {
-    deployer: 'ST1PQHQKV0RJXZFY1DGX8MNSNYVE3VGZJSRTPGZGM',
-    predictionMarket: 'prediction-market-v4',
+    deployer: CONTRACT_ADDRESS,
+    predictionMarket: CONTRACT_NAME,
   }
 };
 
 export const getContractConfig = () => {
-    return CONTRACTS[NETWORK_ENV as keyof typeof CONTRACTS] || CONTRACTS.testnet;
-}
+  return CONTRACTS[NETWORK_ENV as keyof typeof CONTRACTS] || CONTRACTS.testnet;
+};
