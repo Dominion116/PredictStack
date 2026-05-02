@@ -2,6 +2,7 @@
 'use client';
 
 import { useState, useEffect, useMemo } from 'react';
+import Image from 'next/image';
 import { motion } from 'framer-motion';
 import { defaultTransition } from '@/lib/animations';
 import { Navbar } from "@/components/navbar";
@@ -19,29 +20,63 @@ import { Loader2, ShieldAlert, Gavel, Menu, X } from 'lucide-react';
 import { Footer } from "@/components/footer";
 import { toast } from 'sonner';
 
+type MarketRecord = {
+    id: number;
+    status: string | number;
+    backendId?: string;
+    question: string;
+    'resolve-date': number;
+    'yes-pool': number | string;
+    'no-pool': number | string;
+};
+
+const getErrorMessage = (error: unknown, fallback: string) => {
+    if (error instanceof Error && error.message) {
+        return error.message;
+    }
+
+    return fallback;
+};
+
 export default function AdminPage() {
-    const [mounted, setMounted] = useState(false);
     const [isAdmin, setIsAdmin] = useState<boolean | null>(null);
 
     useEffect(() => {
-        setMounted(true);
-        if (isUserSignedIn()) {
-            const userData = userSession.loadUserData();
-            const userAddress = userData.profile.stxAddress.testnet;
-            const config = getContractConfig();
-            setIsAdmin(userAddress === config.deployer);
-        } else {
-            setIsAdmin(false);
-        }
+        let isActive = true;
+        const timer = setTimeout(() => {
+            if (!isActive) return;
+            if (isUserSignedIn()) {
+                const userData = userSession.loadUserData();
+                const userAddress = userData.profile.stxAddress.testnet;
+                const config = getContractConfig();
+                setIsAdmin(userAddress === config.deployer);
+            } else {
+                setIsAdmin(false);
+            }
+        }, 0);
+
+        return () => {
+            isActive = false;
+            clearTimeout(timer);
+        };
     }, []);
 
-    if (!mounted) {
+    if (isAdmin === null) {
         return (
             <main className="min-h-screen flex flex-col bg-background">
                 <Navbar />
-                <div className="container py-12 flex-1 flex flex-col items-center">
-                    <Loader2 className="h-8 w-8 animate-spin text-muted-foreground" />
+                <div className="container py-12 flex-1">
+                    <div className="space-y-6 animate-pulse">
+                        <div className="h-9 w-48 rounded-md bg-muted" />
+                        <div className="grid gap-4 md:grid-cols-3">
+                            <div className="h-24 rounded-lg bg-muted" />
+                            <div className="h-24 rounded-lg bg-muted" />
+                            <div className="h-24 rounded-lg bg-muted" />
+                        </div>
+                        <div className="h-64 rounded-lg bg-muted" />
+                    </div>
                 </div>
+                <Footer />
             </main>
         );
     }
@@ -67,14 +102,12 @@ export default function AdminPage() {
 
 function AdminDashboard() {
     const [activeTab, setActiveTab] = useState('create');
-    const [markets, setMarkets] = useState<any[]>([]);
-    const [loading, setLoading] = useState(true);
+    const [markets, setMarkets] = useState<MarketRecord[]>([]);
     const [processingId, setProcessingId] = useState<number | null>(null);
     const [sidebarOpen, setSidebarOpen] = useState(true);
 
     // Form State
     const activeMarkets = markets.filter(m => m.status === 'active' || m.status === '0' || m.status === 0);
-    const resolvedMarkets = markets.filter(m => m.status === 'resolved' || m.status === '1' || m.status === 1);
     const [question, setQuestion] = useState('');
     const [description, setDescription] = useState('');
     const [resolveDate, setResolveDate] = useState('');
@@ -97,15 +130,12 @@ function AdminDashboard() {
     }, [resolveDate]);
 
     const loadData = async () => {
-        setLoading(true);
         try {
             const fetchedMarkets = await getRecentMarkets(100);
             setMarkets(fetchedMarkets);
         } catch (error) {
             console.error("Failed to load markets:", error);
             toast.error("Failed to load markets.");
-        } finally {
-            setLoading(false);
         }
     };
 
@@ -132,8 +162,8 @@ function AdminDashboard() {
             } else {
                 throw new Error(result.error || 'Upload failed');
             }
-        } catch (error: any) {
-            toast.error(error.message || 'Failed to upload image');
+        } catch (error: unknown) {
+            toast.error(getErrorMessage(error, 'Failed to upload image'));
             setImageUrl('');
         } finally {
             setIsUploading(false);
@@ -175,8 +205,8 @@ function AdminDashboard() {
             setImageUrl('');
             setIsSubmitting(false);
             setTimeout(loadData, 2000);
-        } catch (error: any) {
-            toast.error(error.message || 'Failed to create market');
+        } catch (error: unknown) {
+            toast.error(getErrorMessage(error, 'Failed to create market'));
             setIsSubmitting(false);
         }
     };
@@ -192,8 +222,8 @@ function AdminDashboard() {
             toast.success(`Market ${marketId} resolved as ${outcome ? 'YES' : 'NO'}!`);
             setProcessingId(null);
             setTimeout(loadData, 2000);
-        } catch (error: any) {
-            toast.error(error.message || 'Failed to resolve market');
+        } catch (error: unknown) {
+            toast.error(getErrorMessage(error, 'Failed to resolve market'));
             setProcessingId(null);
         }
     };
@@ -322,7 +352,13 @@ function AdminDashboard() {
                                                         disabled={isUploading}
                                                     />
                                                     {previewUrl ? (
-                                                        <img src={previewUrl} className="h-20 mx-auto rounded" alt="Preview"/>
+                                                        <Image
+                                                            src={previewUrl}
+                                                            width={80}
+                                                            height={80}
+                                                            className="h-20 w-20 mx-auto rounded object-cover"
+                                                            alt="Preview"
+                                                        />
                                                     ) : (
                                                         <div className="text-sm text-muted-foreground">
                                                             {isUploading ? <Loader2 className="h-4 w-4 animate-spin mx-auto"/> : "Click to upload image"}
@@ -356,9 +392,8 @@ function AdminDashboard() {
                             <p className="text-muted-foreground">Select a market to declare the winning outcome.</p>
                             <div className="grid gap-6">
                                 {activeMarkets.map(market => (
-                                   <Card key={market.id}>
+                                    <Card key={market.id}>
                                         <CardHeader>
-// ... existing content ...
                                             <CardTitle className="flex justify-between">
                                                 {market.question}
                                                 <Badge variant="outline">ID: {market.id}</Badge>
