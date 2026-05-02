@@ -444,6 +444,500 @@ async function handleConfirmClaim(req, res) {
   return sendJson(res, 200, { success: true, amountMicro });
 }
 
+/**
+ * @swagger
+ * /api/health:
+ *   get:
+ *     summary: Health check endpoint
+ *     description: Returns server health status and configuration
+ *     tags:
+ *       - Health
+ *     responses:
+ *       200:
+ *         description: Server is healthy
+ *         content:
+ *           application/json:
+ *             schema:
+ *               type: object
+ *               properties:
+ *                 ok:
+ *                   type: boolean
+ *                 network:
+ *                   type: string
+ *                 contractAddress:
+ *                   type: string
+ *                 contractName:
+ *                   type: string
+ *                 signerAddress:
+ *                   type: string
+ * 
+ * /api/config:
+ *   get:
+ *     summary: Get backend configuration
+ *     description: Returns the current backend configuration
+ *     tags:
+ *       - Configuration
+ *     responses:
+ *       200:
+ *         description: Backend configuration
+ *         content:
+ *           application/json:
+ *             schema:
+ *               type: object
+ *               properties:
+ *                 network:
+ *                   type: string
+ *                 contractAddress:
+ *                   type: string
+ *                 contractName:
+ *                   type: string
+ *                 platformFeeMicro:
+ *                   type: number
+ * 
+ * /api/platform/stats:
+ *   get:
+ *     summary: Get platform statistics
+ *     description: Returns aggregated platform statistics
+ *     tags:
+ *       - Platform
+ *     responses:
+ *       200:
+ *         description: Platform statistics
+ *         content:
+ *           application/json:
+ *             schema:
+ *               type: object
+ *               properties:
+ *                 totalMarkets:
+ *                   type: number
+ *                 totalVolumeMicro:
+ *                   type: number
+ *                 totalFeesCollectedMicro:
+ *                   type: number
+ *                 totalUsers:
+ *                   type: number
+ *                 activeMarkets:
+ *                   type: number
+ * 
+ * /api/markets:
+ *   get:
+ *     summary: List all markets
+ *     description: Returns paginated list of prediction markets
+ *     tags:
+ *       - Markets
+ *     parameters:
+ *       - name: limit
+ *         in: query
+ *         schema:
+ *           type: number
+ *         default: 50
+ *         description: Maximum number of markets to return
+ *       - name: status
+ *         in: query
+ *         schema:
+ *           type: string
+ *           enum: [active, resolved, cancelled]
+ *         description: Filter markets by status
+ *     responses:
+ *       200:
+ *         description: List of markets
+ *         content:
+ *           application/json:
+ *             schema:
+ *               type: object
+ *               properties:
+ *                 markets:
+ *                   type: array
+ *                   items:
+ *                     $ref: '#/components/schemas/Market'
+ *   post:
+ *     summary: Create a new market
+ *     description: Creates a new prediction market on the blockchain
+ *     tags:
+ *       - Markets
+ *     requestBody:
+ *       required: true
+ *       content:
+ *         application/json:
+ *           schema:
+ *             type: object
+ *             required: [question, resolveDate, resolveBlock]
+ *             properties:
+ *               question:
+ *                 type: string
+ *                 description: The prediction question
+ *               description:
+ *                 type: string
+ *                 description: Detailed market description
+ *               category:
+ *                 type: string
+ *                 default: General
+ *               imageUrl:
+ *                 type: string
+ *                 description: Market image URL
+ *               resolveDate:
+ *                 type: string
+ *                 format: date-time
+ *                 description: Market resolution deadline
+ *               resolveBlock:
+ *                 type: number
+ *                 description: Stacks block number for resolution
+ *               createdBy:
+ *                 type: string
+ *                 description: Creator address (defaults to signer)
+ *     responses:
+ *       201:
+ *         description: Market created successfully
+ *         content:
+ *           application/json:
+ *             schema:
+ *               type: object
+ *               properties:
+ *                 market:
+ *                   $ref: '#/components/schemas/Market'
+ *       400:
+ *         description: Invalid request parameters
+ * 
+ * /api/markets/contract/{contractMarketId}:
+ *   get:
+ *     summary: Get market by contract ID
+ *     description: Fetches a market by its blockchain contract market ID
+ *     tags:
+ *       - Markets
+ *     parameters:
+ *       - name: contractMarketId
+ *         in: path
+ *         required: true
+ *         schema:
+ *           type: number
+ *     responses:
+ *       200:
+ *         description: Market details
+ *         content:
+ *           application/json:
+ *             schema:
+ *               type: object
+ *               properties:
+ *                 market:
+ *                   $ref: '#/components/schemas/Market'
+ *       404:
+ *         description: Market not found
+ * 
+ * /api/markets/{marketId}:
+ *   get:
+ *     summary: Get market by ID
+ *     description: Fetches a market by its internal ID
+ *     tags:
+ *       - Markets
+ *     parameters:
+ *       - name: marketId
+ *         in: path
+ *         required: true
+ *         schema:
+ *           type: string
+ *     responses:
+ *       200:
+ *         description: Market details
+ *         content:
+ *           application/json:
+ *             schema:
+ *               type: object
+ *               properties:
+ *                 market:
+ *                   $ref: '#/components/schemas/Market'
+ *       404:
+ *         description: Market not found
+ * 
+ * /api/markets/{marketId}/resolve:
+ *   post:
+ *     summary: Resolve a market
+ *     description: Resolves a market with the winning outcome
+ *     tags:
+ *       - Markets
+ *     parameters:
+ *       - name: marketId
+ *         in: path
+ *         required: true
+ *         schema:
+ *           type: string
+ *     requestBody:
+ *       required: true
+ *       content:
+ *         application/json:
+ *           schema:
+ *             type: object
+ *             required: [winningOutcome]
+ *             properties:
+ *               winningOutcome:
+ *                 type: boolean
+ *                 description: true for YES, false for NO
+ *     responses:
+ *       200:
+ *         description: Market resolved successfully
+ *         content:
+ *           application/json:
+ *             schema:
+ *               type: object
+ *               properties:
+ *                 market:
+ *                   $ref: '#/components/schemas/Market'
+ *       404:
+ *         description: Market not found
+ * 
+ * /api/bets/intents:
+ *   post:
+ *     summary: Create a bet intent
+ *     description: Creates a bet intent that can be signed and confirmed
+ *     tags:
+ *       - Bets
+ *     requestBody:
+ *       required: true
+ *       content:
+ *         application/json:
+ *           schema:
+ *             type: object
+ *             required: [userAddress, contractMarketId, amountMicro, outcome]
+ *             properties:
+ *               userAddress:
+ *                 type: string
+ *                 description: Stacks address of the bettor
+ *               contractMarketId:
+ *                 type: number
+ *                 description: Market ID on the contract
+ *               amountMicro:
+ *                 type: number
+ *                 description: Bet amount in microSTX
+ *               outcome:
+ *                 type: boolean
+ *                 description: true for YES, false for NO
+ *     responses:
+ *       201:
+ *         description: Bet intent created
+ *         content:
+ *           application/json:
+ *             schema:
+ *               type: object
+ *               properties:
+ *                 betId:
+ *                   type: string
+ *                 contractCall:
+ *                   type: object
+ *       400:
+ *         description: Invalid bet parameters
+ *       404:
+ *         description: Market not found
+ * 
+ * /api/bets/confirm:
+ *   post:
+ *     summary: Confirm a bet
+ *     description: Confirms a bet after blockchain transaction is mined
+ *     tags:
+ *       - Bets
+ *     requestBody:
+ *       required: true
+ *       content:
+ *         application/json:
+ *           schema:
+ *             type: object
+ *             required: [betId, txId]
+ *             properties:
+ *               betId:
+ *                 type: string
+ *                 description: Bet intent ID
+ *               txId:
+ *                 type: string
+ *                 description: Transaction ID from blockchain
+ *     responses:
+ *       200:
+ *         description: Bet confirmed
+ *         content:
+ *           application/json:
+ *             schema:
+ *               type: object
+ *               properties:
+ *                 success:
+ *                   type: boolean
+ *                 position:
+ *                   $ref: '#/components/schemas/UserPosition'
+ *       404:
+ *         description: Bet intent not found
+ * 
+ * /api/claims/confirm:
+ *   post:
+ *     summary: Confirm a claim
+ *     description: Confirms winnings or refund claim after blockchain transaction is mined
+ *     tags:
+ *       - Claims
+ *     requestBody:
+ *       required: true
+ *       content:
+ *         application/json:
+ *           schema:
+ *             type: object
+ *             required: [userAddress, contractMarketId, type, txId]
+ *             properties:
+ *               userAddress:
+ *                 type: string
+ *                 description: Stacks address
+ *               contractMarketId:
+ *                 type: number
+ *                 description: Market ID on the contract
+ *               type:
+ *                 type: string
+ *                 enum: [winnings, refund]
+ *                 description: Type of claim
+ *               txId:
+ *                 type: string
+ *                 description: Transaction ID from blockchain
+ *     responses:
+ *       200:
+ *         description: Claim confirmed
+ *         content:
+ *           application/json:
+ *             schema:
+ *               type: object
+ *               properties:
+ *                 success:
+ *                   type: boolean
+ *       404:
+ *         description: Position or market not found
+ * 
+ * /api/users/{address}/dashboard:
+ *   get:
+ *     summary: Get user dashboard
+ *     description: Returns user portfolio and statistics
+ *     tags:
+ *       - Users
+ *     parameters:
+ *       - name: address
+ *         in: path
+ *         required: true
+ *         schema:
+ *           type: string
+ *         description: Stacks address
+ *     responses:
+ *       200:
+ *         description: User dashboard data
+ *         content:
+ *           application/json:
+ *             schema:
+ *               type: object
+ *               properties:
+ *                 summary:
+ *                   type: object
+ *                   properties:
+ *                     address:
+ *                       type: string
+ *                     totalInvestedMicro:
+ *                       type: number
+ *                     totalClaimedMicro:
+ *                       type: number
+ *                     totalProfitMicro:
+ *                       type: number
+ *                     activePredictions:
+ *                       type: number
+ *                     winCount:
+ *                       type: number
+ *                     lossCount:
+ *                       type: number
+ *                 positions:
+ *                   type: array
+ *                   items:
+ *                     type: object
+ * 
+ * /api/users/{address}/markets:
+ *   get:
+ *     summary: Get user market IDs
+ *     description: Returns list of market IDs user has participated in
+ *     tags:
+ *       - Users
+ *     parameters:
+ *       - name: address
+ *         in: path
+ *         required: true
+ *         schema:
+ *           type: string
+ *     responses:
+ *       200:
+ *         description: List of market IDs
+ *         content:
+ *           application/json:
+ *             schema:
+ *               type: object
+ *               properties:
+ *                 marketIds:
+ *                   type: array
+ *                   items:
+ *                     type: number
+ * 
+ * /api/users/{address}/positions/{contractMarketId}:
+ *   get:
+ *     summary: Get user position in market
+ *     description: Returns user's position (stakes) in a specific market
+ *     tags:
+ *       - Users
+ *     parameters:
+ *       - name: address
+ *         in: path
+ *         required: true
+ *         schema:
+ *           type: string
+ *       - name: contractMarketId
+ *         in: path
+ *         required: true
+ *         schema:
+ *           type: number
+ *     responses:
+ *       200:
+ *         description: User position
+ *         content:
+ *           application/json:
+ *             schema:
+ *               type: object
+ *               properties:
+ *                 position:
+ *                   $ref: '#/components/schemas/UserPosition'
+ *       404:
+ *         description: Position not found
+ * 
+ * /api/leaderboard:
+ *   get:
+ *     summary: Get platform leaderboard
+ *     description: Returns top users ranked by profit
+ *     tags:
+ *       - Leaderboard
+ *     parameters:
+ *       - name: limit
+ *         in: query
+ *         schema:
+ *           type: number
+ *         default: 50
+ *         description: Number of top users to return
+ *     responses:
+ *       200:
+ *         description: Leaderboard data
+ *         content:
+ *           application/json:
+ *             schema:
+ *               type: object
+ *               properties:
+ *                 leaderboard:
+ *                   type: array
+ *                   items:
+ *                     type: object
+ *                     properties:
+ *                       rank:
+ *                         type: number
+ *                       address:
+ *                         type: string
+ *                       totalProfit:
+ *                         type: number
+ *                       winRate:
+ *                         type: number
+ *                       totalBets:
+ *                         type: number
+ */
+
 const server = createServer(async (req, res) => {
   try {
     if (req.method === 'OPTIONS') {
