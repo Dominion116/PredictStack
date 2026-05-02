@@ -31,10 +31,10 @@ const FALLBACK_DATA: LeaderboardEntry[] = [
 const ITEMS_PER_PAGE = 10;
 
 export default function LeaderboardPage() {
-    const [mounted, setMounted] = useState(false);
     const [loading, setLoading] = useState(true);
     const [leaderboard, setLeaderboard] = useState<LeaderboardEntry[]>([]);
     const [currentPage, setCurrentPage] = useState(1);
+    const skeletonRows = Array.from({ length: 6 });
 
     const loadLeaderboard = async () => {
         setLoading(true);
@@ -51,11 +51,8 @@ export default function LeaderboardPage() {
     };
 
     useEffect(() => {
-        setMounted(true);
         loadLeaderboard();
     }, []);
-
-    if (!mounted) return null;
 
     const totalPages = Math.ceil(leaderboard.length / ITEMS_PER_PAGE);
     const paginatedData = leaderboard.slice(
@@ -102,41 +99,51 @@ export default function LeaderboardPage() {
                     animate="animate"
                     variants={staggerContainer}
                 >
-                    <motion.div variants={fadeInUp}>
-                        <Card>
-                            <CardHeader className="pb-2">
-                                <CardTitle className="text-sm font-medium text-muted-foreground">Top Earner</CardTitle>
-                            </CardHeader>
-                            <CardContent>
-                                <div className="text-2xl font-bold">{topEarner?.address || '--'}</div>
-                                <p className="text-sm text-green-500 font-medium">
-                                    {topEarner ? `+$${topEarner.totalProfit.toLocaleString()}` : '--'}
-                                </p>
-                            </CardContent>
-                        </Card>
-                    </motion.div>
-                    <motion.div variants={fadeInUp}>
-                        <Card>
-                            <CardHeader className="pb-2">
-                                <CardTitle className="text-sm font-medium text-muted-foreground">Highest Win Rate</CardTitle>
-                            </CardHeader>
-                            <CardContent>
-                                <div className="text-2xl font-bold">{topEarner?.winRate || 0}%</div>
-                                <p className="text-sm text-muted-foreground">{topEarner?.address || '--'}</p>
-                            </CardContent>
-                        </Card>
-                    </motion.div>
-                    <motion.div variants={fadeInUp}>
-                        <Card>
-                            <CardHeader className="pb-2">
-                                <CardTitle className="text-sm font-medium text-muted-foreground">Total Predictors</CardTitle>
-                            </CardHeader>
-                            <CardContent>
-                                <div className="text-2xl font-bold">{leaderboard.length}</div>
-                                <p className="text-sm text-muted-foreground">Active users</p>
-                            </CardContent>
-                        </Card>
-                    </motion.div>
+                    {loading ? (
+                        <>
+                            <div className="h-24 rounded-lg bg-muted animate-pulse" />
+                            <div className="h-24 rounded-lg bg-muted animate-pulse" />
+                            <div className="h-24 rounded-lg bg-muted animate-pulse" />
+                        </>
+                    ) : (
+                        <>
+                            <motion.div variants={fadeInUp}>
+                                <Card>
+                                    <CardHeader className="pb-2">
+                                        <CardTitle className="text-sm font-medium text-muted-foreground">Top Earner</CardTitle>
+                                    </CardHeader>
+                                    <CardContent>
+                                        <div className="text-2xl font-bold">{topEarner?.address || '--'}</div>
+                                        <p className="text-sm text-green-500 font-medium">
+                                            {topEarner ? `+$${topEarner.totalProfit.toLocaleString()}` : '--'}
+                                        </p>
+                                    </CardContent>
+                                </Card>
+                            </motion.div>
+                            <motion.div variants={fadeInUp}>
+                                <Card>
+                                    <CardHeader className="pb-2">
+                                        <CardTitle className="text-sm font-medium text-muted-foreground">Highest Win Rate</CardTitle>
+                                    </CardHeader>
+                                    <CardContent>
+                                        <div className="text-2xl font-bold">{topEarner?.winRate || 0}%</div>
+                                        <p className="text-sm text-muted-foreground">{topEarner?.address || '--'}</p>
+                                    </CardContent>
+                                </Card>
+                            </motion.div>
+                            <motion.div variants={fadeInUp}>
+                                <Card>
+                                    <CardHeader className="pb-2">
+                                        <CardTitle className="text-sm font-medium text-muted-foreground">Total Predictors</CardTitle>
+                                    </CardHeader>
+                                    <CardContent>
+                                        <div className="text-2xl font-bold">{leaderboard.length}</div>
+                                        <p className="text-sm text-muted-foreground">Active users</p>
+                                    </CardContent>
+                                </Card>
+                            </motion.div>
+                        </>
+                    )}
                 </motion.div>
 
                 {/* Leaderboard Table */}
@@ -147,24 +154,43 @@ export default function LeaderboardPage() {
                 >
                 <Card>
                     <CardContent className="p-0">
-                        {loading ? (
-                            <div className="flex items-center justify-center py-12">
-                                <Loader2 className="h-8 w-8 animate-spin text-muted-foreground" />
-                            </div>
-                        ) : (
-                            <div className="overflow-x-auto">
-                                <table className="w-full">
-                                    <thead>
-                                        <tr className="border-b bg-muted/50">
-                                            <th className="text-left py-4 px-6 font-medium text-muted-foreground w-16">Rank</th>
-                                            <th className="text-left py-4 px-6 font-medium text-muted-foreground">Address</th>
-                                            <th className="text-right py-4 px-6 font-medium text-muted-foreground">Profit</th>
-                                            <th className="text-right py-4 px-6 font-medium text-muted-foreground hidden md:table-cell">Win Rate</th>
-                                            <th className="text-right py-4 px-6 font-medium text-muted-foreground hidden md:table-cell">Bets</th>
-                                        </tr>
-                                    </thead>
-                                    <tbody>
-                                        {paginatedData.map((entry) => (
+                        <div className="overflow-x-auto">
+                            <table className="w-full">
+                                <thead>
+                                    <tr className="border-b bg-muted/50">
+                                        <th className="text-left py-4 px-6 font-medium text-muted-foreground w-16">Rank</th>
+                                        <th className="text-left py-4 px-6 font-medium text-muted-foreground">Address</th>
+                                        <th className="text-right py-4 px-6 font-medium text-muted-foreground">Profit</th>
+                                        <th className="text-right py-4 px-6 font-medium text-muted-foreground hidden md:table-cell">Win Rate</th>
+                                        <th className="text-right py-4 px-6 font-medium text-muted-foreground hidden md:table-cell">Bets</th>
+                                    </tr>
+                                </thead>
+                                <tbody>
+                                    {loading ? (
+                                        skeletonRows.map((_, index) => (
+                                            <tr key={index} className="border-b last:border-0">
+                                                <td className="py-4 px-6">
+                                                    <div className="h-8 w-8 rounded-full bg-muted animate-pulse" />
+                                                </td>
+                                                <td className="py-4 px-6">
+                                                    <div className="flex items-center gap-3">
+                                                        <div className="h-8 w-8 rounded-full bg-muted animate-pulse" />
+                                                        <div className="h-4 w-40 rounded bg-muted animate-pulse" />
+                                                    </div>
+                                                </td>
+                                                <td className="py-4 px-6 text-right">
+                                                    <div className="ml-auto h-4 w-20 rounded bg-muted animate-pulse" />
+                                                </td>
+                                                <td className="py-4 px-6 text-right hidden md:table-cell">
+                                                    <div className="ml-auto h-6 w-16 rounded bg-muted animate-pulse" />
+                                                </td>
+                                                <td className="py-4 px-6 text-right hidden md:table-cell">
+                                                    <div className="ml-auto h-4 w-10 rounded bg-muted animate-pulse" />
+                                                </td>
+                                            </tr>
+                                        ))
+                                    ) : (
+                                        paginatedData.map((entry) => (
                                             <tr 
                                                 key={entry.address} 
                                                 className="border-b last:border-0 hover:bg-muted/30 transition-colors"
@@ -196,11 +222,11 @@ export default function LeaderboardPage() {
                                                     {entry.totalBets}
                                                 </td>
                                             </tr>
-                                        ))}
-                                    </tbody>
-                                </table>
-                            </div>
-                        )}
+                                        ))
+                                    )}
+                                </tbody>
+                            </table>
+                        </div>
                     </CardContent>
                 </Card>
                 </motion.div>
