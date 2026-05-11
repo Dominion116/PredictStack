@@ -6,7 +6,7 @@ import { randomUUID } from 'node:crypto';
 import { readFile } from 'node:fs/promises';
 import swaggerUi from 'swagger-ui-express';
 
-import { JsonStore } from './store.mjs';
+import { MongoStore } from './store.mjs';
 import { createStacksClient } from './stacks.mjs';
 import { specs } from './swagger.js';
 
@@ -16,7 +16,7 @@ const NETWORK = process.env.NETWORK || 'testnet';
 const CONTRACT_ADDRESS = process.env.CONTRACT_ADDRESS || process.env.NEXT_PUBLIC_CONTRACT_ADDRESS || 'ST30VGN68PSGVWGNMD0HH2WQMM5T486EK3WBNTHCY';
 const CONTRACT_NAME = process.env.CONTRACT_NAME || process.env.NEXT_PUBLIC_CONTRACT_NAME || 'predictionmarketv7';
 const PRIVATE_KEY = process.env.STACKS_PRIVATE_KEY;
-const DATA_FILE = process.env.BACKEND_DATA_FILE || path.join(process.cwd(), 'backend', 'data', 'store.json');
+const MONGODB_URI = process.env.MONGODB_URI;
 const PLATFORM_FEE_MICRO = Number(process.env.PLATFORM_FEE_MICRO || 10_000);
 const PINATA_API_KEY = process.env.PINATA_API_KEY;
 const PINATA_SECRET_KEY = process.env.PINATA_SECRET_KEY;
@@ -24,8 +24,11 @@ const PINATA_SECRET_KEY = process.env.PINATA_SECRET_KEY;
 if (!PRIVATE_KEY) {
   throw new Error('STACKS_PRIVATE_KEY is required to run the backend signer.');
 }
+if (!MONGODB_URI) {
+  throw new Error('MONGODB_URI is required to run the backend.');
+}
 
-const store = await new JsonStore(DATA_FILE).init();
+const store = await new MongoStore(MONGODB_URI).init();
 const stacks = createStacksClient({
   network: NETWORK,
   contractAddress: CONTRACT_ADDRESS,
@@ -1180,3 +1183,12 @@ const server = createServer(async (req, res) => {
 server.listen(PORT, HOST, () => {
   console.log(`PredictStack backend listening on http://${HOST}:${PORT}`);
 });
+
+async function shutdown() {
+  server.close(async () => {
+    await store.close();
+    process.exit(0);
+  });
+}
+process.on('SIGTERM', shutdown);
+process.on('SIGINT', shutdown);

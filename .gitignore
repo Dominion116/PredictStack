@@ -47,3 +47,6 @@ transactions.json
 *.env
 dist/
 config.bat
+
+# Local backend data (replaced by MongoDB)
+backend/data/
