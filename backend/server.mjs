@@ -18,6 +18,8 @@ const CONTRACT_NAME = process.env.CONTRACT_NAME || process.env.NEXT_PUBLIC_CONTR
 const PRIVATE_KEY = process.env.STACKS_PRIVATE_KEY;
 const DATA_FILE = process.env.BACKEND_DATA_FILE || path.join(process.cwd(), 'backend', 'data', 'store.json');
 const PLATFORM_FEE_MICRO = Number(process.env.PLATFORM_FEE_MICRO || 10_000);
+const PINATA_API_KEY = process.env.PINATA_API_KEY;
+const PINATA_SECRET_KEY = process.env.PINATA_SECRET_KEY;
 
 if (!PRIVATE_KEY) {
   throw new Error('STACKS_PRIVATE_KEY is required to run the backend signer.');
@@ -398,6 +400,42 @@ async function handleConfirmBet(req, res) {
   recomputeUser(state, address);
   await store.save();
   return sendJson(res, 200, { success: true, position });
+}
+
+async function handleUpload(req, res) {
+  if (!PINATA_API_KEY || !PINATA_SECRET_KEY) {
+    return sendJson(res, 503, { error: 'IPFS upload not configured on server' });
+  }
+
+  const contentType = req.headers['content-type'] || '';
+  if (!contentType.includes('multipart/form-data')) {
+    return sendJson(res, 400, { error: 'Content-Type must be multipart/form-data' });
+  }
+
+  const chunks = [];
+  for await (const chunk of req) chunks.push(chunk);
+  const body = Buffer.concat(chunks);
+
+  const pinataRes = await fetch('https://api.pinata.cloud/pinning/pinFileToIPFS', {
+    method: 'POST',
+    headers: {
+      'Content-Type': contentType,
+      'pinata_api_key': PINATA_API_KEY,
+      'pinata_secret_api_key': PINATA_SECRET_KEY,
+    },
+    body,
+  });
+
+  if (!pinataRes.ok) {
+    const err = await pinataRes.json().catch(() => ({ message: 'Pinata upload failed' }));
+    return sendJson(res, pinataRes.status, { error: err.message || 'Pinata upload failed' });
+  }
+
+  const data = await pinataRes.json();
+  return sendJson(res, 200, {
+    ipfsHash: data.IpfsHash,
+    ipfsUrl: `https://gateway.pinata.cloud/ipfs/${data.IpfsHash}`,
+  });
 }
 
 async function handleConfirmClaim(req, res) {
@@ -1083,6 +1121,10 @@ const server = createServer(async (req, res) => {
 
     if (req.method === 'POST' && pathname === '/api/claims/confirm') {
       return await handleConfirmClaim(req, res);
+    }
+
+    if (req.method === 'POST' && pathname === '/api/upload') {
+      return await handleUpload(req, res);
     }
 
     if (req.method === 'GET' && /^\/api\/users\/[^/]+\/markets$/.test(pathname)) {
