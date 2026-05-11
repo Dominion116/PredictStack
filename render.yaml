@@ -1,0 +1,30 @@
+services:
+  - type: web
+    name: predictstack-backend
+    runtime: node
+    plan: free
+    buildCommand: npm install
+    startCommand: node backend/server.mjs
+    envVars:
+      - key: NODE_ENV
+        value: production
+      - key: HOST
+        value: 0.0.0.0
+      # PORT is set automatically by Render
+      - key: NETWORK
+        value: testnet
+      - key: CONTRACT_ADDRESS
+        value: ST30VGN68PSGVWGNMD0HH2WQMM5T486EK3WBNTHCY
+      - key: CONTRACT_NAME
+        value: predictionmarketv7
+      - key: PLATFORM_FEE_MICRO
+        value: "10000"
+      # Set these in the Render dashboard — never commit real values:
+      - key: MONGODB_URI
+        sync: false
+      - key: STACKS_PRIVATE_KEY
+        sync: false
+      - key: PINATA_API_KEY
+        sync: false
+      - key: PINATA_SECRET_KEY
+        sync: false
