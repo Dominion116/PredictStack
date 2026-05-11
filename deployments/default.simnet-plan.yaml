@@ -62,6 +62,6 @@ plan:
         - emulated-contract-publish:
             contract-name: predictionmarketv7
             emulated-sender: ST1PQHQKV0RJXZFY1DGX8MNSNYVE3VGZJSRTPGZGM
-            path: contracts/prediction-market-v6.clar
+            path: contracts/predictionmarketv7.clar
             clarity-version: 1
       epoch: "2.05"

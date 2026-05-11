@@ -7,7 +7,7 @@ cache_dir = "./.cache"
 
 # Main Prediction Market Contract V7 (Latest)
 [contracts.predictionmarketv7]
-path = "contracts/prediction-market-v6.clar"
+path = "contracts/predictionmarketv7.clar"
 
 [repl.analysis]
 passes = ["check_checker"]
