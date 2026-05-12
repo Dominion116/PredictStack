@@ -1180,8 +1180,8 @@ const server = createServer(async (req, res) => {
   }
 });
 
-server.listen(PORT, HOST, () => {
-  console.log(`PredictStack backend listening on http://${HOST}:${PORT}`);
+server.listen(PORT, '0.0.0.0', () => {
+  console.log(`PredictStack backend listening on http://0.0.0.0:${PORT}`);
 });
 
 async function shutdown() {
