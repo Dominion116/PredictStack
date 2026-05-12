@@ -2,6 +2,7 @@
   "name": "predictstack",
   "version": "1.0.0",
   "description": "A peer-to-peer prediction market platform on Stacks blockchain using STX",
+  "type": "module",
   "private": false,
   "scripts": {
     "backend": "node backend/server.mjs",
@@ -34,7 +35,7 @@
     "vitest-environment-clarinet": "^2.3.0"
   },
   "engines": {
-    "node": ">=18.0.0"
+    "node": "20.x"
   },
   "devDependencies": {
     "@stacks/wallet-sdk": "^7.2.0",
