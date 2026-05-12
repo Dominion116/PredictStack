@@ -11,7 +11,7 @@ import { createStacksClient } from './stacks.mjs';
 import { specs } from './swagger.js';
 
 const PORT = Number(process.env.PORT || 4000);
-const HOST = process.env.HOST || '127.0.0.1';
+const HOST = process.env.HOST || '0.0.0.0';
 const NETWORK = process.env.NETWORK || 'testnet';
 const CONTRACT_ADDRESS = process.env.CONTRACT_ADDRESS || process.env.NEXT_PUBLIC_CONTRACT_ADDRESS || 'ST30VGN68PSGVWGNMD0HH2WQMM5T486EK3WBNTHCY';
 const CONTRACT_NAME = process.env.CONTRACT_NAME || process.env.NEXT_PUBLIC_CONTRACT_NAME || 'predictionmarketv7';
