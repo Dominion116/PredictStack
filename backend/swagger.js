@@ -16,6 +16,10 @@ const options = {
         url: 'http://localhost:4000',
         description: 'Development server',
       },
+      {
+        url: 'https://predictstack.onrender.com',
+        description: 'Production server',
+      },
     ],
     components: {
       schemas: {
