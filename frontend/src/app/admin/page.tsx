@@ -1,4 +1,3 @@
-
 'use client';
 
 import { useState, useEffect, useMemo } from 'react';
@@ -6,8 +5,6 @@ import Image from 'next/image';
 import { motion } from 'framer-motion';
 import { defaultTransition } from '@/lib/animations';
 import { Navbar } from "@/components/navbar";
-import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
-import { Tabs, TabsContent } from "@/components/ui/tabs";
 import { Button } from '@/components/ui/button';
 import { Badge } from '@/components/ui/badge';
 import { Input } from '@/components/ui/input';
@@ -16,7 +13,11 @@ import { Label } from '@/components/ui/label';
 import { getContractConfig, userSession, isUserSignedIn } from '@/lib/constants';
 import { createMarketRecord, getRecentMarkets, resolveMarketRecord } from '@/lib/stacks-api';
 import { blockToDate } from '@/lib/date-utils';
-import { Loader2, ShieldAlert, Gavel, Menu, X } from 'lucide-react';
+import {
+    Loader2, ShieldAlert, Gavel, LayoutDashboard,
+    PlusCircle, CheckSquare, ChevronRight, Upload,
+    BarChart3, Zap, Globe,
+} from 'lucide-react';
 import { Footer } from "@/components/footer";
 import { toast } from 'sonner';
 
@@ -30,128 +31,118 @@ type MarketRecord = {
     'no-pool': number | string;
 };
 
-const getErrorMessage = (error: unknown, fallback: string) => {
-    if (error instanceof Error && error.message) {
-        return error.message;
-    }
+const getErrorMessage = (error: unknown, fallback: string) =>
+    error instanceof Error && error.message ? error.message : fallback;
 
-    return fallback;
-};
+const NAV_ITEMS = [
+    { id: 'overview', label: 'Overview',      icon: LayoutDashboard },
+    { id: 'create',   label: 'Create Market', icon: PlusCircle      },
+    { id: 'resolve',  label: 'Resolve',       icon: CheckSquare     },
+];
 
 export default function AdminPage() {
     const [isAdmin, setIsAdmin] = useState<boolean | null>(null);
 
     useEffect(() => {
-        let isActive = true;
-        const timer = setTimeout(() => {
-            if (!isActive) return;
+        let active = true;
+        const t = setTimeout(() => {
+            if (!active) return;
             if (isUserSignedIn()) {
-                const userData = userSession.loadUserData();
-                const userAddress = userData.profile.stxAddress.testnet;
-                const config = getContractConfig();
-                setIsAdmin(userAddress === config.deployer);
+                const addr = userSession.loadUserData().profile.stxAddress.testnet;
+                setIsAdmin(addr === getContractConfig().deployer);
             } else {
                 setIsAdmin(false);
             }
         }, 0);
-
-        return () => {
-            isActive = false;
-            clearTimeout(timer);
-        };
+        return () => { active = false; clearTimeout(t); };
     }, []);
 
-    if (isAdmin === null) {
-        return (
-            <main className="min-h-screen flex flex-col bg-background">
-                <Navbar />
-                <div className="container py-12 flex-1">
-                    <div className="space-y-6 animate-pulse">
-                        <div className="h-9 w-48 rounded-md bg-muted" />
-                        <div className="grid gap-4 md:grid-cols-3">
-                            <div className="h-24 rounded-lg bg-muted" />
-                            <div className="h-24 rounded-lg bg-muted" />
-                            <div className="h-24 rounded-lg bg-muted" />
-                        </div>
-                        <div className="h-64 rounded-lg bg-muted" />
-                    </div>
-                </div>
-                <Footer />
-            </main>
-        );
-    }
-
-    if (isAdmin === false) {
-        return (
-            <main className="min-h-screen flex flex-col bg-background">
-                <Navbar />
-                <div className="container py-24 flex-1 flex flex-col items-center justify-center text-center">
-                    <ShieldAlert className="h-16 w-16 text-destructive mb-4" />
-                    <h1 className="text-3xl font-bold mb-2">Access Denied</h1>
-                    <p className="text-muted-foreground max-w-md">
-                        This area is restricted to platform administrators only.
-                    </p>
-                </div>
-                <Footer />
-            </main>
-        );
-    }
-
+    if (isAdmin === null) return <AdminSkeleton />;
+    if (isAdmin === false) return <AccessDenied />;
     return <AdminDashboard />;
 }
 
-function AdminDashboard() {
-    const [activeTab, setActiveTab] = useState('create');
-    const [markets, setMarkets] = useState<MarketRecord[]>([]);
-    const [processingId, setProcessingId] = useState<number | null>(null);
-    const [sidebarOpen, setSidebarOpen] = useState(true);
+function AdminSkeleton() {
+    return (
+        <main className="min-h-screen flex flex-col bg-background">
+            <Navbar />
+            <div className="flex-1 flex">
+                <div className="w-56 border-r border-border/60 bg-muted/20 p-4 space-y-2 animate-pulse">
+                    {[0, 1, 2].map(i => <div key={i} className="h-9 rounded-lg bg-muted" />)}
+                </div>
+                <div className="flex-1 p-8 space-y-6 animate-pulse">
+                    <div className="h-8 w-48 rounded bg-muted" />
+                    <div className="grid grid-cols-3 gap-4">
+                        {[0, 1, 2].map(i => <div key={i} className="h-24 rounded-xl bg-muted" />)}
+                    </div>
+                    <div className="h-64 rounded-xl bg-muted" />
+                </div>
+            </div>
+        </main>
+    );
+}
 
-    // Form State
-    const activeMarkets = markets.filter(m => m.status === 'active' || m.status === '0' || m.status === 0);
-    const [question, setQuestion] = useState('');
+function AccessDenied() {
+    return (
+        <main className="min-h-screen flex flex-col bg-background">
+            <Navbar />
+            <div className="flex-1 flex flex-col items-center justify-center text-center p-8 space-y-4">
+                <div className="h-16 w-16 rounded-2xl border border-destructive/40 bg-destructive/10 flex items-center justify-center">
+                    <ShieldAlert className="h-7 w-7 text-destructive" />
+                </div>
+                <h1 className="text-2xl font-bold">Access Denied</h1>
+                <p className="text-muted-foreground text-sm max-w-sm">
+                    This area is restricted to platform administrators only.
+                </p>
+            </div>
+            <Footer />
+        </main>
+    );
+}
+
+function AdminDashboard() {
+    const [activeTab,    setActiveTab]    = useState('create');
+    const [markets,      setMarkets]      = useState<MarketRecord[]>([]);
+    const [processingId, setProcessingId] = useState<number | null>(null);
+
+    const activeMarkets = markets.filter(
+        m => m.status === 'active' || m.status === '0' || m.status === 0
+    );
+
+    // Form state
+    const [question,    setQuestion]    = useState('');
     const [description, setDescription] = useState('');
     const [resolveDate, setResolveDate] = useState('');
-    const [category, setCategory] = useState('Crypto');
-    const [imageUrl, setImageUrl] = useState('');
+    const [category,    setCategory]    = useState('Crypto');
+    const [imageUrl,    setImageUrl]    = useState('');
     const [isUploading, setIsUploading] = useState(false);
-    const [previewUrl, setPreviewUrl] = useState<string | null>(null);
+    const [previewUrl,  setPreviewUrl]  = useState<string | null>(null);
     const [isSubmitting, setIsSubmitting] = useState(false);
 
-    const CURRENT_BLOCK_HEIGHT = 3750000;
-    const SECONDS_PER_BLOCK = 600;
+    const CURRENT_BLOCK = 3_750_000;
+    const SECS_PER_BLOCK = 600;
 
     const estimatedBlock = useMemo(() => {
         if (!resolveDate) return 0;
-        const targetTime = new Date(resolveDate).getTime();
-        const now = Date.now();
-        const secondsUntilResolve = Math.max(0, (targetTime - now) / 1000);
-        const blocksUntilResolve = Math.ceil(secondsUntilResolve / SECONDS_PER_BLOCK);
-        return CURRENT_BLOCK_HEIGHT + blocksUntilResolve;
+        const secs = Math.max(0, (new Date(resolveDate).getTime() - Date.now()) / 1000);
+        return CURRENT_BLOCK + Math.ceil(secs / SECS_PER_BLOCK);
     }, [resolveDate]);
 
     const loadData = async () => {
         try {
-            const fetchedMarkets = await getRecentMarkets(100);
-            setMarkets(fetchedMarkets);
-        } catch (error) {
-            console.error("Failed to load markets:", error);
-            toast.error("Failed to load markets.");
+            setMarkets(await getRecentMarkets(100));
+        } catch {
+            toast.error('Failed to load markets.');
         }
     };
 
-    useEffect(() => {
-        loadData();
-    }, []);
+    useEffect(() => { loadData(); }, []);
 
     const handleFileChange = async (e: React.ChangeEvent<HTMLInputElement>) => {
         const file = e.target.files?.[0];
         if (!file) return;
-        if (file.size > 2 * 1024 * 1024) {
-            toast.error('Image must be less than 2MB');
-            return;
-        }
-        const localUrl = URL.createObjectURL(file);
-        setPreviewUrl(localUrl);
+        if (file.size > 2 * 1024 * 1024) { toast.error('Image must be < 2 MB'); return; }
+        setPreviewUrl(URL.createObjectURL(file));
         setIsUploading(true);
         try {
             const { uploadToPinata } = await import('@/lib/pinata');
@@ -162,8 +153,8 @@ function AdminDashboard() {
             } else {
                 throw new Error(result.error || 'Upload failed');
             }
-        } catch (error: unknown) {
-            toast.error(getErrorMessage(error, 'Failed to upload image'));
+        } catch (err: unknown) {
+            toast.error(getErrorMessage(err, 'Upload failed'));
             setImageUrl('');
         } finally {
             setIsUploading(false);
@@ -172,41 +163,20 @@ function AdminDashboard() {
 
     const handleCreateMarket = async (e: React.FormEvent) => {
         e.preventDefault();
-        if (!question || !resolveDate) {
-            toast.error('Question and Resolution Date are required');
-            return;
+        if (!question || !resolveDate) { toast.error('Question and date are required'); return; }
+        if (estimatedBlock <= CURRENT_BLOCK + 144) {
+            toast.error('Resolution must be at least 24 h in the future'); return;
         }
-
-        if (estimatedBlock <= CURRENT_BLOCK_HEIGHT + 144) {
-            toast.error('Resolution date must be at least 24 hours in the future');
-            return;
-        }
-
+        setIsSubmitting(true);
         try {
-            setIsSubmitting(true);
-            const userData = userSession.loadUserData();
-            const createdBy = userData.profile.stxAddress.testnet;
-
-            await createMarketRecord({
-                question,
-                description,
-                category,
-                imageUrl,
-                resolveDate,
-                resolveBlock: estimatedBlock,
-                createdBy,
-            });
-
-            toast.success('Market stored and signed successfully!');
-            setQuestion('');
-            setDescription('');
-            setResolveDate('');
-            setPreviewUrl(null);
-            setImageUrl('');
-            setIsSubmitting(false);
+            const createdBy = userSession.loadUserData().profile.stxAddress.testnet;
+            await createMarketRecord({ question, description, category, imageUrl, resolveDate, resolveBlock: estimatedBlock, createdBy });
+            toast.success('Market created!');
+            setQuestion(''); setDescription(''); setResolveDate(''); setPreviewUrl(null); setImageUrl('');
             setTimeout(loadData, 2000);
-        } catch (error: unknown) {
-            toast.error(getErrorMessage(error, 'Failed to create market'));
+        } catch (err: unknown) {
+            toast.error(getErrorMessage(err, 'Failed to create market'));
+        } finally {
             setIsSubmitting(false);
         }
     };
@@ -214,266 +184,368 @@ function AdminDashboard() {
     const handleResolve = async (marketId: number, outcome: boolean) => {
         setProcessingId(marketId);
         try {
-            const market = markets.find(item => item.id === marketId);
-            if (!market?.backendId) {
-                throw new Error('Missing backend market reference');
-            }
+            const market = markets.find(m => m.id === marketId);
+            if (!market?.backendId) throw new Error('Missing backend reference');
             await resolveMarketRecord(market.backendId, outcome);
             toast.success(`Market ${marketId} resolved as ${outcome ? 'YES' : 'NO'}!`);
-            setProcessingId(null);
             setTimeout(loadData, 2000);
-        } catch (error: unknown) {
-            toast.error(getErrorMessage(error, 'Failed to resolve market'));
+        } catch (err: unknown) {
+            toast.error(getErrorMessage(err, 'Failed to resolve'));
+        } finally {
             setProcessingId(null);
         }
     };
 
+    const totalVolume = markets.reduce((sum, m) => {
+        return sum + (Number(m['yes-pool']) + Number(m['no-pool'])) / 1_000_000;
+    }, 0);
+
     return (
         <main className="min-h-screen flex flex-col bg-background">
             <Navbar />
-            
-            <div className="flex-1 flex flex-col md:flex-row relative">
-                {/* Mobile/Desktop Sidebar Toggle */}
-                <Button
-                    onClick={() => setSidebarOpen(!sidebarOpen)}
-                    variant="ghost"
-                    size="icon"
-                    className="absolute top-4 left-4 z-50 md:hidden"
-                >
-                    {sidebarOpen ? <X className="h-5 w-5" /> : <Menu className="h-5 w-5" />}
-                </Button>
 
+            <div className="flex-1 flex overflow-hidden">
                 {/* Sidebar */}
-                <motion.aside 
-                    className={`${sidebarOpen ? 'w-full md:w-64' : 'w-0 md:w-16'} border-r bg-muted/20 p-6 flex flex-col gap-6 overflow-hidden transition-all duration-300`}
-                    initial={{ opacity: 0, x: -20 }}
+                <motion.aside
+                    className="w-56 shrink-0 border-r border-border/60 bg-muted/20 flex flex-col"
+                    initial={{ opacity: 0, x: -16 }}
                     animate={{ opacity: 1, x: 0 }}
                     transition={defaultTransition}
                 >
-                    <div className="flex items-center justify-between">
-                        {sidebarOpen && <div className="font-semibold text-lg px-2">Admin</div>}
-                        <Button
-                            onClick={() => setSidebarOpen(!sidebarOpen)}
-                            variant="ghost"
-                            size="icon"
-                            className="hidden md:inline-flex"
-                        >
-                            {sidebarOpen ? <X className="h-4 w-4" /> : <Menu className="h-4 w-4" />}
-                        </Button>
+                    <div className="p-4 border-b border-border/60">
+                        <div className="flex items-center gap-2">
+                            <div className="h-7 w-7 rounded-md bg-primary/15 flex items-center justify-center">
+                                <ShieldAlert className="h-3.5 w-3.5 text-primary" />
+                            </div>
+                            <span className="text-sm font-semibold">Admin Panel</span>
+                        </div>
                     </div>
-                    <nav className="space-y-2">
-                        <button 
-                            onClick={() => setActiveTab('overview')}
-                            className={`w-full text-left px-3 py-2 text-sm font-medium rounded-md transition-colors ${activeTab === 'overview' ? 'bg-primary/10 text-primary' : 'hover:bg-muted/50 text-muted-foreground'}`}
-                            title={!sidebarOpen ? 'Overview' : ''}
-                        >
-                            {sidebarOpen ? 'Overview' : '📊'}
-                        </button>
-                        <button 
-                            onClick={() => setActiveTab('create')}
-                            className={`w-full text-left px-3 py-2 text-sm font-medium rounded-md transition-colors flex justify-between items-center ${activeTab === 'create' ? 'bg-primary/10 text-primary' : 'hover:bg-muted/50 text-muted-foreground'}`}
-                            title={!sidebarOpen ? 'Create Market' : ''}
-                        >
-                            {sidebarOpen ? 'Create Market' : '➕'}
-                        </button>
-                        <button 
-                            onClick={() => setActiveTab('resolve')}
-                            className={`w-full text-left px-3 py-2 text-sm font-medium rounded-md transition-colors ${activeTab === 'resolve' ? 'bg-primary/10 text-primary' : 'hover:bg-muted/50 text-muted-foreground'}`}
-                            title={!sidebarOpen ? 'Resolve Betting' : ''}
-                        >
-                            {sidebarOpen ? 'Resolve Betting' : '🏛️'}
-                        </button>
+
+                    <nav className="p-3 space-y-1 flex-1">
+                        {NAV_ITEMS.map(({ id, label, icon: Icon }) => (
+                            <button
+                                key={id}
+                                onClick={() => setActiveTab(id)}
+                                className={`w-full flex items-center gap-2.5 px-3 py-2 rounded-lg text-sm font-mono transition-colors text-left ${
+                                    activeTab === id
+                                        ? 'bg-primary/10 text-primary font-medium'
+                                        : 'text-muted-foreground hover:bg-muted/50 hover:text-foreground'
+                                }`}
+                            >
+                                <Icon className="h-3.5 w-3.5 shrink-0" />
+                                {label}
+                                {activeTab === id && (
+                                    <ChevronRight className="h-3 w-3 ml-auto text-primary" />
+                                )}
+                            </button>
+                        ))}
                     </nav>
+
+                    {/* Sidebar footer stats */}
+                    <div className="p-3 border-t border-border/60 space-y-2">
+                        <div className="rounded-lg bg-muted/40 px-3 py-2 text-xs font-mono">
+                            <div className="text-muted-foreground">Active</div>
+                            <div className="font-bold text-primary">{activeMarkets.length}</div>
+                        </div>
+                        <div className="rounded-lg bg-muted/40 px-3 py-2 text-xs font-mono">
+                            <div className="text-muted-foreground">Total</div>
+                            <div className="font-bold">{markets.length}</div>
+                        </div>
+                    </div>
                 </motion.aside>
 
-                {/* Main Content */}
-                <motion.div 
-                    className="flex-1 p-8 space-y-8"
-                    initial={{ opacity: 0, y: 20 }}
+                {/* Main content */}
+                <motion.div
+                    className="flex-1 overflow-auto p-6 md:p-8 space-y-6"
+                    initial={{ opacity: 0, y: 12 }}
                     animate={{ opacity: 1, y: 0 }}
-                    transition={{ ...defaultTransition, delay: 0.1 }}
+                    transition={{ ...defaultTransition, delay: 0.08 }}
                 >
-                    <Tabs value={activeTab} onValueChange={setActiveTab} className="w-full">
-                        
-                        <TabsContent value="create" className="space-y-6">
-                            <div className="flex items-center justify-between">
-                                <h2 className="text-2xl font-bold tracking-tight">Create New Market</h2>
-                            </div>
+                    {/* ── OVERVIEW ─────────────────────────────────── */}
+                    {activeTab === 'overview' && (
+                        <div className="space-y-6">
+                            <SectionHeader
+                                icon={LayoutDashboard}
+                                title="Platform Overview"
+                                sub="Real-time market data"
+                            />
 
-                            <Card>
-                                <CardContent className="pt-6">
-                                    <form onSubmit={handleCreateMarket} className="space-y-4">
-                                        <div className="space-y-2">
-                                            <Label htmlFor="question">Market Question</Label>
-                                            <Input 
-                                                id="question" 
-                                                placeholder="e.g. Will Bitcoin reach $100k by end of year?" 
-                                                value={question}
-                                                onChange={(e) => setQuestion(e.target.value)}
-                                                required
-                                            />
+                            <div className="grid grid-cols-1 sm:grid-cols-3 gap-4">
+                                {[
+                                    { icon: Globe,    label: 'Total Markets',  value: markets.length,        accent: false },
+                                    { icon: Zap,      label: 'Active Markets', value: activeMarkets.length,  accent: true  },
+                                    { icon: BarChart3, label: 'Total Volume',  value: `$${totalVolume.toFixed(2)}`, accent: false },
+                                ].map(({ icon: Icon, label, value, accent }) => (
+                                    <div key={label} className="rounded-xl border border-border/60 bg-card p-5">
+                                        <div className="flex items-center justify-between mb-2">
+                                            <span className="text-[10px] font-mono uppercase tracking-widest text-muted-foreground">{label}</span>
+                                            <Icon className={`h-3.5 w-3.5 ${accent ? 'text-primary' : 'text-muted-foreground'}`} />
                                         </div>
-
-                                        <div className="grid grid-cols-2 gap-4">
-                                            <div className="space-y-2">
-                                                <Label htmlFor="category">Category</Label>
-                                                <select 
-                                                    id="category"
-                                                    className="flex h-10 w-full rounded-md border border-input bg-background px-3 py-2 text-sm"
-                                                    value={category}
-                                                    onChange={(e) => setCategory(e.target.value)}
-                                                >
-                                                    <option value="Crypto">Crypto</option>
-                                                    <option value="Politics">Politics</option>
-                                                    <option value="Sports">Sports</option>
-                                                </select>
-                                            </div>
-                                            <div className="space-y-2">
-                                                <Label htmlFor="resolveDate">Resolution Date</Label>
-                                                <Input 
-                                                    id="resolveDate" 
-                                                    type="datetime-local" 
-                                                    value={resolveDate}
-                                                    onChange={(e) => setResolveDate(e.target.value)}
-                                                    required
-                                                />
-                                            </div>
-                                        </div>
-
-                                        <div className="space-y-2">
-                                            <Label htmlFor="image">Market Image</Label>
-                                            <div className="flex items-center gap-4">
-                                                <div className="flex-1 border-2 border-dashed rounded-lg p-4 text-center cursor-pointer hover:bg-muted/50 relative">
-                                                    <input 
-                                                        type="file" 
-                                                        className="absolute inset-0 opacity-0 cursor-pointer" 
-                                                        onChange={handleFileChange}
-                                                        accept="image/*"
-                                                        disabled={isUploading}
-                                                    />
-                                                    {previewUrl ? (
-                                                        <Image
-                                                            src={previewUrl}
-                                                            width={80}
-                                                            height={80}
-                                                            className="h-20 w-20 mx-auto rounded object-cover"
-                                                            alt="Preview"
-                                                        />
-                                                    ) : (
-                                                        <div className="text-sm text-muted-foreground">
-                                                            {isUploading ? <Loader2 className="h-4 w-4 animate-spin mx-auto"/> : "Click to upload image"}
-                                                        </div>
-                                                    )}
-                                                </div>
-                                            </div>
-                                        </div>
-
-                                        <div className="space-y-2">
-                                            <Label htmlFor="description">Description (Markdown supported)</Label>
-                                            <Textarea 
-                                                id="description" 
-                                                placeholder="Market rules and outcome conditions..." 
-                                                value={description}
-                                                onChange={(e) => setDescription(e.target.value)}
-                                            />
-                                        </div>
-
-                                        <Button type="submit" className="w-full" disabled={isSubmitting || isUploading}>
-                                            {isSubmitting && <Loader2 className="mr-2 h-4 w-4 animate-spin"/>}
-                                            {isSubmitting ? "Creating Market..." : "Create Market"}
-                                        </Button>
-                                    </form>
-                                </CardContent>
-                            </Card>
-                        </TabsContent>
-
-                        <TabsContent value="resolve" className="space-y-6">
-                            <h2 className="text-2xl font-bold tracking-tight">Resolve Markets</h2>
-                            <p className="text-muted-foreground">Select a market to declare the winning outcome.</p>
-                            <div className="grid gap-6">
-                                {activeMarkets.map(market => (
-                                    <Card key={market.id}>
-                                        <CardHeader>
-                                            <CardTitle className="flex justify-between">
-                                                {market.question}
-                                                <Badge variant="outline">ID: {market.id}</Badge>
-                                            </CardTitle>
-                                            <CardDescription>Ends: {blockToDate(market['resolve-date']).toLocaleDateString()}</CardDescription>
-                                        </CardHeader>
-                                        <CardContent>
-                                            <div className="flex flex-col gap-4">
-                                                <div className="flex gap-4">
-                                                    <div className="flex-1 bg-green-50 p-3 rounded-md text-center border border-green-100">
-                                                        <div className="text-xs text-muted-foreground uppercase mb-1">Yes Pool</div>
-                                                        <div className="font-bold text-green-700">
-                                                            ${(Number(market['yes-pool']) / 1000000).toLocaleString()}
-                                                        </div>
-                                                    </div>
-                                                    <div className="flex-1 bg-red-50 p-3 rounded-md text-center border border-red-100">
-                                                        <div className="text-xs text-muted-foreground uppercase mb-1">No Pool</div>
-                                                        <div className="font-bold text-red-700">
-                                                            ${(Number(market['no-pool']) / 1000000).toLocaleString()}
-                                                        </div>
-                                                    </div>
-                                                </div>
-                                                <div className="flex gap-4">
-                                                    <Button 
-                                                        className="flex-1 bg-green-600 hover:bg-green-700"
-                                                        onClick={() => handleResolve(market.id, true)}
-                                                        disabled={processingId === market.id}
-                                                    >
-                                                        {processingId === market.id ? <Loader2 className="mr-2 h-4 w-4 animate-spin"/> : <Gavel className="mr-2 h-4 w-4"/>}
-                                                        Resolve YES
-                                                    </Button>
-                                                    <Button 
-                                                        className="flex-1 bg-red-600 hover:bg-red-700"
-                                                        onClick={() => handleResolve(market.id, false)}
-                                                        disabled={processingId === market.id}
-                                                    >
-                                                        {processingId === market.id ? <Loader2 className="mr-2 h-4 w-4 animate-spin"/> : <Gavel className="mr-2 h-4 w-4"/>}
-                                                        Resolve NO
-                                                    </Button>
-                                                </div>
-                                            </div>
-                                        </CardContent>
-                                   </Card> 
+                                        <div className={`text-2xl font-bold font-mono ${accent ? 'text-primary' : ''}`}>{value}</div>
+                                    </div>
                                 ))}
                             </div>
-                        </TabsContent>
 
-                         <TabsContent value="overview" className="space-y-6 mt-6">
-                            <h2 className="text-2xl font-bold tracking-tight">Platform Overview</h2>
-                            <div className="grid gap-4 md:grid-cols-3">
-                                <Card>
-                                    <CardHeader className="pb-2">
-                                        <CardTitle className="text-sm font-medium text-muted-foreground">Total Markets</CardTitle>
-                                    </CardHeader>
-                                    <CardContent>
-                                        <div className="text-2xl font-bold">{markets.length}</div>
-                                    </CardContent>
-                                </Card>
-                                <Card>
-                                    <CardHeader className="pb-2">
-                                        <CardTitle className="text-sm font-medium text-muted-foreground">Active Markets</CardTitle>
-                                    </CardHeader>
-                                    <CardContent>
-                                        <div className="text-2xl font-bold text-primary">{activeMarkets.length}</div>
-                                    </CardContent>
-                                </Card>
-                                <Card>
-                                    <CardHeader className="pb-2">
-                                        <CardTitle className="text-sm font-medium text-muted-foreground">Total Volume</CardTitle>
-                                    </CardHeader>
-                                    <CardContent>
-                                        <div className="text-2xl font-bold">---</div>
-                                    </CardContent>
-                                </Card>
+                            {/* Market list quick view */}
+                            <div className="rounded-xl border border-border/60 bg-card overflow-hidden">
+                                <div className="px-5 py-3 border-b border-border/60 bg-muted/20 flex items-center justify-between">
+                                    <span className="text-xs font-mono text-muted-foreground uppercase tracking-widest">Recent Markets</span>
+                                    <Button variant="ghost" size="sm" onClick={() => setActiveTab('resolve')} className="font-mono text-xs text-primary h-7">
+                                        Resolve →
+                                    </Button>
+                                </div>
+                                <div className="divide-y divide-border/40">
+                                    {markets.slice(0, 5).map(m => (
+                                        <div key={m.id} className="flex items-center gap-4 px-5 py-3">
+                                            <Badge variant="outline" className={`text-[10px] font-mono shrink-0 ${
+                                                m.status === 'active' || m.status === 0 || m.status === '0'
+                                                    ? 'text-green-500 border-green-500/40'
+                                                    : 'text-muted-foreground'
+                                            }`}>
+                                                {m.status === 'active' || m.status === 0 || m.status === '0' ? 'LIVE' : String(m.status).toUpperCase()}
+                                            </Badge>
+                                            <p className="text-sm flex-1 truncate">{m.question}</p>
+                                            <span className="text-xs font-mono text-muted-foreground shrink-0">#{m.id}</span>
+                                        </div>
+                                    ))}
+                                    {markets.length === 0 && (
+                                        <div className="py-8 text-center text-sm font-mono text-muted-foreground">No markets yet.</div>
+                                    )}
+                                </div>
                             </div>
-                        </TabsContent>
-                    </Tabs>
+                        </div>
+                    )}
+
+                    {/* ── CREATE ───────────────────────────────────── */}
+                    {activeTab === 'create' && (
+                        <div className="space-y-6 max-w-2xl">
+                            <SectionHeader
+                                icon={PlusCircle}
+                                title="Create New Market"
+                                sub="Deploy a prediction market to the blockchain"
+                            />
+
+                            <form onSubmit={handleCreateMarket} className="space-y-5">
+                                {/* Question */}
+                                <Field label="Market Question" hint="Make it a clear YES/NO question">
+                                    <Input
+                                        placeholder="e.g. Will Bitcoin reach $100k by end of 2026?"
+                                        value={question}
+                                        onChange={e => setQuestion(e.target.value)}
+                                        required
+                                        className="font-mono text-sm"
+                                    />
+                                </Field>
+
+                                {/* Category + Date */}
+                                <div className="grid grid-cols-2 gap-4">
+                                    <Field label="Category">
+                                        <select
+                                            className="flex h-10 w-full rounded-md border border-input bg-background px-3 py-2 text-sm font-mono ring-offset-background focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring"
+                                            value={category}
+                                            onChange={e => setCategory(e.target.value)}
+                                        >
+                                            <option value="Crypto">Crypto</option>
+                                            <option value="Politics">Politics</option>
+                                            <option value="Sports">Sports</option>
+                                            <option value="General">General</option>
+                                        </select>
+                                    </Field>
+                                    <Field label="Resolution Date" hint={estimatedBlock ? `Block ~${estimatedBlock.toLocaleString()}` : undefined}>
+                                        <Input
+                                            type="datetime-local"
+                                            value={resolveDate}
+                                            onChange={e => setResolveDate(e.target.value)}
+                                            required
+                                            className="font-mono text-sm"
+                                        />
+                                    </Field>
+                                </div>
+
+                                {/* Image upload */}
+                                <Field label="Market Image" hint="Max 2 MB · uploaded to IPFS">
+                                    <label className="relative flex flex-col items-center justify-center w-full h-28 border-2 border-dashed border-border/60 rounded-xl cursor-pointer hover:border-primary/40 hover:bg-muted/20 transition-colors overflow-hidden">
+                                        <input
+                                            type="file"
+                                            className="absolute inset-0 opacity-0 cursor-pointer"
+                                            onChange={handleFileChange}
+                                            accept="image/*"
+                                            disabled={isUploading}
+                                        />
+                                        {previewUrl ? (
+                                            <Image
+                                                src={previewUrl}
+                                                width={80}
+                                                height={80}
+                                                className="h-20 w-20 rounded-lg object-cover"
+                                                alt="Preview"
+                                            />
+                                        ) : isUploading ? (
+                                            <Loader2 className="h-5 w-5 animate-spin text-muted-foreground" />
+                                        ) : (
+                                            <div className="flex flex-col items-center gap-1.5 text-muted-foreground">
+                                                <Upload className="h-5 w-5" />
+                                                <span className="text-xs font-mono">Click to upload</span>
+                                            </div>
+                                        )}
+                                    </label>
+                                </Field>
+
+                                {/* Description */}
+                                <Field label="Resolution Criteria" hint="Markdown supported">
+                                    <Textarea
+                                        placeholder="Describe exactly how this market will be resolved..."
+                                        value={description}
+                                        onChange={e => setDescription(e.target.value)}
+                                        className="font-mono text-sm min-h-[100px]"
+                                    />
+                                </Field>
+
+                                <Button
+                                    type="submit"
+                                    className="w-full font-mono"
+                                    disabled={isSubmitting || isUploading}
+                                >
+                                    {isSubmitting
+                                        ? <><Loader2 className="mr-2 h-4 w-4 animate-spin" />Creating…</>
+                                        : <><PlusCircle className="mr-2 h-4 w-4" />Create Market</>
+                                    }
+                                </Button>
+                            </form>
+                        </div>
+                    )}
+
+                    {/* ── RESOLVE ──────────────────────────────────── */}
+                    {activeTab === 'resolve' && (
+                        <div className="space-y-6">
+                            <SectionHeader
+                                icon={CheckSquare}
+                                title="Resolve Markets"
+                                sub={`${activeMarkets.length} active market${activeMarkets.length !== 1 ? 's' : ''} pending resolution`}
+                            />
+
+                            {activeMarkets.length === 0 ? (
+                                <div className="rounded-xl border border-dashed border-border py-16 text-center space-y-2">
+                                    <CheckSquare className="h-8 w-8 text-muted-foreground mx-auto" />
+                                    <p className="text-sm font-mono text-muted-foreground">No active markets to resolve.</p>
+                                </div>
+                            ) : (
+                                <div className="space-y-4">
+                                    {activeMarkets.map(market => {
+                                        const yesPool = Number(market['yes-pool']) / 1_000_000;
+                                        const noPool  = Number(market['no-pool'])  / 1_000_000;
+                                        const total   = yesPool + noPool;
+                                        const yesPercent = total > 0 ? (yesPool / total) * 100 : 50;
+                                        const noPercent  = 100 - yesPercent;
+                                        const resolveDate = blockToDate(market['resolve-date']);
+
+                                        return (
+                                            <div
+                                                key={market.id}
+                                                className="rounded-xl border border-border/60 bg-card overflow-hidden"
+                                            >
+                                                <div className="px-5 py-4 border-b border-border/60">
+                                                    <div className="flex items-start justify-between gap-4">
+                                                        <p className="font-semibold text-sm leading-snug flex-1">
+                                                            {market.question}
+                                                        </p>
+                                                        <Badge variant="outline" className="font-mono text-[10px] shrink-0">
+                                                            #{market.id}
+                                                        </Badge>
+                                                    </div>
+                                                    <p className="text-xs font-mono text-muted-foreground mt-1.5">
+                                                        Resolves {resolveDate.toLocaleDateString()}
+                                                    </p>
+                                                </div>
+
+                                                <div className="px-5 py-4 space-y-4">
+                                                    {/* Pool breakdown */}
+                                                    <div className="grid grid-cols-2 gap-3">
+                                                        <div className="rounded-lg bg-green-500/10 border border-green-500/20 p-3">
+                                                            <div className="text-[10px] font-mono uppercase text-muted-foreground mb-1">YES Pool</div>
+                                                            <div className="font-bold font-mono text-green-500">${yesPool.toFixed(2)}</div>
+                                                            <div className="text-[10px] font-mono text-muted-foreground mt-0.5">{yesPercent.toFixed(1)}%</div>
+                                                        </div>
+                                                        <div className="rounded-lg bg-red-500/10 border border-red-500/20 p-3">
+                                                            <div className="text-[10px] font-mono uppercase text-muted-foreground mb-1">NO Pool</div>
+                                                            <div className="font-bold font-mono text-red-500">${noPool.toFixed(2)}</div>
+                                                            <div className="text-[10px] font-mono text-muted-foreground mt-0.5">{noPercent.toFixed(1)}%</div>
+                                                        </div>
+                                                    </div>
+
+                                                    {/* Pool bar */}
+                                                    <div className="h-1.5 w-full rounded-full overflow-hidden flex bg-muted">
+                                                        <div className="h-full bg-green-500" style={{ width: `${yesPercent}%` }} />
+                                                        <div className="h-full bg-red-500"   style={{ width: `${noPercent}%`  }} />
+                                                    </div>
+
+                                                    {/* Resolve buttons */}
+                                                    <div className="grid grid-cols-2 gap-3">
+                                                        <Button
+                                                            className="font-mono text-sm bg-green-600 hover:bg-green-700 text-white"
+                                                            onClick={() => handleResolve(market.id, true)}
+                                                            disabled={processingId === market.id}
+                                                        >
+                                                            {processingId === market.id
+                                                                ? <Loader2 className="mr-2 h-4 w-4 animate-spin" />
+                                                                : <Gavel className="mr-2 h-4 w-4" />
+                                                            }
+                                                            YES Wins
+                                                        </Button>
+                                                        <Button
+                                                            className="font-mono text-sm bg-red-600 hover:bg-red-700 text-white"
+                                                            onClick={() => handleResolve(market.id, false)}
+                                                            disabled={processingId === market.id}
+                                                        >
+                                                            {processingId === market.id
+                                                                ? <Loader2 className="mr-2 h-4 w-4 animate-spin" />
+                                                                : <Gavel className="mr-2 h-4 w-4" />
+                                                            }
+                                                            NO Wins
+                                                        </Button>
+                                                    </div>
+                                                </div>
+                                            </div>
+                                        );
+                                    })}
+                                </div>
+                            )}
+                        </div>
+                    )}
                 </motion.div>
             </div>
+
             <Footer />
         </main>
+    );
+}
+
+function SectionHeader({
+    icon: Icon, title, sub,
+}: { icon: React.ElementType; title: string; sub?: string }) {
+    return (
+        <div className="space-y-0.5">
+            <div className="flex items-center gap-2 text-muted-foreground mb-1">
+                <Icon className="h-3.5 w-3.5" />
+                <span className="text-[11px] font-mono uppercase tracking-widest">{title}</span>
+            </div>
+            {sub && <p className="text-xs text-muted-foreground font-mono">{sub}</p>}
+        </div>
+    );
+}
+
+function Field({
+    label, hint, children,
+}: { label: string; hint?: string; children: React.ReactNode }) {
+    return (
+        <div className="space-y-1.5">
+            <div className="flex items-baseline justify-between">
+                <Label className="text-xs font-mono uppercase tracking-wide text-muted-foreground">
+                    {label}
+                </Label>
+                {hint && <span className="text-[10px] font-mono text-muted-foreground">{hint}</span>}
+            </div>
+            {children}
+        </div>
     );
 }
