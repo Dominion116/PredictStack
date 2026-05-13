@@ -4,11 +4,14 @@ import { useEffect, useState } from 'react';
 import { motion } from 'framer-motion';
 import { fadeInUp, staggerContainer, defaultTransition } from '@/lib/animations';
 import { Navbar } from "@/components/navbar";
-import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
 import { Badge } from '@/components/ui/badge';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
-import { Loader2, Wallet, TrendingUp, AlertCircle, RefreshCcw, CheckCircle } from 'lucide-react';
+import {
+    Loader2, Wallet, TrendingUp, RefreshCcw,
+    CheckCircle, ArrowRight, Clock, CircleDot,
+    BarChart2, Trophy, AlertCircle,
+} from 'lucide-react';
 import { userSession, getContractConfig, isUserSignedIn } from '@/lib/constants';
 import { confirmClaim, getStxBalance, getUserDashboard } from '@/lib/stacks-api';
 import { blockToDate } from '@/lib/date-utils';
@@ -21,22 +24,46 @@ import { RecentActivity } from '@/components/recent-activity';
 
 export default function DashboardPage() {
     const [mounted, setMounted] = useState(false);
-
-    useEffect(() => {
-        setMounted(true);
-    }, []);
-
+    useEffect(() => { setMounted(true); }, []);
     if (!mounted) return null;
-
     return <DashboardContent />;
 }
 
+function StatCard({
+    label, value, sub, icon: Icon, accent = false,
+}: {
+    label: string; value: string | number; sub?: string;
+    icon: React.ElementType; accent?: boolean;
+}) {
+    return (
+        <motion.div variants={fadeInUp}>
+            <div className="relative rounded-xl border border-border/60 bg-card p-5 overflow-hidden group hover:border-primary/30 transition-colors duration-300">
+                <div className="flex items-start justify-between mb-3">
+                    <span className="text-[11px] font-mono tracking-widest text-muted-foreground uppercase">
+                        {label}
+                    </span>
+                    <Icon className={`h-4 w-4 ${accent ? 'text-primary' : 'text-muted-foreground'}`} />
+                </div>
+                <div className={`text-2xl font-bold font-mono ${accent ? 'text-primary' : ''}`}>
+                    {value}
+                </div>
+                {sub && (
+                    <p className="text-xs text-muted-foreground mt-1">{sub}</p>
+                )}
+                {/* Subtle corner accent */}
+                <div className="absolute bottom-0 right-0 w-16 h-16 rounded-tl-3xl bg-primary/5 opacity-0 group-hover:opacity-100 transition-opacity duration-300" />
+            </div>
+        </motion.div>
+    );
+}
+
 function DashboardContent() {
-    const [loading, setLoading] = useState(true);
-    const [userData, setUserData] = useState<any>(null);
-    const [balance, setBalance] = useState<number>(0);
-    const [userBets, setUserBets] = useState<any[]>([]);
+    const [loading, setLoading]       = useState(true);
+    const [userData, setUserData]     = useState<any>(null);
+    const [balance, setBalance]       = useState<number>(0);
+    const [userBets, setUserBets]     = useState<any[]>([]);
     const [isClaiming, setIsClaiming] = useState<number | null>(null);
+    const [summary, setSummary]       = useState<any>(null);
 
     const { doContractCall } = useConnect();
 
@@ -54,24 +81,23 @@ function DashboardContent() {
         try {
             const profile = userSession.loadUserData().profile;
             const address = profile.stxAddress.testnet;
-
-            // 1. Get Balance
-            const bal = await getStxBalance(address);
+            const [bal, dashboard] = await Promise.all([
+                getStxBalance(address),
+                getUserDashboard(address),
+            ]);
             setBalance(bal);
-
-            const dashboard = await getUserDashboard(address);
+            setSummary(dashboard.summary);
             const bets = dashboard.positions.map(item => ({
                 ...item.market,
                 position: {
                     'yes-amount': item.position.yesAmountMicro,
-                    'no-amount': item.position.noAmountMicro,
+                    'no-amount':  item.position.noAmountMicro,
                     'total-wagered': item.position.totalWageredMicro,
                     claimed: item.position.claimed,
                 },
                 id: item.market.contractMarketId,
             }));
             setUserBets(bets.reverse());
-
         } catch (error) {
             console.error(error);
             toast.error("Failed to load dashboard data");
@@ -83,296 +109,312 @@ function DashboardContent() {
     const handleClaim = async (marketId: number) => {
         setIsClaiming(marketId);
         const config = getContractConfig();
-        
         try {
             const userAddress = userSession.loadUserData().profile.stxAddress.testnet;
             await doContractCall({
                 contractAddress: config.deployer,
                 contractName: config.predictionMarket,
                 functionName: 'claim-winnings',
-                functionArgs: [
-                    Cl.uint(marketId)
-                ],
+                functionArgs: [Cl.uint(marketId)],
                 postConditionMode: PostConditionMode.Allow,
                 anchorMode: AnchorMode.Any,
                 onFinish: async (data) => {
-                    await confirmClaim({
-                        userAddress,
-                        contractMarketId: marketId,
-                        txId: data.txId,
-                        type: 'winnings',
-                    });
-                    toast.success("Winnings claimed successfully!");
-                    setTimeout(() => {
-                        loadDashboardData();
-                        setIsClaiming(null);
-                    }, 4000);
+                    await confirmClaim({ userAddress, contractMarketId: marketId, txId: data.txId, type: 'winnings' });
+                    toast.success("Winnings claimed!");
+                    setTimeout(() => { loadDashboardData(); setIsClaiming(null); }, 4000);
                 },
-                onCancel: () => {
-                    setIsClaiming(null);
-                }
+                onCancel: () => setIsClaiming(null),
             });
         } catch (error: any) {
-            toast.error(error.message || "Failed to claim winnings");
+            toast.error(error.message || "Failed to claim");
             setIsClaiming(null);
         }
     };
 
-
-
     if (!isUserSignedIn()) {
         return (
-             <main className="min-h-screen flex flex-col bg-background">
+            <main className="min-h-screen flex flex-col bg-background">
                 <Navbar />
-                <div className="flex-1 flex flex-col items-center justify-center p-4">
-                    <Card className="max-w-md w-full text-center p-8">
-                        <div className="flex justify-center mb-4">
-                            <Wallet className="h-12 w-12 text-muted-foreground" />
+                <div className="flex-1 flex items-center justify-center p-6">
+                    <div className="text-center space-y-4 max-w-sm">
+                        <div className="h-16 w-16 rounded-2xl border border-border bg-muted/40 flex items-center justify-center mx-auto">
+                            <Wallet className="h-7 w-7 text-muted-foreground" />
                         </div>
-                        <h1 className="text-2xl font-bold mb-2">Connect Wallet</h1>
-                        <p className="text-muted-foreground mb-6">
-                            Please connect your Stacks wallet to view your dashboard.
+                        <h1 className="text-2xl font-bold">Connect Wallet</h1>
+                        <p className="text-muted-foreground text-sm">
+                            Connect your Stacks wallet to view your prediction portfolio.
                         </p>
-                    </Card>
+                    </div>
                 </div>
             </main>
         );
     }
 
-    const activeBets = userBets.filter(b => b.status === "active");
-    const resolvedBets = userBets.filter(b => b.status !== "active");
-    
-    // Calculate total potential value (very rough estimate)
+    const activeBets   = userBets.filter(b => b.status === 'active');
+    const resolvedBets = userBets.filter(b => b.status !== 'active');
     const totalInvested = userBets.reduce((acc, bet) => {
-        const yes = Number(bet.position['yes-amount']);
-        const no = Number(bet.position['no-amount']);
-        return acc + ((yes + no) / 1000000);
+        return acc + ((Number(bet.position['yes-amount']) + Number(bet.position['no-amount'])) / 1_000_000);
     }, 0);
+    const winRate = summary?.winCount > 0
+        ? ((summary.winCount / (summary.winCount + summary.lossCount)) * 100).toFixed(0)
+        : '—';
+
+    const shortAddress = userData
+        ? `${userData.profile.stxAddress.testnet.slice(0, 6)}...${userData.profile.stxAddress.testnet.slice(-4)}`
+        : '';
+
     return (
         <main className="min-h-screen flex flex-col bg-background">
             <Navbar />
-            
-            <div className="container py-8 md:py-12 space-y-8 flex-1">
-                
-                {/* Header Section */}
-                <motion.div 
-                    className="flex flex-col md:flex-row justify-between items-start md:items-center gap-4"
-                    initial={{ opacity: 0, y: 20 }}
-                    animate={{ opacity: 1, y: 0 }}
-                    transition={defaultTransition}
-                >
-                    <div>
-                        <h1 className="text-3xl font-bold tracking-tight">Dashboard</h1>
-                        <p className="text-muted-foreground">Manage your predictions and rewards</p>
-                    </div>
-                    <Button variant="outline" onClick={loadDashboardData} disabled={loading}>
-                        <RefreshCcw className={`mr-2 h-4 w-4 ${loading ? 'animate-spin' : ''}`} />
-                        Refresh Data
-                    </Button>
-                </motion.div>
 
-                {/* Stats Grid */}
-                <motion.div 
-                    className="grid grid-cols-1 md:grid-cols-3 gap-4"
+            {/* Page header */}
+            <div className="relative border-b border-border/60 bg-muted/20 overflow-hidden">
+                <div
+                    className="pointer-events-none absolute inset-0 opacity-[0.04]"
+                    style={{
+                        backgroundImage:
+                            'linear-gradient(hsl(var(--border)) 1px, transparent 1px), linear-gradient(90deg, hsl(var(--border)) 1px, transparent 1px)',
+                        backgroundSize: '32px 32px',
+                    }}
+                />
+                <div className="container relative py-8 md:py-10">
+                    <div className="flex flex-col md:flex-row md:items-center justify-between gap-4">
+                        <motion.div initial={{ opacity: 0, y: 12 }} animate={{ opacity: 1, y: 0 }} transition={defaultTransition}>
+                            <div className="flex items-center gap-2 mb-2">
+                                <CircleDot className="h-3 w-3 text-primary" />
+                                <span className="text-[11px] font-mono tracking-widest text-primary uppercase">Portfolio</span>
+                            </div>
+                            <h1 className="text-2xl font-bold tracking-tight">Dashboard</h1>
+                            {shortAddress && (
+                                <p className="text-xs font-mono text-muted-foreground mt-1">{shortAddress}</p>
+                            )}
+                        </motion.div>
+                        <Button
+                            variant="outline"
+                            size="sm"
+                            onClick={loadDashboardData}
+                            disabled={loading}
+                            className="font-mono text-xs self-start md:self-auto"
+                        >
+                            <RefreshCcw className={`mr-2 h-3.5 w-3.5 ${loading ? 'animate-spin' : ''}`} />
+                            Refresh
+                        </Button>
+                    </div>
+                </div>
+            </div>
+
+            <div className="container py-8 space-y-8 flex-1">
+
+                {/* Stats */}
+                <motion.div
+                    className="grid grid-cols-2 lg:grid-cols-4 gap-4"
                     initial="initial"
                     animate="animate"
                     variants={staggerContainer}
                 >
-                    <motion.div variants={fadeInUp}>
-                        <Card>
-                            <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
-                                <CardTitle className="text-sm font-medium">STX Balance</CardTitle>
-                                <Wallet className="h-4 w-4 text-muted-foreground" />
-                            </CardHeader>
-                            <CardContent>
-                                <div className="text-2xl font-bold">${balance.toLocaleString()}</div>
-                                <p className="text-xs text-muted-foreground mt-1">
-                                    Available to bet
-                                </p>
-                            </CardContent>
-                        </Card>
-                    </motion.div>
-                    <motion.div variants={fadeInUp}>
-                        <Card>
-                            <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
-                                <CardTitle className="text-sm font-medium">Active Predictions</CardTitle>
-                                <TrendingUp className="h-4 w-4 text-muted-foreground" />
-                            </CardHeader>
-                            <CardContent>
-                                <div className="text-2xl font-bold">{activeBets.length}</div>
-                                <p className="text-xs text-muted-foreground mt-1">
-                                    In <strong>{activeBets.length + resolvedBets.length}</strong> total markets
-                                </p>
-                            </CardContent>
-                        </Card>
-                    </motion.div>
-                    <motion.div variants={fadeInUp}>
-                        <Card>
-                            <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
-                                <CardTitle className="text-sm font-medium">Total Invested</CardTitle>
-                                <AlertCircle className="h-4 w-4 text-muted-foreground" />
-                            </CardHeader>
-                            <CardContent>
-                                <div className="text-2xl font-bold">${totalInvested.toLocaleString()}</div>
-                                <p className="text-xs text-muted-foreground mt-1">
-                                    Lifetime volume
-                                </p>
-                            </CardContent>
-                        </Card>
-                    </motion.div>
+                    <StatCard label="STX Balance"      value={`${balance.toLocaleString()} STX`} sub="Available to bet"            icon={Wallet}    accent />
+                    <StatCard label="Active"           value={activeBets.length}                  sub={`of ${userBets.length} total`} icon={TrendingUp} />
+                    <StatCard label="Total Invested"   value={`${totalInvested.toFixed(2)} STX`}  sub="Lifetime volume"             icon={BarChart2} />
+                    <StatCard label="Win Rate"         value={winRate === '—' ? '—' : `${winRate}%`} sub={`${summary?.winCount ?? 0}W / ${summary?.lossCount ?? 0}L`} icon={Trophy} />
                 </motion.div>
 
-                {/* Main Content Grid */}
-                <motion.div 
+                {/* Main content */}
+                <motion.div
                     className="grid grid-cols-1 lg:grid-cols-3 gap-6"
-                    initial={{ opacity: 0, y: 20 }}
+                    initial={{ opacity: 0, y: 16 }}
                     animate={{ opacity: 1, y: 0 }}
-                    transition={{ ...defaultTransition, delay: 0.3 }}
+                    transition={{ ...defaultTransition, delay: 0.2 }}
                 >
-                    {/* Bets Section (2 columns) */}
+                    {/* Bets (2/3 width) */}
                     <div className="lg:col-span-2">
-                        {/* Bets Tabs */}
-                        <Tabs defaultValue="active" className="w-full">
-                    <TabsList>
-                        <TabsTrigger value="active">Active Bets ({activeBets.length})</TabsTrigger>
-                        <TabsTrigger value="history">History ({resolvedBets.length})</TabsTrigger>
-                    </TabsList>
-                    
-                    <TabsContent value="active" className="mt-6">
-                        {loading ? (
-                            <div className="flex justify-center p-12">
-                                <Loader2 className="h-8 w-8 animate-spin text-muted-foreground" />
-                            </div>
-                        ) : activeBets.length > 0 ? (
-                            <div className="grid grid-cols-1 gap-4">
-                                {activeBets.map((bet) => (
-                                    <BetHistoryCard key={bet.id} bet={bet} onClaim={handleClaim} isClaiming={isClaiming === bet.id} />
-                                ))}
-                            </div>
-                        ) : (
-                            <div className="text-center py-12 border rounded-lg bg-muted/10">
-                                <h3 className="text-lg font-medium mb-2">No active predictions</h3>
-                                <p className="text-muted-foreground mb-4">You don't have any active bets right now.</p>
-                                <Link href="/markets">
-                                    <Button>Explore Markets</Button>
-                                </Link>
-                            </div>
-                        )}
-                    </TabsContent>
-                    
-                    <TabsContent value="history" className="mt-6">
-                        {loading ? (
-                             <div className="flex justify-center p-12">
-                                <Loader2 className="h-8 w-8 animate-spin text-muted-foreground" />
-                            </div>
-                        ) : resolvedBets.length > 0 ? (
-                            <div className="grid grid-cols-1 gap-4">
-                                {resolvedBets.map((bet) => (
-                                    <BetHistoryCard key={bet.id} bet={bet} onClaim={handleClaim} isClaiming={isClaiming === bet.id} />
-                                ))}
-                            </div>
-                        ) : (
-                            <div className="text-center py-12 border rounded-lg bg-muted/10">
-                                <h3 className="text-lg font-medium mb-2">No history</h3>
-                                <p className="text-muted-foreground">You haven't participated in any resolved markets yet.</p>
-                            </div>
-                        )}
-                    </TabsContent>
-                </Tabs>
+                        <Tabs defaultValue="active">
+                            <TabsList className="font-mono text-xs">
+                                <TabsTrigger value="active">
+                                    Active
+                                    <span className="ml-2 rounded-md bg-primary/15 px-1.5 py-0.5 text-[10px] font-bold text-primary">
+                                        {activeBets.length}
+                                    </span>
+                                </TabsTrigger>
+                                <TabsTrigger value="history">
+                                    History
+                                    <span className="ml-2 rounded-md bg-muted px-1.5 py-0.5 text-[10px] font-bold text-muted-foreground">
+                                        {resolvedBets.length}
+                                    </span>
+                                </TabsTrigger>
+                            </TabsList>
+
+                            <TabsContent value="active" className="mt-5">
+                                {loading ? (
+                                    <LoadingRows />
+                                ) : activeBets.length > 0 ? (
+                                    <div className="space-y-3">
+                                        {activeBets.map(bet => (
+                                            <BetRow key={bet.id} bet={bet} onClaim={handleClaim} isClaiming={isClaiming === bet.id} />
+                                        ))}
+                                    </div>
+                                ) : (
+                                    <EmptyBets text="No active predictions." action />
+                                )}
+                            </TabsContent>
+
+                            <TabsContent value="history" className="mt-5">
+                                {loading ? (
+                                    <LoadingRows />
+                                ) : resolvedBets.length > 0 ? (
+                                    <div className="space-y-3">
+                                        {resolvedBets.map(bet => (
+                                            <BetRow key={bet.id} bet={bet} onClaim={handleClaim} isClaiming={isClaiming === bet.id} />
+                                        ))}
+                                    </div>
+                                ) : (
+                                    <EmptyBets text="No resolved markets yet." />
+                                )}
+                            </TabsContent>
+                        </Tabs>
                     </div>
 
-                    {/* Recent Activity Sidebar */}
+                    {/* Sidebar */}
                     <div className="lg:col-span-1">
                         <RecentActivity />
                     </div>
                 </motion.div>
-
             </div>
+
             <Footer />
         </main>
     );
 }
 
-function BetHistoryCard({ bet, onClaim, isClaiming }: { bet: any, onClaim: any, isClaiming: boolean }) {
-    const yesAmount = Number(bet.position['yes-amount']) / 1000000;
-    const noAmount = Number(bet.position['no-amount']) / 1000000;
-    
-    // Determine user's outcome
-    const userOutcome = yesAmount > 0 ? "YES" : (noAmount > 0 ? "NO" : "NONE");
-    const userStake = yesAmount + noAmount;
+function LoadingRows() {
+    return (
+        <div className="space-y-3">
+            {[0, 1, 2].map(i => (
+                <div key={i} className="rounded-xl border border-border/60 bg-card p-5 animate-pulse">
+                    <div className="flex items-center justify-between gap-4">
+                        <div className="space-y-2 flex-1">
+                            <div className="h-3 w-16 rounded bg-muted" />
+                            <div className="h-4 w-3/4 rounded bg-muted" />
+                            <div className="h-3 w-1/2 rounded bg-muted" />
+                        </div>
+                        <div className="h-8 w-24 rounded-lg bg-muted shrink-0" />
+                    </div>
+                </div>
+            ))}
+        </div>
+    );
+}
 
-    // Check if won - use 'outcome' not 'winning-outcome'
-    const isResolved = bet.status !== "active";
-    const winningOutcome = bet.outcome; // was bet['winning-outcome']
-    
-    let isWinner = false;
-    if (isResolved && winningOutcome !== undefined) {
-        if (winningOutcome === true && yesAmount > 0) isWinner = true;
-        if (winningOutcome === false && noAmount > 0) isWinner = true;
-    }
+function EmptyBets({ text, action }: { text: string; action?: boolean }) {
+    return (
+        <div className="rounded-xl border border-dashed border-border py-14 text-center space-y-3">
+            <AlertCircle className="h-8 w-8 text-muted-foreground mx-auto" />
+            <p className="text-sm text-muted-foreground font-mono">{text}</p>
+            {action && (
+                <Button asChild size="sm" className="font-mono text-xs mt-2">
+                    <Link href="/markets">Browse markets <ArrowRight className="ml-2 h-3.5 w-3.5" /></Link>
+                </Button>
+            )}
+        </div>
+    );
+}
 
-    const claimed = bet.position.claimed;
+function BetRow({ bet, onClaim, isClaiming }: { bet: any; onClaim: (id: number) => void; isClaiming: boolean }) {
+    const yesAmount = Number(bet.position['yes-amount']) / 1_000_000;
+    const noAmount  = Number(bet.position['no-amount'])  / 1_000_000;
+    const userOutcome = yesAmount > noAmount ? 'YES' : 'NO';
+    const userStake   = yesAmount + noAmount;
+
+    const isResolved = bet.status !== 'active';
+    const winningOutcome = bet.outcome;
+    const isWinner =
+        isResolved &&
+        ((winningOutcome === true  && yesAmount > 0) ||
+         (winningOutcome === false && noAmount  > 0));
+    const claimed  = bet.position.claimed;
     const canClaim = isWinner && !claimed;
 
+    const resolveDate = bet['resolve-date'] ? blockToDate(bet['resolve-date']) : null;
+
     return (
-        <Card className="overflow-hidden">
-            <div className="p-6 flex flex-col md:flex-row md:items-center gap-6">
-                
-                {/* Image */}
-                <div className="h-16 w-16 md:h-20 md:w-20 rounded-lg overflow-hidden bg-muted shrink-0">
-                     {bet['image-url'] ? (
-                        <img src={bet['image-url']} alt="" className="w-full h-full object-cover" />
-                    ) : (
-                        <div className="w-full h-full flex items-center justify-center bg-primary/10">
-                            <TrendingUp className="h-8 w-8 text-primary/40" />
-                        </div>
-                    )}
-                </div>
+        <motion.div
+            initial={{ opacity: 0, y: 8 }}
+            animate={{ opacity: 1, y: 0 }}
+            className="group rounded-xl border border-border/60 bg-card hover:border-primary/30 transition-colors duration-200 overflow-hidden"
+        >
+            {/* Status accent line */}
+            <div className={`h-px w-full ${
+                !isResolved ? 'bg-green-500/50' :
+                isWinner    ? 'bg-primary/60'   :
+                              'bg-border'
+            }`} />
 
-                {/* Details */}
-                <div className="flex-1 space-y-1">
-                    <div className="flex items-center gap-2 mb-1">
-                        <Badge variant={isResolved ? "outline" : "default"} className={isResolved ? "" : "bg-green-500 hover:bg-green-600"}>
-                            {isResolved ? (bet.status === "cancelled" ? "Cancelled" : "Resolved") : "Live"}
+            <div className="p-4 flex flex-col sm:flex-row sm:items-center gap-4">
+                {/* Info */}
+                <div className="flex-1 min-w-0 space-y-1.5">
+                    <div className="flex items-center gap-2 flex-wrap">
+                        <Badge
+                            variant="outline"
+                            className={`text-[10px] font-mono px-1.5 py-0 border-border/80 ${
+                                !isResolved ? 'text-green-500 border-green-500/40' : 'text-muted-foreground'
+                            }`}
+                        >
+                            {!isResolved ? 'LIVE' : bet.status === 'cancelled' ? 'CANCELLED' : 'RESOLVED'}
                         </Badge>
-                        <span className="text-xs text-muted-foreground">Make ID: {bet.id}</span>
+                        <span className={`text-xs font-mono font-bold ${
+                            userOutcome === 'YES' ? 'text-green-500' : 'text-red-500'
+                        }`}>
+                            {userOutcome}
+                        </span>
+                        <span className="text-xs font-mono text-muted-foreground">
+                            {userStake.toFixed(4)} STX staked
+                        </span>
                     </div>
-                    <Link href={`/market/${bet.id}`} className="hover:underline">
-                        <h3 className="font-semibold text-lg leading-tight">{bet.question}</h3>
-                    </Link>
-                    <div className="text-sm text-muted-foreground flex gap-4">
-                        <span>You predicted: <strong className={userOutcome === "YES" ? "text-green-600" : "text-red-600"}>{userOutcome}</strong></span>
-                        <span>Stake: <strong>${userStake.toLocaleString()}</strong></span>
-                        <span>End Date: {blockToDate(bet['resolve-date']).toLocaleDateString()}</span>
-                    </div>
-                </div>
 
-                {/* Status/Action */}
-                <div className="flex items-center gap-4 justify-end min-w-[140px]">
-                    {isResolved ? (
-                        canClaim ? (
-                            <Button className="w-full md:w-auto bg-green-600 hover:bg-green-700" onClick={() => onClaim(bet.id)} disabled={isClaiming}>
-                                {isClaiming ? <Loader2 className="mr-2 h-4 w-4 animate-spin"/> : <Wallet className="mr-2 h-4 w-4" />}
-                                Claim Winnings
-                            </Button>
-                        ) : claimed ? (
-                            <div className="flex items-center text-green-600 font-medium">
-                                <CheckCircle className="mr-2 h-4 w-4" />
-                                Claimed
-                            </div>
-                        ) : isWinner === false && bet.status !== "cancelled" ? (
-                            <div className="text-muted-foreground font-medium">
-                                Not Winning
-                            </div>
-                        ) : null
-                    ) : (
-                        <div className="text-sm font-medium text-muted-foreground text-center">
-                            In Progress
+                    <Link href={`/market/${bet.id}`} className="block group/link">
+                        <p className="text-sm font-semibold leading-snug line-clamp-1 group-hover/link:text-primary transition-colors">
+                            {bet.question}
+                        </p>
+                    </Link>
+
+                    {resolveDate && (
+                        <div className="flex items-center gap-1 text-[11px] text-muted-foreground font-mono">
+                            <Clock className="h-3 w-3" />
+                            <span>{resolveDate.toLocaleDateString()}</span>
                         </div>
                     )}
                 </div>
 
+                {/* Action */}
+                <div className="shrink-0">
+                    {!isResolved ? (
+                        <Link href={`/market/${bet.id}`}>
+                            <Button variant="outline" size="sm" className="font-mono text-xs h-8">
+                                View <ArrowRight className="ml-1.5 h-3 w-3" />
+                            </Button>
+                        </Link>
+                    ) : canClaim ? (
+                        <Button
+                            size="sm"
+                            className="font-mono text-xs h-8 bg-primary hover:bg-primary/90"
+                            onClick={() => onClaim(bet.id)}
+                            disabled={isClaiming}
+                        >
+                            {isClaiming
+                                ? <Loader2 className="mr-1.5 h-3 w-3 animate-spin" />
+                                : <Wallet className="mr-1.5 h-3 w-3" />
+                            }
+                            Claim
+                        </Button>
+                    ) : claimed ? (
+                        <div className="flex items-center gap-1.5 text-xs font-mono text-green-500">
+                            <CheckCircle className="h-3.5 w-3.5" />
+                            Claimed
+                        </div>
+                    ) : isResolved && !isWinner ? (
+                        <span className="text-xs font-mono text-muted-foreground">Lost</span>
+                    ) : null}
+                </div>
             </div>
-        </Card>
+        </motion.div>
     );
 }
