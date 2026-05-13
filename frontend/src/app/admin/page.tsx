@@ -48,8 +48,14 @@ export default function AdminPage() {
         const t = setTimeout(() => {
             if (!active) return;
             if (isUserSignedIn()) {
-                const addr = userSession.loadUserData().profile.stxAddress.testnet;
-                setIsAdmin(addr === getContractConfig().deployer);
+                const profile  = userSession.loadUserData().profile;
+                const deployer = getContractConfig().deployer.trim().toLowerCase();
+                // Compare both address formats — wallet may return testnet (ST…) or
+                // mainnet (SP…) depending on how it was configured, and the deployer
+                // env var may be stored in either format.
+                const testnet = (profile.stxAddress?.testnet ?? '').trim().toLowerCase();
+                const mainnet = (profile.stxAddress?.mainnet ?? '').trim().toLowerCase();
+                setIsAdmin(testnet === deployer || mainnet === deployer);
             } else {
                 setIsAdmin(false);
             }
