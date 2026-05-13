@@ -1,7 +1,7 @@
 'use client';
 
 import Link from "next/link";
-import { Github, Twitter, ArrowUpRight, Layers, ExternalLink } from "lucide-react";
+import { Github, Twitter, ArrowUpRight, ExternalLink } from "lucide-react";
 import { NETWORK_ENV, BACKEND_BASE_URL } from "@/lib/constants";
 
 const NAV = [
@@ -55,13 +55,8 @@ export function Footer() {
                     {/* ── Brand ─────────────────────────────────── */}
                     <div className="col-span-2 md:col-span-1 space-y-5">
                         {/* Logo */}
-                        <div className="flex items-center gap-2">
-                            <div className="h-7 w-7 rounded-md bg-primary/15 border border-primary/30 flex items-center justify-center">
-                                <Layers className="h-3.5 w-3.5 text-primary" />
-                            </div>
-                            <span className="font-bold text-base tracking-tight">
-                                Predict<span className="text-primary">Stack</span>
-                            </span>
+                        <div className="font-bold text-base tracking-tight">
+                            Predict<span className="text-primary">Stack</span>
                         </div>
 
                         <p className="text-sm text-muted-foreground leading-relaxed max-w-[220px]">
