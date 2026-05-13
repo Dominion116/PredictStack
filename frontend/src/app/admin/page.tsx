@@ -170,9 +170,6 @@ function AdminDashboard() {
     const handleCreateMarket = async (e: React.FormEvent) => {
         e.preventDefault();
         if (!question || !resolveDate) { toast.error('Question and date are required'); return; }
-        if (estimatedBlock <= CURRENT_BLOCK + 144) {
-            toast.error('Resolution must be at least 24 h in the future'); return;
-        }
         setIsSubmitting(true);
         try {
             const createdBy = userSession.loadUserData().profile.stxAddress.testnet;
