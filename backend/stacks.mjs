@@ -56,7 +56,7 @@ export function createStacksClient(config) {
       validateWithAbi: false,
     });
 
-    const response = await broadcastTransaction(transaction, network);
+    const response = await broadcastTransaction({ transaction, network });
     if ('error' in response) {
       throw new Error(response.reason ?? response.error ?? 'Failed to broadcast transaction');
     }
