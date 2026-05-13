@@ -107,9 +107,11 @@ function AccessDenied() {
 }
 
 function AdminDashboard() {
-    const [activeTab,    setActiveTab]    = useState('create');
-    const [markets,      setMarkets]      = useState<MarketRecord[]>([]);
-    const [processingId, setProcessingId] = useState<number | null>(null);
+    const [activeTab,      setActiveTab]      = useState('create');
+    const [markets,        setMarkets]        = useState<MarketRecord[]>([]);
+    const [processingId,   setProcessingId]   = useState<number | null>(null);
+    const [currentBlock,   setCurrentBlock]   = useState<number>(0);
+    const [blockFetching,  setBlockFetching]  = useState(true);
 
     const activeMarkets = markets.filter(
         m => m.status === 'active' || m.status === '0' || m.status === 0
@@ -125,14 +127,33 @@ function AdminDashboard() {
     const [previewUrl,  setPreviewUrl]  = useState<string | null>(null);
     const [isSubmitting, setIsSubmitting] = useState(false);
 
-    const CURRENT_BLOCK = 3_750_000;
     const SECS_PER_BLOCK = 600;
 
+    // Fetch the real current Stacks block height — never use a hardcoded value
+    const fetchCurrentBlock = async () => {
+        setBlockFetching(true);
+        try {
+            const network = process.env.NEXT_PUBLIC_NETWORK === 'mainnet' ? 'mainnet' : 'testnet';
+            const apiUrl  = network === 'mainnet'
+                ? 'https://api.mainnet.hiro.so'
+                : 'https://api.testnet.hiro.so';
+            const res  = await fetch(`${apiUrl}/v2/info`);
+            const data = await res.json();
+            setCurrentBlock(data.stacks_tip_height ?? data.burn_block_height ?? 0);
+        } catch {
+            toast.error('Could not fetch current block height — block estimate may be inaccurate.');
+        } finally {
+            setBlockFetching(false);
+        }
+    };
+
+    // resolveBlock = currentBlock + blocks-until-resolve-date
     const estimatedBlock = useMemo(() => {
-        if (!resolveDate) return 0;
-        const secs = Math.max(0, (new Date(resolveDate).getTime() - Date.now()) / 1000);
-        return CURRENT_BLOCK + Math.ceil(secs / SECS_PER_BLOCK);
-    }, [resolveDate]);
+        if (!resolveDate || !currentBlock) return 0;
+        const secs   = Math.max(0, (new Date(resolveDate).getTime() - Date.now()) / 1000);
+        const blocks = Math.max(1, Math.ceil(secs / SECS_PER_BLOCK));
+        return currentBlock + blocks;
+    }, [resolveDate, currentBlock]);
 
     const loadData = async () => {
         try {
@@ -142,7 +163,10 @@ function AdminDashboard() {
         }
     };
 
-    useEffect(() => { loadData(); }, []);
+    useEffect(() => {
+        loadData();
+        fetchCurrentBlock();
+    }, []);
 
     const handleFileChange = async (e: React.ChangeEvent<HTMLInputElement>) => {
         const file = e.target.files?.[0];
@@ -354,7 +378,16 @@ function AdminDashboard() {
                                             <option value="General">General</option>
                                         </select>
                                     </Field>
-                                    <Field label="Resolution Date" hint={estimatedBlock ? `Block ~${estimatedBlock.toLocaleString()}` : undefined}>
+                                    <Field
+                                        label="Resolution Date"
+                                        hint={
+                                            blockFetching
+                                                ? 'Fetching block height…'
+                                                : currentBlock
+                                                    ? `Tip #${currentBlock.toLocaleString()} → resolve at #${estimatedBlock ? estimatedBlock.toLocaleString() : '…'}`
+                                                    : 'Could not fetch block height'
+                                        }
+                                    >
                                         <Input
                                             type="datetime-local"
                                             value={resolveDate}
