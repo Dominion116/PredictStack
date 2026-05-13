@@ -5,8 +5,8 @@ import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import Link from "next/link";
-import { ArrowRight, Trophy, Zap, Shield, Wallet, BarChart3 } from "lucide-react";
-import { MarketsList } from "@/components/markets-list";
+import { ArrowRight, Trophy, Wallet, BarChart3 } from "lucide-react";
+import { TrendingMarkets } from "@/components/trending-markets";
 import { useEffect, useState } from "react";
 import { getPlatformStats } from "@/lib/stacks-api";
 import { isUserSignedIn } from "@/lib/constants";
@@ -48,30 +48,10 @@ export default function Home() {
       {/* Features */}
       <Features />
 
-      {/* Featured Markets */}
-      <section className="bg-muted/30">
-        <div className="container py-16 md:py-24">
-          <motion.div 
-            className="flex flex-col md:flex-row justify-between items-end mb-10 gap-4"
-            initial={{ opacity: 0, y: 20 }}
-            whileInView={{ opacity: 1, y: 0 }}
-            viewport={{ once: true }}
-            transition={defaultTransition}
-          >
-              <div className="space-y-2">
-                  <h2 className="text-3xl font-bold tracking-tighter sm:text-4xl">Trending Markets</h2>
-                  <p className="text-muted-foreground">The most active predictions right now on PredictStack.</p>
-              </div>
-              <Link href="/markets">
-                <Button variant="ghost" className="hidden md:flex">
-                    View all markets <ArrowRight className="ml-2 h-4 w-4" />
-                </Button>
-              </Link>
-          </motion.div>
-
-          <MarketsList />
-        </div>
-      </section>
+      {/* Trending Markets */}
+      <div className="bg-muted/20">
+        <TrendingMarkets />
+      </div>
 
       {/* How it works */}
       <section className="container py-16 md:py-24">
