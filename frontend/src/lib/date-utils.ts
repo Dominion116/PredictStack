@@ -1,9 +1,9 @@
 // Approximate block time for Stacks in seconds (10 minutes)
 export const SECONDS_PER_BLOCK = 600;
 
-// Approximate current block height (Testnet)
-// In a real app, you would fetch this from the Stacks Node API
-export const CURRENT_BLOCK_HEIGHT = 3750000;
+// Approximate current block height — kept as a static fallback.
+// The market page uses resolve-time-iso from the backend instead of this.
+export const CURRENT_BLOCK_HEIGHT = 3981916;
 
 /**
  * Converts a Stacks block height to an estimated Javascript Date object.
