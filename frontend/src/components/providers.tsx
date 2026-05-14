@@ -1,34 +1,31 @@
 'use client';
 
 import { ReactNode } from 'react';
-import { Connect } from '@stacks/connect-react';
 import { ThemeProvider } from 'next-themes';
-import { APP_DETAILS, userSession } from '@/lib/constants';
+import dynamic from 'next/dynamic';
+
+// Load the Stacks Connect provider only on the client — it depends on
+// @stacks/transactions / @noble/secp256k1 which cannot run during SSR.
+const StacksConnectWrapper = dynamic(
+    () => import('./stacks-connect-wrapper').then(m => m.StacksConnectWrapper),
+    { ssr: false }
+);
 
 interface ProvidersProps {
-  children: ReactNode;
+    children: ReactNode;
 }
 
 export function Providers({ children }: ProvidersProps) {
-  return (
-    <ThemeProvider
-      attribute="class"
-      defaultTheme="system"
-      enableSystem
-      disableTransitionOnChange
-    >
-      <Connect
-        authOptions={{
-          appDetails: APP_DETAILS,
-          redirectTo: '/dashboard',
-          onFinish: () => {
-            window.location.reload();
-          },
-          userSession,
-        }}
-      >
-        {children}
-      </Connect>
-    </ThemeProvider>
-  );
+    return (
+        <ThemeProvider
+            attribute="class"
+            defaultTheme="system"
+            enableSystem
+            disableTransitionOnChange
+        >
+            <StacksConnectWrapper>
+                {children}
+            </StacksConnectWrapper>
+        </ThemeProvider>
+    );
 }
