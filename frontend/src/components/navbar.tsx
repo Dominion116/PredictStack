@@ -3,7 +3,7 @@
 import { useConnect } from '@stacks/connect-react';
 import { Button } from '@/components/ui/button';
 import { Badge } from '@/components/ui/badge';
-import { userSession, getContractConfig, isUserSignedIn } from '@/lib/constants';
+import { userSession, getContractConfig, isUserSignedIn, getUserAddress } from '@/lib/constants';
 import { useEffect, useState } from 'react';
 import { LogOut, Sun, Moon } from 'lucide-react';
 import { useTheme } from 'next-themes';
@@ -41,7 +41,7 @@ function NavbarContent() {
   useEffect(() => {
     if (isUserSignedIn()) {
       setIsSignedIn(true);
-      const userAddress = userSession.loadUserData().profile.stxAddress.testnet;
+      const userAddress = getUserAddress();
       setAddress(userAddress);
       
       const config = getContractConfig();

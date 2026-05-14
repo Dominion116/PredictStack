@@ -12,7 +12,7 @@ import {
     CheckCircle, ArrowRight, Clock, CircleDot,
     BarChart2, Trophy, AlertCircle,
 } from 'lucide-react';
-import { userSession, getContractConfig, isUserSignedIn } from '@/lib/constants';
+import { userSession, getContractConfig, isUserSignedIn, getUserAddress } from '@/lib/constants';
 import { confirmClaim, getStxBalance, getUserDashboard } from '@/lib/stacks-api';
 import { blockToDate } from '@/lib/date-utils';
 import { useConnect } from '@stacks/connect-react';
@@ -79,8 +79,7 @@ function DashboardContent() {
     const loadDashboardData = async () => {
         setLoading(true);
         try {
-            const profile = userSession.loadUserData().profile;
-            const address = profile.stxAddress.testnet;
+            const address = getUserAddress();
             const [bal, dashboard] = await Promise.all([
                 getStxBalance(address),
                 getUserDashboard(address),
@@ -112,7 +111,7 @@ function DashboardContent() {
         try {
             const { uintCV, PostConditionMode, AnchorMode } =
                 await import('@stacks/transactions');
-            const userAddress = userSession.loadUserData().profile.stxAddress.testnet;
+            const userAddress = getUserAddress();
             await doContractCall({
                 contractAddress: config.deployer,
                 contractName: config.predictionMarket,
@@ -161,9 +160,8 @@ function DashboardContent() {
         ? ((summary.winCount / (summary.winCount + summary.lossCount)) * 100).toFixed(0)
         : '—';
 
-    const shortAddress = userData
-        ? `${userData.profile.stxAddress.testnet.slice(0, 6)}...${userData.profile.stxAddress.testnet.slice(-4)}`
-        : '';
+    const addr = isUserSignedIn() ? getUserAddress() : '';
+    const shortAddress = addr ? `${addr.slice(0, 6)}...${addr.slice(-4)}` : '';
 
     return (
         <main className="min-h-screen flex flex-col bg-background">

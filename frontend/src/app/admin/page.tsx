@@ -10,7 +10,7 @@ import { Badge } from '@/components/ui/badge';
 import { Input } from '@/components/ui/input';
 import { Textarea } from '@/components/ui/textarea';
 import { Label } from '@/components/ui/label';
-import { getContractConfig, userSession, isUserSignedIn } from '@/lib/constants';
+import { getContractConfig, userSession, isUserSignedIn, getUserAddress } from '@/lib/constants';
 import { createMarketRecord, getRecentMarkets, resolveMarketRecord } from '@/lib/stacks-api';
 import { blockToDate } from '@/lib/date-utils';
 import {
@@ -196,7 +196,7 @@ function AdminDashboard() {
         if (!question || !resolveDate) { toast.error('Question and date are required'); return; }
         setIsSubmitting(true);
         try {
-            const createdBy = userSession.loadUserData().profile.stxAddress.testnet;
+            const createdBy = getUserAddress();
             await createMarketRecord({ question, description, category, imageUrl, resolveDate, resolveBlock: estimatedBlock, createdBy });
             toast.success('Market created!');
             setQuestion(''); setDescription(''); setResolveDate(''); setPreviewUrl(null); setImageUrl('');

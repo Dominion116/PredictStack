@@ -21,7 +21,7 @@ import {
 } from 'lucide-react';
 import { toast } from 'sonner';
 import { useConnect } from '@stacks/connect-react';
-import { userSession, getContractConfig, isUserSignedIn } from '@/lib/constants';
+import { userSession, getContractConfig, isUserSignedIn, getUserAddress } from '@/lib/constants';
 // @stacks/transactions is NOT statically imported — Turbopack cannot bundle
 // it for the browser. All Clarity helpers are loaded dynamically inside handlers.
 import Link from 'next/link';
@@ -128,7 +128,7 @@ export default function MarketPage() {
                 const data = await getMarket(marketId);
                 setMarket(data);
                 if (isUserSignedIn()) {
-                    const addr = userSession.loadUserData().profile.stxAddress.testnet;
+                    const addr = getUserAddress();
                     const [bal, pos] = await Promise.all([
                         getStxBalance(addr),
                         getUserPosition(addr, marketId),
@@ -175,7 +175,7 @@ export default function MarketPage() {
             const { uintCV, boolCV, Pc, PostConditionMode, AnchorMode } =
                 await import('@stacks/transactions');
 
-            const userAddress = userSession.loadUserData().profile.stxAddress.testnet;
+            const userAddress = getUserAddress();
             const amountMicro = Math.floor(amt * 1_000_000);
             const intent = await createBetIntent({
                 userAddress, contractMarketId: marketId, amountMicro, outcome: outcome === 'YES',
@@ -201,7 +201,7 @@ export default function MarketPage() {
                     setBetAmount('');
                     setIsSubmitting(false);
                     setTimeout(async () => {
-                        const addr = userSession.loadUserData().profile.stxAddress.testnet;
+                        const addr = getUserAddress();
                         setUserBalance(await getStxBalance(addr));
                     }, 4000);
                 },
@@ -222,7 +222,7 @@ export default function MarketPage() {
             const { uintCV, PostConditionMode, AnchorMode } =
                 await import('@stacks/transactions');
 
-            const userAddress = userSession.loadUserData().profile.stxAddress.testnet;
+            const userAddress = getUserAddress();
             const claimType  = market.status === 'cancelled' ? 'refund' : 'winnings';
             const funcName   = claimType === 'refund' ? 'claim-refund' : 'claim-winnings';
             await doContractCall({
@@ -236,7 +236,7 @@ export default function MarketPage() {
                     await confirmClaim({ userAddress, contractMarketId: marketId, txId: data.txId, type: claimType });
                     toast.success('Claimed! Processing…');
                     setTimeout(async () => {
-                        const addr = userSession.loadUserData().profile.stxAddress.testnet;
+                        const addr = getUserAddress();
                         const [bal, pos] = await Promise.all([
                             getStxBalance(addr), getUserPosition(addr, marketId),
                         ]);
