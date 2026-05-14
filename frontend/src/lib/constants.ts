@@ -49,3 +49,11 @@ export const CONTRACTS = {
 export const getContractConfig = () => {
   return CONTRACTS[NETWORK_ENV as keyof typeof CONTRACTS] || CONTRACTS.testnet;
 };
+
+/** Returns the wallet address for the current network (mainnet SP… or testnet ST…). */
+export function getUserAddress(): string {
+  const profile = userSession.loadUserData().profile;
+  return NETWORK_ENV === 'mainnet'
+    ? (profile.stxAddress?.mainnet ?? '')
+    : (profile.stxAddress?.testnet ?? '');
+}
