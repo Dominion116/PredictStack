@@ -4,4 +4,6 @@ export * from '@/api/bets';
 export * from '@/api/claims';
 export * from '@/api/users';
 export * from '@/api/platform';
-export * from '@/blockchain/contract-reads';
+// blockchain/contract-reads is NOT re-exported here — it statically imports
+// @stacks/transactions which Turbopack cannot bundle for the browser.
+// Import from '@/blockchain/contract-reads' directly, or use dynamic import.

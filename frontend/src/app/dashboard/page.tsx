@@ -16,7 +16,7 @@ import { userSession, getContractConfig, isUserSignedIn } from '@/lib/constants'
 import { confirmClaim, getStxBalance, getUserDashboard } from '@/lib/stacks-api';
 import { blockToDate } from '@/lib/date-utils';
 import { useConnect } from '@stacks/connect-react';
-import { uintCV, PostConditionMode, AnchorMode } from '@stacks/transactions';
+// @stacks/transactions loaded dynamically inside handleClaim to keep it out of the main bundle
 import { toast } from 'sonner';
 import Link from 'next/link';
 import { Footer } from '@/components/footer';
@@ -110,6 +110,8 @@ function DashboardContent() {
         setIsClaiming(marketId);
         const config = getContractConfig();
         try {
+            const { uintCV, PostConditionMode, AnchorMode } =
+                await import('@stacks/transactions');
             const userAddress = userSession.loadUserData().profile.stxAddress.testnet;
             await doContractCall({
                 contractAddress: config.deployer,

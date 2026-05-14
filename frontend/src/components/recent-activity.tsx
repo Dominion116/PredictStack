@@ -3,7 +3,7 @@
 import { useEffect, useState } from 'react';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Badge } from '@/components/ui/badge';
-import { getContractEvents } from '@/lib/stacks-api';
+import { getContractEvents } from '@/blockchain/contract-reads';
 import { Loader2, TrendingUp, Trophy, Gavel, DollarSign, RefreshCcw } from 'lucide-react';
 import { formatDistanceToNow } from '@/lib/date-utils';
 

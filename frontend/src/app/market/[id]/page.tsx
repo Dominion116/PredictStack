@@ -8,7 +8,6 @@ import { Navbar } from '@/components/navbar';
 import {
     confirmBet, confirmClaim, createBetIntent,
     getMarket, getStxBalance, getUserPosition,
-    getQuotePrice, getQuoteShares,
 } from '@/lib/stacks-api';
 import { Footer } from '@/components/footer';
 import { Button } from '@/components/ui/button';
@@ -23,7 +22,8 @@ import {
 import { toast } from 'sonner';
 import { useConnect } from '@stacks/connect-react';
 import { userSession, getContractConfig, isUserSignedIn } from '@/lib/constants';
-import { PostConditionMode, AnchorMode, uintCV, boolCV, Pc } from '@stacks/transactions';
+// @stacks/transactions is NOT statically imported — Turbopack cannot bundle
+// it for the browser. All Clarity helpers are loaded dynamically inside handlers.
 import Link from 'next/link';
 
 const MIN_BET_STX  = 0.02;
@@ -144,7 +144,7 @@ export default function MarketPage() {
         })();
     }, [marketId]);
 
-    // ── live quotes ──────────────────────────────────────────────────────────
+    // ── live quotes (dynamic import keeps @stacks/transactions out of main bundle)
     useEffect(() => {
         if (!market || !betAmount || isNaN(Number(betAmount)) || Number(betAmount) <= 0) {
             setQuotePrice(null); setQuoteShares(null); return;
@@ -152,11 +152,14 @@ export default function MarketPage() {
         setQuotesLoading(true);
         const micro = Math.floor(Number(betAmount) * 1_000_000);
         const isYes = outcome === 'YES';
-        Promise.all([
-            getQuotePrice(marketId, isYes, micro),
-            getQuoteShares(marketId, isYes, micro),
-        ]).then(([p, s]) => { setQuotePrice(p); setQuoteShares(s); })
-          .finally(() => setQuotesLoading(false));
+        import('@/blockchain/contract-reads').then(({ getQuotePrice, getQuoteShares }) =>
+            Promise.all([
+                getQuotePrice(marketId, isYes, micro),
+                getQuoteShares(marketId, isYes, micro),
+            ])
+        ).then(([p, s]) => { setQuotePrice(p); setQuoteShares(s); })
+         .catch(() => { setQuotePrice(null); setQuoteShares(null); })
+         .finally(() => setQuotesLoading(false));
     }, [betAmount, outcome, market, marketId]);
 
     // ── bet ──────────────────────────────────────────────────────────────────
@@ -168,6 +171,10 @@ export default function MarketPage() {
         }
         setIsSubmitting(true);
         try {
+            // Dynamic import keeps @stacks/transactions out of the initial bundle
+            const { uintCV, boolCV, Pc, PostConditionMode, AnchorMode } =
+                await import('@stacks/transactions');
+
             const userAddress = userSession.loadUserData().profile.stxAddress.testnet;
             const amountMicro = Math.floor(amt * 1_000_000);
             const intent = await createBetIntent({
@@ -212,6 +219,9 @@ export default function MarketPage() {
         setIsSubmitting(true);
         const config = getContractConfig();
         try {
+            const { uintCV, PostConditionMode, AnchorMode } =
+                await import('@stacks/transactions');
+
             const userAddress = userSession.loadUserData().profile.stxAddress.testnet;
             const claimType  = market.status === 'cancelled' ? 'refund' : 'winnings';
             const funcName   = claimType === 'refund' ? 'claim-refund' : 'claim-winnings';
