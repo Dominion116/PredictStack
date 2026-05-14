@@ -48,7 +48,8 @@ export function createMarketRoutes({ store, stacks }) {
 
       const marketRef = makeMarketRef();
       const contractMarketId = await stacks.getNextMarketId();
-      const txId = await stacks.createMarket(marketRef, resolveBlock);
+      // Deployed contract: create-market(question, description?, resolve-date, ipfs-hash?)
+      const txId = await stacks.createMarket(question, description || null, resolveBlock, imageUrl || null);
       const now = new Date().toISOString();
 
       state.markets[marketRef] = {

@@ -7,6 +7,8 @@ import {
   fetchCallReadOnlyFunction,
   getAddressFromPrivateKey,
   makeContractCall,
+  noneCV,
+  someCV,
   stringAsciiCV,
   trueCV,
   uintCV,
@@ -58,7 +60,8 @@ export function createStacksClient(config) {
 
     const response = await broadcastTransaction({ transaction, network });
     if ('error' in response) {
-      throw new Error(response.reason ?? response.error ?? 'Failed to broadcast transaction');
+      const detail = response.reason_data?.message ?? JSON.stringify(response.reason_data ?? {});
+      throw new Error(`${response.reason ?? response.error}: ${detail}`);
     }
     return response.txid;
   }
@@ -68,10 +71,12 @@ export function createStacksClient(config) {
     contractName: config.contractName,
     networkName: config.network,
     signerAddress: getAddressFromPrivateKey(config.privateKey, config.network === 'mainnet' ? 'mainnet' : 'testnet'),
+
     async getNextMarketId() {
       const value = await callReadOnly('get-next-market-id');
       return Number(extractValue(value) ?? 0);
     },
+
     async getPlatformStats() {
       const value = await callReadOnly('get-platform-stats');
       return {
@@ -80,25 +85,46 @@ export function createStacksClient(config) {
         totalFeesCollected: Number(extractValue(value['total-fees-collected']) ?? 0),
       };
     },
+
+    // Deployed contract: get-market returns question, description, ipfs-hash, status (string), etc.
     async getMarket(contractMarketId) {
       const value = await callReadOnly('get-market', [uintCV(contractMarketId)]);
+      const rawStatus = extractValue(value.status);
+      // Normalise numeric status codes from older contract versions to strings
+      const statusMap = { '0': 'active', '1': 'resolved', '2': 'cancelled' };
+      const status = typeof rawStatus === 'string' && isNaN(Number(rawStatus))
+        ? rawStatus
+        : (statusMap[String(rawStatus)] ?? 'active');
+
       return {
         contractMarketId,
-        marketRef: extractValue(value['market-ref']) ?? null,
+        question: extractValue(value.question) ?? null,
+        description: extractValue(value.description) ?? null,
+        ipfsHash: extractValue(value['ipfs-hash']) ?? null,
         creator: extractValue(value.creator) ?? null,
         createdAtBlock: Number(extractValue(value['created-at']) ?? 0),
         resolveDateBlock: Number(extractValue(value['resolve-date']) ?? 0),
         yesPoolMicro: Number(extractValue(value['yes-pool']) ?? 0),
         noPoolMicro: Number(extractValue(value['no-pool']) ?? 0),
         totalBets: Number(extractValue(value['total-bets']) ?? 0),
-        status: extractValue(value.status) ?? 'active',
+        status,
         winningOutcome: extractValue(value['winning-outcome']),
-        resolvedAtBlock: extractValue(value['resolved-at']) ? Number(extractValue(value['resolved-at'])) : null,
+        resolvedAtBlock: extractValue(value['resolved-at'])
+          ? Number(extractValue(value['resolved-at']))
+          : null,
       };
     },
-    async createMarket(marketRef, resolveBlock) {
-      return signedContractCall('create-market', [stringAsciiCV(marketRef), uintCV(resolveBlock)]);
+
+    // Deployed contract: create-market(question, description?, resolve-date, ipfs-hash?)
+    async createMarket(question, description, resolveBlock, ipfsHash) {
+      return signedContractCall('create-market', [
+        stringAsciiCV(question.slice(0, 256)),
+        description ? someCV(stringAsciiCV(description.slice(0, 512))) : noneCV(),
+        uintCV(resolveBlock),
+        ipfsHash ? someCV(stringAsciiCV(ipfsHash.slice(0, 64))) : noneCV(),
+      ]);
     },
+
     async resolveMarket(contractMarketId, winningOutcome) {
       return signedContractCall('resolve-market', [
         uintCV(contractMarketId),

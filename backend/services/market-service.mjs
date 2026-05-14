@@ -36,24 +36,28 @@ export async function getMergedMarketByContractId(store, stacks, contractMarketI
     chain = null;
   }
 
+  // Chain status is a string in the deployed contract ("active"/"resolved"/"cancelled").
+  // Fall back to the backend-stored status if the chain call failed.
+  const status = chain?.status ?? market.status;
+
   return {
     id: market.id,
     question: market.question,
     description: market.description,
     category: market.category,
-    imageUrl: market.imageUrl,
+    // imageUrl is stored in the backend; ipfsHash may also be on-chain
+    imageUrl: market.imageUrl ?? chain?.ipfsHash ?? null,
     resolveTimeIso: market.resolveTimeIso,
     resolveBlock: market.resolveBlock,
     createdAt: market.createdAt,
     updatedAt: market.updatedAt,
-    createdBy: market.createdBy,
+    createdBy: market.createdBy ?? chain?.creator ?? null,
     contractMarketId,
     contractTxId: market.contractTxId ?? null,
     resolutionTxId: market.resolutionTxId ?? null,
     marketRef: market.marketRef,
     chain: chain ?? {
       contractMarketId,
-      marketRef: market.marketRef,
       creator: null,
       createdAtBlock: 0,
       resolveDateBlock: market.resolveBlock,
@@ -64,7 +68,7 @@ export async function getMergedMarketByContractId(store, stacks, contractMarketI
       winningOutcome: market.winningOutcome ?? null,
       resolvedAtBlock: null,
     },
-    status: chain?.status ?? market.status,
+    status,
     winningOutcome: chain?.winningOutcome ?? market.winningOutcome ?? null,
     yesPoolMicro: chain?.yesPoolMicro ?? 0,
     noPoolMicro: chain?.noPoolMicro ?? 0,
