@@ -23,7 +23,7 @@ import {
 import { toast } from 'sonner';
 import { useConnect } from '@stacks/connect-react';
 import { userSession, getContractConfig, isUserSignedIn } from '@/lib/constants';
-import { PostConditionMode, AnchorMode, Cl, Pc } from '@stacks/transactions';
+import { PostConditionMode, AnchorMode, uintCV, boolCV, Pc } from '@stacks/transactions';
 import Link from 'next/link';
 
 const MIN_BET_STX  = 0.02;
@@ -180,10 +180,10 @@ export default function MarketPage() {
                 contractName:    intent.contractCall.contractName,
                 functionName:    intent.contractCall.functionName,
                 functionArgs: [
-                    Cl.uint(intent.contractCall.args.marketId),
-                    Cl.bool(intent.contractCall.args.outcome),
-                    Cl.uint(intent.contractCall.args.amountMicro),
-                    Cl.uint(intent.contractCall.args.maxAcceptedPriceBps),
+                    uintCV(intent.contractCall.args.marketId),
+                    boolCV(intent.contractCall.args.outcome),
+                    uintCV(intent.contractCall.args.amountMicro),
+                    uintCV(intent.contractCall.args.maxAcceptedPriceBps),
                 ],
                 postConditions: [postCondition],
                 postConditionMode: PostConditionMode.Deny,
@@ -219,7 +219,7 @@ export default function MarketPage() {
                 contractAddress: config.deployer,
                 contractName:    config.predictionMarket,
                 functionName:    funcName,
-                functionArgs:    [Cl.uint(marketId)],
+                functionArgs:    [uintCV(marketId)],
                 postConditionMode: PostConditionMode.Allow,
                 anchorMode: AnchorMode.Any,
                 onFinish: async (data) => {

@@ -16,7 +16,7 @@ import { userSession, getContractConfig, isUserSignedIn } from '@/lib/constants'
 import { confirmClaim, getStxBalance, getUserDashboard } from '@/lib/stacks-api';
 import { blockToDate } from '@/lib/date-utils';
 import { useConnect } from '@stacks/connect-react';
-import { Cl, PostConditionMode, AnchorMode } from '@stacks/transactions';
+import { uintCV, PostConditionMode, AnchorMode } from '@stacks/transactions';
 import { toast } from 'sonner';
 import Link from 'next/link';
 import { Footer } from '@/components/footer';
@@ -115,7 +115,7 @@ function DashboardContent() {
                 contractAddress: config.deployer,
                 contractName: config.predictionMarket,
                 functionName: 'claim-winnings',
-                functionArgs: [Cl.uint(marketId)],
+                functionArgs: [uintCV(marketId)],
                 postConditionMode: PostConditionMode.Allow,
                 anchorMode: AnchorMode.Any,
                 onFinish: async (data) => {
