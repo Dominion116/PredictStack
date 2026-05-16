@@ -20,7 +20,6 @@ import { useConnect } from '@stacks/connect-react';
 import { toast } from 'sonner';
 import Link from 'next/link';
 import { Footer } from '@/components/footer';
-import { RecentActivity } from '@/components/recent-activity';
 
 export default function DashboardPage() {
     const [mounted, setMounted] = useState(false);
@@ -225,14 +224,11 @@ function DashboardContent() {
 
                 {/* Main content */}
                 <motion.div
-                    className="grid grid-cols-1 lg:grid-cols-3 gap-6"
                     initial={{ opacity: 0, y: 16 }}
                     animate={{ opacity: 1, y: 0 }}
                     transition={{ ...defaultTransition, delay: 0.2 }}
                 >
-                    {/* Bets (2/3 width) */}
-                    <div className="lg:col-span-2">
-                        <Tabs defaultValue="active">
+                    <Tabs defaultValue="active">
                             <TabsList className="font-mono text-xs">
                                 <TabsTrigger value="active">
                                     Active
@@ -262,26 +258,20 @@ function DashboardContent() {
                                 )}
                             </TabsContent>
 
-                            <TabsContent value="history" className="mt-5">
-                                {loading ? (
-                                    <LoadingRows />
-                                ) : resolvedBets.length > 0 ? (
-                                    <div className="space-y-3">
-                                        {resolvedBets.map(bet => (
-                                            <BetRow key={bet.id} bet={bet} onClaim={handleClaim} isClaiming={isClaiming === bet.id} />
-                                        ))}
-                                    </div>
-                                ) : (
-                                    <EmptyBets text="No resolved markets yet." />
-                                )}
-                            </TabsContent>
-                        </Tabs>
-                    </div>
-
-                    {/* Sidebar */}
-                    <div className="lg:col-span-1">
-                        <RecentActivity />
-                    </div>
+                        <TabsContent value="history" className="mt-5">
+                            {loading ? (
+                                <LoadingRows />
+                            ) : resolvedBets.length > 0 ? (
+                                <div className="space-y-3">
+                                    {resolvedBets.map(bet => (
+                                        <BetRow key={bet.id} bet={bet} onClaim={handleClaim} isClaiming={isClaiming === bet.id} />
+                                    ))}
+                                </div>
+                            ) : (
+                                <EmptyBets text="No resolved markets yet." />
+                            )}
+                        </TabsContent>
+                    </Tabs>
                 </motion.div>
             </div>
 
