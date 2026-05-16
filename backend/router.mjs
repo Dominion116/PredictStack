@@ -39,6 +39,7 @@ export function createRouter({ store, stacks, config, specs }) {
 
     // Markets — order matters: /contract/ must match before /:id
     if (method === 'GET' && pathname === '/api/markets') return markets.list(req, res, searchParams);
+    if (method === 'GET' && pathname === '/api/markets/next-id') return markets.nextId(req, res);
     if (method === 'POST' && pathname === '/api/markets') return markets.create(req, res);
     if (method === 'GET' && pathname.startsWith('/api/markets/contract/')) {
       return markets.getByContractId(req, res, Number(pathname.split('/').pop()));

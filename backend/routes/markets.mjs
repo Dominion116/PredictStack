@@ -19,6 +19,12 @@ export function createMarketRoutes({ store, stacks }) {
       return sendJson(res, 200, { markets: markets.slice(0, limit) });
     },
 
+    // Read the next market ID from the chain (no auth needed).
+    async nextId(req, res) {
+      const contractMarketId = await stacks.getNextMarketId();
+      return sendJson(res, 200, { contractMarketId });
+    },
+
     async getByContractId(req, res, contractMarketId) {
       const market = await getMerged(contractMarketId);
       if (!market) return sendJson(res, 404, { error: 'Market not found' });
@@ -31,6 +37,11 @@ export function createMarketRoutes({ store, stacks }) {
       return sendJson(res, 200, { market: await getMerged(market.contractMarketId) });
     },
 
+    // Accepts either:
+    //   A) { question, resolveDate, resolveBlock, ... } with no txId
+    //      → backend signs + broadcasts (legacy / CLI use)
+    //   B) { question, resolveDate, resolveBlock, contractMarketId, txId, ... }
+    //      → admin already signed via Leather; just store metadata
     async create(req, res) {
       const state = store.getState();
       const body = await readBody(req);
@@ -46,10 +57,20 @@ export function createMarketRoutes({ store, stacks }) {
         return sendJson(res, 400, { error: 'question, resolveDate and resolveBlock are required' });
       }
 
+      let contractMarketId;
+      let txId;
+
+      if (body.txId && body.contractMarketId) {
+        // Path B: admin signed through their wallet — just record the metadata
+        contractMarketId = Number(body.contractMarketId);
+        txId = String(body.txId);
+      } else {
+        // Path A: backend signs (kept for CLI/legacy)
+        contractMarketId = await stacks.getNextMarketId();
+        txId = await stacks.createMarket(question, description || null, resolveBlock, imageUrl || null);
+      }
+
       const marketRef = makeMarketRef();
-      const contractMarketId = await stacks.getNextMarketId();
-      // Deployed contract: create-market(question, description?, resolve-date, ipfs-hash?)
-      const txId = await stacks.createMarket(question, description || null, resolveBlock, imageUrl || null);
       const now = new Date().toISOString();
 
       state.markets[marketRef] = {
