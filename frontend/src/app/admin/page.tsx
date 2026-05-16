@@ -190,11 +190,16 @@ function AdminDashboard() {
     const handleInitialize = async () => {
         setIsInitializing(true);
         try {
-            const { principalCV, uintCV, PostConditionMode, AnchorMode } =
-                await import('@stacks/transactions');
+            const [tx, net] = await Promise.all([
+                import('@stacks/transactions'),
+                import('@stacks/network'),
+            ]);
+            const { principalCV, uintCV, PostConditionMode, AnchorMode } = tx;
+            const network = NETWORK_ENV === 'mainnet' ? net.STACKS_MAINNET : net.STACKS_TESTNET;
             const config  = getContractConfig();
             const admin   = getUserAddress();
             await doContractCall({
+                network,
                 contractAddress: config.deployer,
                 contractName:    config.predictionMarket,
                 functionName:    'initialize',
@@ -256,8 +261,12 @@ function AdminDashboard() {
         if (!estimatedBlock) { toast.error('Block height not loaded yet — please wait'); return; }
         setIsSubmitting(true);
         try {
-            const { stringAsciiCV, noneCV, someCV, uintCV, PostConditionMode, AnchorMode } =
-                await import('@stacks/transactions');
+            const [tx, net] = await Promise.all([
+                import('@stacks/transactions'),
+                import('@stacks/network'),
+            ]);
+            const { stringAsciiCV, noneCV, someCV, uintCV, PostConditionMode, AnchorMode } = tx;
+            const network = NETWORK_ENV === 'mainnet' ? net.STACKS_MAINNET : net.STACKS_TESTNET;
             const config = getContractConfig();
             const createdBy = getUserAddress();
 
@@ -265,6 +274,7 @@ function AdminDashboard() {
             const contractMarketId = await getNextMarketId();
 
             await doContractCall({
+                network,
                 contractAddress: config.deployer,
                 contractName:    config.predictionMarket,
                 functionName:    'create-market',

@@ -21,7 +21,7 @@ import {
 } from 'lucide-react';
 import { toast } from 'sonner';
 import { useConnect } from '@stacks/connect-react';
-import { userSession, getContractConfig, isUserSignedIn, getUserAddress } from '@/lib/constants';
+import { userSession, getContractConfig, isUserSignedIn, getUserAddress, NETWORK_ENV } from '@/lib/constants';
 // @stacks/transactions is NOT statically imported — Turbopack cannot bundle
 // it for the browser. All Clarity helpers are loaded dynamically inside handlers.
 import Link from 'next/link';
@@ -171,9 +171,14 @@ export default function MarketPage() {
         }
         setIsSubmitting(true);
         try {
-            // Dynamic import keeps @stacks/transactions out of the initial bundle
-            const { uintCV, boolCV, Pc, PostConditionMode, AnchorMode } =
-                await import('@stacks/transactions');
+            // Dynamic imports — both @stacks/transactions and @stacks/network
+            // must stay out of the initial client bundle (Turbopack can't bundle them).
+            const [tx, net] = await Promise.all([
+                import('@stacks/transactions'),
+                import('@stacks/network'),
+            ]);
+            const { uintCV, boolCV, Pc, PostConditionMode, AnchorMode } = tx;
+            const network = NETWORK_ENV === 'mainnet' ? net.STACKS_MAINNET : net.STACKS_TESTNET;
 
             const userAddress = getUserAddress();
             const amountMicro = Math.floor(amt * 1_000_000);
@@ -183,6 +188,7 @@ export default function MarketPage() {
             const postCondition = Pc.principal(userAddress)
                 .willSendEq(intent.contractCall.postConditionAmountMicro).ustx();
             await doContractCall({
+                network,  // force the wallet to use the correct network
                 contractAddress: intent.contractCall.contractAddress,
                 contractName:    intent.contractCall.contractName,
                 functionName:    intent.contractCall.functionName,
@@ -219,13 +225,18 @@ export default function MarketPage() {
         setIsSubmitting(true);
         const config = getContractConfig();
         try {
-            const { uintCV, PostConditionMode, AnchorMode } =
-                await import('@stacks/transactions');
+            const [tx, net] = await Promise.all([
+                import('@stacks/transactions'),
+                import('@stacks/network'),
+            ]);
+            const { uintCV, PostConditionMode, AnchorMode } = tx;
+            const network = NETWORK_ENV === 'mainnet' ? net.STACKS_MAINNET : net.STACKS_TESTNET;
 
             const userAddress = getUserAddress();
             const claimType  = market.status === 'cancelled' ? 'refund' : 'winnings';
             const funcName   = claimType === 'refund' ? 'claim-refund' : 'claim-winnings';
             await doContractCall({
+                network,
                 contractAddress: config.deployer,
                 contractName:    config.predictionMarket,
                 functionName:    funcName,

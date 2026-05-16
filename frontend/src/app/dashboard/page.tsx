@@ -12,7 +12,7 @@ import {
     CheckCircle, ArrowRight, Clock, CircleDot,
     BarChart2, Trophy, AlertCircle,
 } from 'lucide-react';
-import { userSession, getContractConfig, isUserSignedIn, getUserAddress } from '@/lib/constants';
+import { userSession, getContractConfig, isUserSignedIn, getUserAddress, NETWORK_ENV } from '@/lib/constants';
 import { confirmClaim, getStxBalance, getUserDashboard } from '@/lib/stacks-api';
 import { blockToDate } from '@/lib/date-utils';
 import { useConnect } from '@stacks/connect-react';
@@ -109,10 +109,15 @@ function DashboardContent() {
         setIsClaiming(marketId);
         const config = getContractConfig();
         try {
-            const { uintCV, PostConditionMode, AnchorMode } =
-                await import('@stacks/transactions');
+            const [tx, net] = await Promise.all([
+                import('@stacks/transactions'),
+                import('@stacks/network'),
+            ]);
+            const { uintCV, PostConditionMode, AnchorMode } = tx;
+            const network = NETWORK_ENV === 'mainnet' ? net.STACKS_MAINNET : net.STACKS_TESTNET;
             const userAddress = getUserAddress();
             await doContractCall({
+                network,
                 contractAddress: config.deployer,
                 contractName: config.predictionMarket,
                 functionName: 'claim-winnings',
