@@ -43,6 +43,11 @@ export async function getRecentMarkets(limit = 6) {
   }
 }
 
+export async function getNextMarketId(): Promise<number> {
+  const data = await backendFetch<{ contractMarketId: number }>('/api/markets/next-id');
+  return data.contractMarketId;
+}
+
 export async function createMarketRecord(payload: {
   question: string;
   description: string;
@@ -51,6 +56,9 @@ export async function createMarketRecord(payload: {
   resolveDate: string;
   resolveBlock: number;
   createdBy: string;
+  // If txId + contractMarketId are provided, the backend skips blockchain signing
+  txId?: string;
+  contractMarketId?: number;
 }) {
   return backendFetch<{ market: any }>('/api/markets', {
     method: 'POST',
