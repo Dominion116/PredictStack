@@ -10,8 +10,9 @@ import { Badge } from '@/components/ui/badge';
 import { Input } from '@/components/ui/input';
 import { Textarea } from '@/components/ui/textarea';
 import { Label } from '@/components/ui/label';
-import { getContractConfig, userSession, isUserSignedIn, getUserAddress } from '@/lib/constants';
-import { createMarketRecord, getRecentMarkets, resolveMarketRecord } from '@/lib/stacks-api';
+import { getContractConfig, userSession, isUserSignedIn, getUserAddress, NETWORK_ENV } from '@/lib/constants';
+import { createMarketRecord, getRecentMarkets, resolveMarketRecord, getNextMarketId } from '@/lib/stacks-api';
+import { useConnect } from '@stacks/connect-react';
 import { blockToDate } from '@/lib/date-utils';
 import {
     Loader2, ShieldAlert, Gavel, LayoutDashboard,
@@ -107,11 +108,15 @@ function AccessDenied() {
 }
 
 function AdminDashboard() {
+    const { doContractCall } = useConnect();
+
     const [activeTab,      setActiveTab]      = useState('create');
     const [markets,        setMarkets]        = useState<MarketRecord[]>([]);
     const [processingId,   setProcessingId]   = useState<number | null>(null);
     const [currentBlock,   setCurrentBlock]   = useState<number>(0);
     const [blockFetching,  setBlockFetching]  = useState(true);
+    const [isInitialized,  setIsInitialized]  = useState<boolean | null>(null);
+    const [isInitializing, setIsInitializing] = useState(false);
 
     const activeMarkets = markets.filter(
         m => m.status === 'active' || m.status === '0' || m.status === 0
@@ -163,9 +168,63 @@ function AdminDashboard() {
         }
     };
 
+    const checkInitialized = async () => {
+        try {
+            const config = getContractConfig();
+            const apiUrl = NETWORK_ENV === 'mainnet'
+                ? 'https://api.mainnet.hiro.so'
+                : 'https://api.testnet.hiro.so';
+            const res = await fetch(
+                `${apiUrl}/v2/contracts/call-read/${config.deployer}/${config.predictionMarket}/is-initialized`,
+                { method: 'POST', headers: { 'Content-Type': 'application/json' },
+                  body: JSON.stringify({ sender: config.deployer, arguments: [] }) }
+            );
+            const data = await res.json();
+            // result "0x0703" = (ok false), "0x0704" = (ok true)
+            setIsInitialized(data.result === '0x0704');
+        } catch {
+            setIsInitialized(null);
+        }
+    };
+
+    const handleInitialize = async () => {
+        setIsInitializing(true);
+        try {
+            const { principalCV, uintCV, PostConditionMode, AnchorMode } =
+                await import('@stacks/transactions');
+            const config  = getContractConfig();
+            const admin   = getUserAddress();
+            await doContractCall({
+                contractAddress: config.deployer,
+                contractName:    config.predictionMarket,
+                functionName:    'initialize',
+                functionArgs: [
+                    principalCV(admin),  // admin
+                    principalCV(admin),  // oracle
+                    principalCV(admin),  // treasury
+                    uintCV(10_000),      // fee: 0.01 STX
+                    uintCV(20_000),      // min-bet: 0.02 STX
+                    uintCV(100_000),     // max-bet: 0.1 STX
+                ],
+                postConditionMode: PostConditionMode.Allow,
+                anchorMode: AnchorMode.Any,
+                onFinish: async () => {
+                    toast.success('Contract initialized!');
+                    setTimeout(checkInitialized, 4000);
+                    setIsInitializing(false);
+                },
+                onCancel: () => setIsInitializing(false),
+            });
+        } catch (err: unknown) {
+            toast.error(getErrorMessage(err, 'Failed to initialize'));
+            setIsInitializing(false);
+        }
+    };
+
     useEffect(() => {
         loadData();
         fetchCurrentBlock();
+        checkInitialized();
     }, []);
 
     const handleFileChange = async (e: React.ChangeEvent<HTMLInputElement>) => {
@@ -194,16 +253,47 @@ function AdminDashboard() {
     const handleCreateMarket = async (e: React.FormEvent) => {
         e.preventDefault();
         if (!question || !resolveDate) { toast.error('Question and date are required'); return; }
+        if (!estimatedBlock) { toast.error('Block height not loaded yet — please wait'); return; }
         setIsSubmitting(true);
         try {
+            const { stringAsciiCV, noneCV, someCV, uintCV, PostConditionMode, AnchorMode } =
+                await import('@stacks/transactions');
+            const config = getContractConfig();
             const createdBy = getUserAddress();
-            await createMarketRecord({ question, description, category, imageUrl, resolveDate, resolveBlock: estimatedBlock, createdBy });
-            toast.success('Market created!');
-            setQuestion(''); setDescription(''); setResolveDate(''); setPreviewUrl(null); setImageUrl('');
-            setTimeout(loadData, 2000);
+
+            // Read expected market ID before signing so we can store it immediately
+            const contractMarketId = await getNextMarketId();
+
+            await doContractCall({
+                contractAddress: config.deployer,
+                contractName:    config.predictionMarket,
+                functionName:    'create-market',
+                functionArgs: [
+                    stringAsciiCV(question.slice(0, 256)),
+                    description ? someCV(stringAsciiCV(description.slice(0, 512))) : noneCV(),
+                    uintCV(estimatedBlock),
+                    imageUrl    ? someCV(stringAsciiCV(imageUrl.slice(0, 64)))    : noneCV(),
+                ],
+                postConditionMode: PostConditionMode.Allow,
+                anchorMode: AnchorMode.Any,
+                onFinish: async (data) => {
+                    await createMarketRecord({
+                        question, description, category, imageUrl,
+                        resolveDate, resolveBlock: estimatedBlock,
+                        createdBy,
+                        txId: data.txId,
+                        contractMarketId,
+                    });
+                    toast.success('Market submitted on-chain!');
+                    setQuestion(''); setDescription(''); setResolveDate('');
+                    setPreviewUrl(null); setImageUrl('');
+                    setIsSubmitting(false);
+                    setTimeout(loadData, 3000);
+                },
+                onCancel: () => setIsSubmitting(false),
+            });
         } catch (err: unknown) {
             toast.error(getErrorMessage(err, 'Failed to create market'));
-        } finally {
             setIsSubmitting(false);
         }
     };
@@ -288,6 +378,31 @@ function AdminDashboard() {
                     animate={{ opacity: 1, y: 0 }}
                     transition={{ ...defaultTransition, delay: 0.08 }}
                 >
+                    {/* Contract initialization banner */}
+                    {isInitialized === false && (
+                        <div className="rounded-xl border border-yellow-500/40 bg-yellow-500/10 px-5 py-4 flex flex-col sm:flex-row sm:items-center gap-3">
+                            <div className="flex-1 space-y-0.5">
+                                <p className="text-sm font-semibold text-yellow-500">Contract not initialized</p>
+                                <p className="text-xs font-mono text-muted-foreground">
+                                    Run <code className="text-yellow-500">initialize()</code> once before creating markets. Your wallet will sign the transaction.
+                                </p>
+                            </div>
+                            <Button
+                                size="sm"
+                                className="font-mono text-xs bg-yellow-500 hover:bg-yellow-600 text-black shrink-0"
+                                onClick={handleInitialize}
+                                disabled={isInitializing}
+                            >
+                                {isInitializing ? <><Loader2 className="mr-2 h-3.5 w-3.5 animate-spin" />Initializing…</> : 'Initialize Contract'}
+                            </Button>
+                        </div>
+                    )}
+                    {isInitialized === true && (
+                        <div className="rounded-xl border border-green-500/30 bg-green-500/5 px-4 py-2.5 flex items-center gap-2">
+                            <span className="h-1.5 w-1.5 rounded-full bg-green-500" />
+                            <span className="text-xs font-mono text-green-500">Contract initialized · ready to create markets</span>
+                        </div>
+                    )}
                     {/* ── OVERVIEW ─────────────────────────────────── */}
                     {activeTab === 'overview' && (
                         <div className="space-y-6">
