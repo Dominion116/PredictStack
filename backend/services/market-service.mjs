@@ -36,9 +36,13 @@ export async function getMergedMarketByContractId(store, stacks, contractMarketI
     chain = null;
   }
 
-  // Chain status is a string in the deployed contract ("active"/"resolved"/"cancelled").
-  // Fall back to the backend-stored status if the chain call failed.
-  const status = chain?.status ?? market.status;
+  // Status priority:
+  // • If the backend has already marked the market resolved/cancelled, trust that —
+  //   the backend only sets those states AFTER broadcasting the tx, and the chain
+  //   can lag by one full block (~10 min on testnet) before confirming.
+  // • For active markets, prefer the live chain status so pool sizes / bets are current.
+  const backendResolved = market.status === 'resolved' || market.status === 'cancelled';
+  const status = backendResolved ? market.status : (chain?.status ?? market.status);
 
   return {
     id: market.id,
@@ -69,7 +73,10 @@ export async function getMergedMarketByContractId(store, stacks, contractMarketI
       resolvedAtBlock: null,
     },
     status,
-    winningOutcome: chain?.winningOutcome ?? market.winningOutcome ?? null,
+    // Same priority as status: backend is authoritative once it has resolved.
+    winningOutcome: backendResolved
+      ? (market.winningOutcome ?? null)
+      : (chain?.winningOutcome ?? market.winningOutcome ?? null),
     yesPoolMicro: chain?.yesPoolMicro ?? 0,
     noPoolMicro: chain?.noPoolMicro ?? 0,
     totalBets: chain?.totalBets ?? 0,
