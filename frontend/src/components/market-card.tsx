@@ -2,9 +2,8 @@
 
 import { Badge } from '@/components/ui/badge';
 import { Button } from '@/components/ui/button';
-import { ArrowRight, Clock, TrendingUp, Zap } from 'lucide-react';
+import { ArrowRight, Clock, TrendingUp } from 'lucide-react';
 import Link from 'next/link';
-import { blockToDate, formatResolutionDate } from '@/lib/date-utils';
 import { motion } from 'framer-motion';
 
 interface MarketCardProps {
@@ -12,24 +11,43 @@ interface MarketCardProps {
     index?: number;
 }
 
+// Compute display from the real ISO timestamp the admin entered.
+// We avoid block-height arithmetic (which uses a hardcoded reference).
+function timeFromIso(iso?: string | null): string {
+    if (!iso) return 'Active';
+    const target = new Date(iso).getTime();
+    const diff   = target - Date.now();
+    if (diff < 0) return 'Ended';
+    const mins  = Math.floor(diff / 60_000);
+    const hours = Math.floor(mins / 60);
+    const days  = Math.floor(hours / 24);
+    if (mins  < 60) return `Ends in ${mins}m`;
+    if (hours < 24) return `Ends in ${hours}h`;
+    if (days  < 30) return `Ends in ${days}d`;
+    return `Ends ${new Date(iso).toLocaleDateString()}`;
+}
+
 export function MarketCard({ market, index = 0 }: MarketCardProps) {
     const question = market.question || 'Unknown Market';
     const category = market.category || 'General';
     const isActive = market.status === 'active';
 
-    const yesPool = Number(market['yes-pool']) / 1_000_000;
-    const noPool = Number(market['no-pool']) / 1_000_000;
+    // Pool numbers come straight from getMergedMarketByContractId on the backend:
+    // max(on-chain pool, backend confirmed bets). Always real data.
+    const yesPool   = Number(market['yes-pool'] ?? 0) / 1_000_000;
+    const noPool    = Number(market['no-pool']  ?? 0) / 1_000_000;
     const totalPool = yesPool + noPool;
 
+    // Standard CPMM-style implied probabilities and payout multipliers.
+    // Display 50/50 + 2.00x only when no bets exist yet (mathematical default,
+    // not mock data).
     const yesMultiplier = yesPool > 0 ? (totalPool / yesPool).toFixed(2) : '2.00';
     const noMultiplier  = noPool  > 0 ? (totalPool / noPool).toFixed(2)  : '2.00';
+    const yesPercent    = totalPool > 0 ? (yesPool / totalPool) * 100 : 50;
+    const noPercent     = 100 - yesPercent;
 
-    const yesPercent = totalPool > 0 ? (yesPool / totalPool) * 100 : 50;
-    const noPercent  = totalPool > 0 ? (noPool  / totalPool) * 100 : 50;
-
-    const resolveBlock = market['resolve-date'] || 0;
-    const resolutionDate = resolveBlock > 0 ? blockToDate(resolveBlock) : null;
-    const timeDisplay = resolutionDate ? formatResolutionDate(resolutionDate) : 'Active';
+    // Use the ISO timestamp the admin entered (stored as resolve-time-iso).
+    const timeDisplay = timeFromIso(market['resolve-time-iso'] ?? market.resolveTimeIso);
 
     const volumeDisplay = totalPool >= 1000
         ? `${(totalPool / 1000).toFixed(1)}k`
