@@ -116,7 +116,6 @@ function AdminDashboard() {
     const [currentBlock,   setCurrentBlock]   = useState<number>(0);
     const [blockFetching,  setBlockFetching]  = useState(true);
     const [isInitialized,  setIsInitialized]  = useState<boolean | null>(null);
-    const [isInitializing, setIsInitializing] = useState(false);
 
     const activeMarkets = markets.filter(
         m => m.status === 'active' || m.status === '0' || m.status === 0
@@ -187,44 +186,6 @@ function AdminDashboard() {
         }
     };
 
-    const handleInitialize = async () => {
-        setIsInitializing(true);
-        try {
-            const [tx, net] = await Promise.all([
-                import('@stacks/transactions'),
-                import('@stacks/network'),
-            ]);
-            const { principalCV, uintCV, PostConditionMode, AnchorMode } = tx;
-            const network = NETWORK_ENV === 'mainnet' ? net.STACKS_MAINNET : net.STACKS_TESTNET;
-            const config  = getContractConfig();
-            const admin   = getUserAddress();
-            await doContractCall({
-                network,
-                contractAddress: config.deployer,
-                contractName:    config.predictionMarket,
-                functionName:    'initialize',
-                functionArgs: [
-                    principalCV(admin),  // admin
-                    principalCV(admin),  // oracle
-                    principalCV(admin),  // treasury
-                    uintCV(10_000),      // fee: 0.01 STX
-                    uintCV(20_000),      // min-bet: 0.02 STX
-                    uintCV(100_000),     // max-bet: 0.1 STX
-                ],
-                postConditionMode: PostConditionMode.Allow,
-                anchorMode: AnchorMode.Any,
-                onFinish: async () => {
-                    toast.success('Contract initialized!');
-                    setTimeout(checkInitialized, 4000);
-                    setIsInitializing(false);
-                },
-                onCancel: () => setIsInitializing(false),
-            });
-        } catch (err: unknown) {
-            toast.error(getErrorMessage(err, 'Failed to initialize'));
-            setIsInitializing(false);
-        }
-    };
 
     useEffect(() => {
         loadData();
@@ -390,21 +351,13 @@ function AdminDashboard() {
                 >
                     {/* Contract initialization banner */}
                     {isInitialized === false && (
-                        <div className="rounded-xl border border-yellow-500/40 bg-yellow-500/10 px-5 py-4 flex flex-col sm:flex-row sm:items-center gap-3">
+                        <div className="rounded-xl border border-yellow-500/40 bg-yellow-500/10 px-5 py-4">
                             <div className="flex-1 space-y-0.5">
                                 <p className="text-sm font-semibold text-yellow-500">Contract not initialized</p>
                                 <p className="text-xs font-mono text-muted-foreground">
-                                    Run <code className="text-yellow-500">initialize()</code> once before creating markets. Your wallet will sign the transaction.
+                                    Run <code className="text-yellow-500">initialize()</code> once before creating markets.
                                 </p>
                             </div>
-                            <Button
-                                size="sm"
-                                className="font-mono text-xs bg-yellow-500 hover:bg-yellow-600 text-black shrink-0"
-                                onClick={handleInitialize}
-                                disabled={isInitializing}
-                            >
-                                {isInitializing ? <><Loader2 className="mr-2 h-3.5 w-3.5 animate-spin" />Initializing…</> : 'Initialize Contract'}
-                            </Button>
                         </div>
                     )}
                     {isInitialized === true && (
