@@ -44,6 +44,25 @@ export async function getMergedMarketByContractId(store, stacks, contractMarketI
   const backendResolved = market.status === 'resolved' || market.status === 'cancelled';
   const status = backendResolved ? market.status : (chain?.status ?? market.status);
 
+  // Pool sizes: aggregate confirmed bets from the backend store too.
+  // Chain pools only update once the bet tx confirms (~10 min lag on testnet).
+  // Backend bets are confirmed as soon as the user signs in their wallet, so
+  // they give a more responsive view of true pool size. We take the max so
+  // chain values win once they catch up.
+  const confirmedBets = Object.values(state.bets).filter(
+    b => Number(b.contractMarketId) === Number(contractMarketId) && b.status === 'confirmed'
+  );
+  const yesFromBets = confirmedBets
+    .filter(b => b.outcome === true)
+    .reduce((sum, b) => sum + Number(b.amountMicro || 0), 0);
+  const noFromBets = confirmedBets
+    .filter(b => b.outcome === false)
+    .reduce((sum, b) => sum + Number(b.amountMicro || 0), 0);
+
+  const yesPoolMicro = Math.max(Number(chain?.yesPoolMicro ?? 0), yesFromBets);
+  const noPoolMicro  = Math.max(Number(chain?.noPoolMicro  ?? 0), noFromBets);
+  const totalBets    = Math.max(Number(chain?.totalBets    ?? 0), confirmedBets.length);
+
   return {
     id: market.id,
     question: market.question,
@@ -77,9 +96,9 @@ export async function getMergedMarketByContractId(store, stacks, contractMarketI
     winningOutcome: backendResolved
       ? (market.winningOutcome ?? null)
       : (chain?.winningOutcome ?? market.winningOutcome ?? null),
-    yesPoolMicro: chain?.yesPoolMicro ?? 0,
-    noPoolMicro: chain?.noPoolMicro ?? 0,
-    totalBets: chain?.totalBets ?? 0,
+    yesPoolMicro,
+    noPoolMicro,
+    totalBets,
   };
 }
 
