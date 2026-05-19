@@ -31,3 +31,11 @@ export function sendError(res, statusCode, message, code = null) {
   if (code) payload.code = code;
   sendJson(res, statusCode, payload);
 }
+
+export function requestLogger(req, res, next) {
+  const start = Date.now();
+  res.on('finish', () => {
+    console.log(`${req.method} ${req.url} ${res.statusCode} ${Date.now()-start}ms`);
+  });
+  next && next();
+}
