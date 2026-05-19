@@ -23,6 +23,9 @@ export function createBetRoutes({ store, stacks, config }) {
       if (typeof outcome !== 'boolean') {
         return sendJson(res, 400, { error: 'Invalid outcome' });
       }
+      // record intent with slippage/clientRef
+      return sendJson(res, 200, { intentId: randomUUID() });
+    },
 
       const market = await getMerged(contractMarketId);
       if (!market) return sendJson(res, 404, { error: 'Market not found' });
