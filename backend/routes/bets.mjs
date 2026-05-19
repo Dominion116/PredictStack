@@ -20,6 +20,9 @@ export function createBetRoutes({ store, stacks, config }) {
           error: 'userAddress, contractMarketId, amountMicro and outcome are required',
         });
       }
+      if (typeof outcome !== 'boolean') {
+        return sendJson(res, 400, { error: 'Invalid outcome' });
+      }
 
       const market = await getMerged(contractMarketId);
       if (!market) return sendJson(res, 404, { error: 'Market not found' });
