@@ -17,6 +17,7 @@ export function createClaimRoutes({ store, stacks }) {
       const position = getUserPositionRecord(state, userAddress, contractMarketId);
 
       if (!position) return sendJson(res, 404, { error: 'Position not found' });
+      if (!contractMarketId) return sendJson(res, 400, { error: 'Invalid market-id' });
 
       const market = await getMerged(contractMarketId);
       if (!market) return sendJson(res, 404, { error: 'Market not found' });
