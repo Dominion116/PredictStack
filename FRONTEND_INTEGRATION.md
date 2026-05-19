@@ -8,6 +8,10 @@ PredictStack is STX-native. Bet placement and claims call the market contract di
 - `claim-winnings(market-id)`
 - `claim-refund(market-id)`
 
+## New Endpoints
+- /platform/config, /platform/stats
+- /markets filters, /bets/intent, /claims/confirm
+
 ## STX Post-condition Pattern
 
 Use an exact STX debit post-condition when placing bets:
