@@ -76,3 +76,7 @@ export async function resolveMarketRecord(backendMarketId: string, winningOutcom
 export async function getPlatformConfig() {
   return backendFetch('/api/platform/config');
 }
+
+export async function getPlatformStats() {
+  return backendFetch('/api/platform/stats');
+}
