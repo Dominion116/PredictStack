@@ -48,6 +48,10 @@ export function createMarketRoutes({ store, stacks }) {
       const question = String(body.question || '').trim();
       const description = String(body.description || '').trim();
       const category = String(body.category || 'General').trim();
+      const marketRef = String(body.marketRef || question).trim();
+      if (marketRef.length < 3 || marketRef.length > 64) {
+        return sendJson(res, 400, { error: 'Invalid market-ref length' });
+      }
       const imageUrl = String(body.imageUrl || '').trim();
       const resolveTimeIso = String(body.resolveDate || '').trim();
       const resolveBlock = Number(body.resolveBlock || 0);
