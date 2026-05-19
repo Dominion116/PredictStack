@@ -106,7 +106,6 @@ export function createMarketRoutes({ store, stacks }) {
         txId = await stacks.createMarket(question, description || null, resolveBlock, imageUrl || null);
       }
 
-      const marketRef = makeMarketRef();
       const now = new Date().toISOString();
 
       state.markets[marketRef] = {
