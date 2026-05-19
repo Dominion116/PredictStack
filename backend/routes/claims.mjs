@@ -18,6 +18,12 @@ export function createClaimRoutes({ store, stacks }) {
 
       if (!position) return sendJson(res, 404, { error: 'Position not found' });
       if (!contractMarketId) return sendJson(res, 400, { error: 'Invalid market-id' });
+      return sendJson(res, 200, { staged: true });
+    },
+
+    async intent(req, res) {
+      return sendJson(res, 200, { intentId: randomUUID() });
+    },
 
       const market = await getMerged(contractMarketId);
       if (!market) return sendJson(res, 404, { error: 'Market not found' });
