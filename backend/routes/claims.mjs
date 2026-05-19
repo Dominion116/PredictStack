@@ -7,6 +7,10 @@ export function createClaimRoutes({ store, stacks }) {
   const getMerged = id => getMergedMarketByContractId(store, stacks, id);
 
   return {
+    async intent(req, res) {
+      return sendJson(res, 200, { intentId: randomUUID() });
+    },
+
     async confirm(req, res) {
       const state = store.getState();
       const body = await readBody(req);
@@ -14,20 +18,13 @@ export function createClaimRoutes({ store, stacks }) {
       const contractMarketId = Number(body.contractMarketId || 0);
       const type = String(body.type || 'winnings');
       const txId = String(body.txId || '');
+
+      if (!userAddress || !contractMarketId) {
+        return sendJson(res, 400, { error: 'userAddress and contractMarketId are required' });
+      }
+
       const position = getUserPositionRecord(state, userAddress, contractMarketId);
-
       if (!position) return sendJson(res, 404, { error: 'Position not found' });
-      if (!contractMarketId) return sendJson(res, 400, { error: 'Invalid market-id' });
-      return sendJson(res, 200, { staged: true });
-    },
-
-    async intent(req, res) {
-      return sendJson(res, 200, { intentId: randomUUID() });
-    },
-
-    async confirm(req, res) {
-      return sendJson(res, 200, { verified: true });
-    },
 
       const market = await getMerged(contractMarketId);
       if (!market) return sendJson(res, 404, { error: 'Market not found' });
