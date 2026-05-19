@@ -441,4 +441,32 @@ describe("predictionmarketv7 (STX-native)", () => {
     );
     expect(cvToString(second.result)).toBe("(err u117)");
   });
+
+  it("create-market rejects resolve dates in the past", () => {
+    const accounts = simnet.getAccounts();
+    const deployer = accounts.get("deployer")!;
+
+    const init = simnet.callPublicFn(
+      CONTRACT,
+      "initialize",
+      [
+        Cl.standardPrincipal(deployer),
+        Cl.standardPrincipal(deployer),
+        Cl.standardPrincipal(deployer),
+        Cl.uint(10_000),
+        Cl.uint(20_000),
+        Cl.uint(100_000),
+      ],
+      deployer
+    );
+    expect(cvToString(init.result)).toBe("(ok true)");
+
+    const create = simnet.callPublicFn(
+      CONTRACT,
+      "create-market",
+      [Cl.stringAscii("past-ref"), Cl.uint(0)],
+      deployer
+    );
+    expect(cvToString(create.result)).toBe("(err u111)");
+  });
 });
