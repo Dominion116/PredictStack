@@ -18,6 +18,8 @@ export function createMarketRoutes({ store, stacks }) {
       let markets = await getAllMerged();
       if (status) markets = markets.filter(m => m.status === status);
       if (creator) markets = markets.filter(m => m.creator === creator);
+      const sort = searchParams.get('sort');
+      if (sort === 'newest') markets.sort((a,b)=>b.createdAt-a.createdAt);
       return sendJson(res, 200, { markets: markets.slice(0, limit) });
     },
 
