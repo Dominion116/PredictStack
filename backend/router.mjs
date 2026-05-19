@@ -44,6 +44,15 @@ export function createRouter({ store, stacks, config, specs }) {
     if (method === 'GET' && pathname.startsWith('/api/markets/contract/')) {
       return markets.getByContractId(req, res, Number(pathname.split('/').pop()));
     }
+    if (method === 'GET' && pathname.startsWith('/api/markets/ref/')) {
+      return markets.getByRef(req, res, pathname.replace('/api/markets/ref/', ''));
+    }
+    if (method === 'GET' && /^\/api\/markets\/[^/]+\/odds$/.test(pathname)) {
+      return markets.getOdds(req, res, pathname.split('/')[3]);
+    }
+    if (method === 'GET' && /^\/api\/markets\/[^/]+\/quotes$/.test(pathname)) {
+      return markets.getQuotes(req, res, pathname.split('/')[3]);
+    }
     if (method === 'POST' && pathname.endsWith('/resolve')) {
       return markets.resolve(req, res, pathname.split('/').at(-2));
     }
