@@ -740,7 +740,7 @@ describe("predictionmarketv7 (STX-native)", () => {
 
     const refund = simnet.callPublicFn(
       CONTRACT,
-      "refund-bets",
+      "claim-refund",
       [Cl.uint(1)],
       wallet1
     );
@@ -775,7 +775,7 @@ describe("predictionmarketv7 (STX-native)", () => {
     );
     expect(cvToString(create.result)).toBe("(ok u1)");
 
-    const pause = simnet.callPublicFn(CONTRACT, "pause", [], deployer);
+    const pause = simnet.callPublicFn(CONTRACT, "pause-platform", [], deployer);
     expect(cvToString(pause.result)).toBe("(ok true)");
 
     const bet = simnet.callPublicFn(
@@ -815,8 +815,8 @@ describe("predictionmarketv7 (STX-native)", () => {
     );
     expect(cvToString(create.result)).toBe("(ok u1)");
 
-    simnet.callPublicFn(CONTRACT, "pause", [], deployer);
-    simnet.callPublicFn(CONTRACT, "unpause", [], deployer);
+    simnet.callPublicFn(CONTRACT, "pause-platform", [], deployer);
+    simnet.callPublicFn(CONTRACT, "unpause-platform", [], deployer);
 
     const bet = simnet.callPublicFn(
       CONTRACT,
