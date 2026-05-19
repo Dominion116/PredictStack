@@ -31,6 +31,12 @@ export function createMarketRoutes({ store, stacks }) {
       return sendJson(res, 200, { market });
     },
 
+    async getMarketById(req, res, id) {
+      const market = await getMerged(id);
+      if (!market) return sendJson(res, 404, { error: 'Market not found' });
+      return sendJson(res, 200, { market });
+    },
+
     async getById(req, res, marketId) {
       const market = store.getState().markets[marketId];
       if (!market) return sendJson(res, 404, { error: 'Market not found' });
