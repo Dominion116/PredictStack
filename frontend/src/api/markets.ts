@@ -80,3 +80,20 @@ export async function getPlatformConfig() {
 export async function getPlatformStats() {
   return backendFetch('/api/platform/stats');
 }
+
+export async function getMarkets(filters = {}) {
+  const params = new URLSearchParams(filters).toString();
+  return backendFetch(`/api/markets?${params}`);
+}
+
+export async function getMarketByRef(ref) {
+  return backendFetch(`/api/markets/ref/${ref}`);
+}
+
+export async function getOdds(marketId) {
+  return backendFetch(`/api/markets/${marketId}/odds`);
+}
+
+export async function getQuotes(marketId) {
+  return backendFetch(`/api/markets/${marketId}/quotes`);
+}
