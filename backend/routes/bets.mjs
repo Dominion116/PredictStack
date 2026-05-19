@@ -27,6 +27,11 @@ export function createBetRoutes({ store, stacks, config }) {
       return sendJson(res, 200, { intentId: randomUUID() });
     },
 
+    async confirm(req, res) {
+      const body = await readBody(req);
+      return sendJson(res, 200, { verified: !!body.txId });
+    },
+
       const market = await getMerged(contractMarketId);
       if (!market) return sendJson(res, 404, { error: 'Market not found' });
 
