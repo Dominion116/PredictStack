@@ -15,11 +15,17 @@ export function createMarketRoutes({ store, stacks }) {
       const limit = Number(searchParams.get('limit') || 50);
       const status = searchParams.get('status');
       const creator = searchParams.get('creator');
+      const dateFrom = searchParams.get('dateFrom');
+      const dateTo = searchParams.get('dateTo');
       let markets = await getAllMerged();
       if (status) markets = markets.filter(m => m.status === status);
       if (creator) markets = markets.filter(m => m.creator === creator);
+      if (dateFrom) markets = markets.filter(m => m.resolveTimeIso && m.resolveTimeIso >= dateFrom);
+      if (dateTo) markets = markets.filter(m => m.resolveTimeIso && m.resolveTimeIso <= dateTo);
       const sort = searchParams.get('sort');
-      if (sort === 'newest') markets.sort((a,b)=>b.createdAt-a.createdAt);
+      if (sort === 'newest') markets.sort((a, b) => b.createdAt - a.createdAt);
+      if (sort === 'volume') markets.sort((a, b) => (b.yesPoolMicro + b.noPoolMicro) - (a.yesPoolMicro + a.noPoolMicro));
+      if (sort === 'ending') markets.sort((a, b) => new Date(a.resolveTimeIso || 0) - new Date(b.resolveTimeIso || 0));
       return sendJson(res, 200, { markets: markets.slice(0, limit) });
     },
 
