@@ -39,7 +39,62 @@ server.listen(config.PORT, '0.0.0.0', () => {
   console.log(`PredictStack backend listening on http://0.0.0.0:${config.PORT}`);
 });
 
+async function checkTxStatus(txId) {
+  try {
+    const base = config.NETWORK === 'mainnet'
+      ? 'https://api.hiro.so'
+      : 'https://api.testnet.hiro.so';
+    const res = await fetch(`${base}/extended/v1/tx/${txId}`);
+    if (!res.ok) return null;
+    const json = await res.json();
+    return json.tx_status; // 'success' | 'abort_by_response' | 'pending' | etc.
+  } catch {
+    return null;
+  }
+}
+
+async function reconcileIntents() {
+  const state = store.getState();
+  let dirty = false;
+
+  for (const bet of Object.values(state.bets || {})) {
+    if (bet.status === 'intent' && bet.txId) {
+      const txStatus = await checkTxStatus(bet.txId);
+      if (txStatus === 'success') {
+        bet.status = 'confirmed';
+        bet.updatedAt = new Date().toISOString();
+        dirty = true;
+      } else if (txStatus && txStatus !== 'pending') {
+        bet.status = 'failed';
+        bet.updatedAt = new Date().toISOString();
+        dirty = true;
+      }
+    }
+  }
+
+  for (const claim of Object.values(state.claims || {})) {
+    if (claim.status === 'intent' && claim.txId) {
+      const txStatus = await checkTxStatus(claim.txId);
+      if (txStatus === 'success') {
+        claim.status = 'confirmed';
+        claim.updatedAt = new Date().toISOString();
+        dirty = true;
+      } else if (txStatus && txStatus !== 'pending') {
+        claim.status = 'failed';
+        claim.updatedAt = new Date().toISOString();
+        dirty = true;
+      }
+    }
+  }
+
+  if (dirty) await store.save();
+}
+
+const RECONCILE_INTERVAL_MS = 5 * 60 * 1000; // 5 minutes
+const reconcileTimer = setInterval(reconcileIntents, RECONCILE_INTERVAL_MS);
+
 async function shutdown() {
+  clearInterval(reconcileTimer);
   server.close(async () => {
     await store.close();
     process.exit(0);
