@@ -12,6 +12,13 @@ const DEFAULT_STORE = {
 
 const DOC_ID = 'main';
 
+// Storage interface abstraction
+export interface IStore {
+  getState(): any;
+  setState(s: any): void;
+  // more methods
+}
+
 export class MongoStore {
   constructor(uri) {
     if (!uri) throw new Error('MONGODB_URI is required');
