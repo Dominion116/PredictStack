@@ -72,3 +72,7 @@ export async function resolveMarketRecord(backendMarketId: string, winningOutcom
     body: JSON.stringify({ winningOutcome }),
   });
 }
+
+export async function getPlatformConfig() {
+  return backendFetch('/api/platform/config');
+}
