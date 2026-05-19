@@ -20,17 +20,6 @@ export function createBetRoutes({ store, stacks, config }) {
           error: 'userAddress, contractMarketId, amountMicro and outcome are required',
         });
       }
-      if (typeof outcome !== 'boolean') {
-        return sendJson(res, 400, { error: 'Invalid outcome' });
-      }
-      // record intent with slippage/clientRef
-      return sendJson(res, 200, { intentId: randomUUID() });
-    },
-
-    async confirm(req, res) {
-      const body = await readBody(req);
-      return sendJson(res, 200, { verified: !!body.txId });
-    },
 
       const market = await getMerged(contractMarketId);
       if (!market) return sendJson(res, 404, { error: 'Market not found' });
