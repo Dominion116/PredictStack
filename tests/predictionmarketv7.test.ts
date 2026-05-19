@@ -405,4 +405,40 @@ describe("predictionmarketv7 (STX-native)", () => {
     );
     expect(cvToString(badFee.result)).toBe("(err u110)");
   });
+
+  it("create-market rejects duplicate market refs", () => {
+    const accounts = simnet.getAccounts();
+    const deployer = accounts.get("deployer")!;
+
+    const init = simnet.callPublicFn(
+      CONTRACT,
+      "initialize",
+      [
+        Cl.standardPrincipal(deployer),
+        Cl.standardPrincipal(deployer),
+        Cl.standardPrincipal(deployer),
+        Cl.uint(10_000),
+        Cl.uint(20_000),
+        Cl.uint(100_000),
+      ],
+      deployer
+    );
+    expect(cvToString(init.result)).toBe("(ok true)");
+
+    const first = simnet.callPublicFn(
+      CONTRACT,
+      "create-market",
+      [Cl.stringAscii("dup-ref"), Cl.uint(100)],
+      deployer
+    );
+    expect(cvToString(first.result)).toBe("(ok u1)");
+
+    const second = simnet.callPublicFn(
+      CONTRACT,
+      "create-market",
+      [Cl.stringAscii("dup-ref"), Cl.uint(120)],
+      deployer
+    );
+    expect(cvToString(second.result)).toBe("(err u117)");
+  });
 });
