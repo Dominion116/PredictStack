@@ -321,4 +321,88 @@ describe("predictionmarketv7 (STX-native)", () => {
 
     expect(cvToString(betWithSlippage.result)).toBe("(err u121)");
   });
+
+  it("initialize sets platform config", () => {
+    const accounts = simnet.getAccounts();
+    const deployer = accounts.get("deployer")!;
+
+    const init = simnet.callPublicFn(
+      CONTRACT,
+      "initialize",
+      [
+        Cl.standardPrincipal(deployer),
+        Cl.standardPrincipal(deployer),
+        Cl.standardPrincipal(deployer),
+        Cl.uint(10_000),
+        Cl.uint(20_000),
+        Cl.uint(100_000),
+      ],
+      deployer
+    );
+
+    expect(cvToString(init.result)).toBe("(ok true)");
+
+    const config = simnet.callReadOnlyFn(
+      CONTRACT,
+      "get-platform-config",
+      [],
+      deployer
+    );
+
+    const configStr = cvToString(config.result);
+    expect(configStr).toContain("initialized true");
+    expect(configStr).toContain("fee-amount u10000");
+    expect(configStr).toContain("min-bet-amount u20000");
+    expect(configStr).toContain("max-bet-amount u100000");
+  });
+
+  it("initialize rejects invalid min/max/fee", () => {
+    const accounts = simnet.getAccounts();
+    const deployer = accounts.get("deployer")!;
+
+    const badMin = simnet.callPublicFn(
+      CONTRACT,
+      "initialize",
+      [
+        Cl.standardPrincipal(deployer),
+        Cl.standardPrincipal(deployer),
+        Cl.standardPrincipal(deployer),
+        Cl.uint(10_000),
+        Cl.uint(10_000),
+        Cl.uint(100_000),
+      ],
+      deployer
+    );
+    expect(cvToString(badMin.result)).toBe("(err u110)");
+
+    const badMax = simnet.callPublicFn(
+      CONTRACT,
+      "initialize",
+      [
+        Cl.standardPrincipal(deployer),
+        Cl.standardPrincipal(deployer),
+        Cl.standardPrincipal(deployer),
+        Cl.uint(10_000),
+        Cl.uint(20_000),
+        Cl.uint(10_000),
+      ],
+      deployer
+    );
+    expect(cvToString(badMax.result)).toBe("(err u110)");
+
+    const badFee = simnet.callPublicFn(
+      CONTRACT,
+      "initialize",
+      [
+        Cl.standardPrincipal(deployer),
+        Cl.standardPrincipal(deployer),
+        Cl.standardPrincipal(deployer),
+        Cl.uint(30_000),
+        Cl.uint(20_000),
+        Cl.uint(100_000),
+      ],
+      deployer
+    );
+    expect(cvToString(badFee.result)).toBe("(err u110)");
+  });
 });
