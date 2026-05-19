@@ -125,3 +125,8 @@ export async function fetchPlatformConfig(stacks) {
 export async function fetchPlatformStats(stacks) {
   return { totalMarkets: 0, totalVolume: 0 };
 }
+
+export async function fetchMarketDetails(stacks, marketId) {
+  // uses stacks.callReadOnly for get-market etc.
+  return null;
+}
