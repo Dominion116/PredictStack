@@ -757,6 +757,24 @@
   )
 )
 
+;; Get market pools by ID
+(define-read-only (get-market-pools (market-id uint))
+  (match (map-get? markets { market-id: market-id })
+    market (let
+      (
+        (yes-pool (get yes-pool market))
+        (no-pool (get no-pool market))
+      )
+      (ok {
+        yes-pool: yes-pool,
+        no-pool: no-pool,
+        total-pool: (+ yes-pool no-pool)
+      })
+    )
+    ERR-MARKET-NOT-FOUND
+  )
+)
+
 ;; Get user's position in a market
 (define-read-only (get-user-position (user principal) (market-id uint))
   (match (map-get? user-positions { user: user, market-id: market-id })
