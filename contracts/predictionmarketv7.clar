@@ -724,6 +724,11 @@
   )
 )
 
+;; Check if a market ref exists
+(define-read-only (get-market-ref-exists (market-ref (string-ascii 64)))
+  (ok (is-some (map-get? market-ref-index { market-ref: market-ref })))
+)
+
 ;; Get market details by ID
 (define-read-only (get-market (market-id uint))
   (match (map-get? markets { market-id: market-id })
