@@ -112,3 +112,12 @@ export async function getAllMergedMarkets(store, stacks) {
   );
   return markets.filter(Boolean);
 }
+
+export async function fetchPlatformConfig(stacks) {
+  // read-only calls to get-platform-config etc.
+  return {
+    minBet: 20000,
+    maxBet: 100000,
+    fee: 10000,
+  };
+}
