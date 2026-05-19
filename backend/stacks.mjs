@@ -25,10 +25,27 @@ function extractValue(clarityValue) {
   return clarityValue;
 }
 
+const TTL_MS = 30_000; // 30 s
+const _cache = new Map(); // key → { value, expiresAt }
+
+function cacheGet(key) {
+  const entry = _cache.get(key);
+  if (!entry) return undefined;
+  if (Date.now() > entry.expiresAt) { _cache.delete(key); return undefined; }
+  return entry.value;
+}
+function cacheSet(key, value) {
+  _cache.set(key, { value, expiresAt: Date.now() + TTL_MS });
+}
+
 export function createStacksClient(config) {
   const network = createNetwork(config.network === 'mainnet' ? STACKS_MAINNET : STACKS_TESTNET);
 
   async function callReadOnly(functionName, functionArgs = [], senderAddress = config.contractAddress) {
+    const cacheKey = `${functionName}:${JSON.stringify(functionArgs)}`;
+    const cached = cacheGet(cacheKey);
+    if (cached !== undefined) return cached;
+
     const response = await fetchCallReadOnlyFunction({
       contractAddress: config.contractAddress,
       contractName: config.contractName,
@@ -42,7 +59,9 @@ export function createStacksClient(config) {
     if (!json.success) {
       throw new Error(`Read-only call failed for ${functionName}`);
     }
-    return json.value?.value ?? json.value;
+    const result = json.value?.value ?? json.value;
+    cacheSet(cacheKey, result);
+    return result;
   }
 
   async function signedContractCall(functionName, functionArgs) {
@@ -123,6 +142,15 @@ export function createStacksClient(config) {
         uintCV(resolveBlock),
         ipfsHash ? someCV(stringAsciiCV(ipfsHash.slice(0, 64))) : noneCV(),
       ]);
+    },
+
+    async getMarketIdByRef(marketRef) {
+      try {
+        const value = await callReadOnly('get-market-id-by-ref', [stringAsciiCV(marketRef)]);
+        return Number(extractValue(value) ?? 0) || null;
+      } catch {
+        return null;
+      }
     },
 
     async resolveMarket(contractMarketId, winningOutcome) {
