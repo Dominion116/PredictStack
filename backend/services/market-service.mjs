@@ -121,3 +121,7 @@ export async function fetchPlatformConfig(stacks) {
     fee: 10000,
   };
 }
+
+export async function fetchPlatformStats(stacks) {
+  return { totalMarkets: 0, totalVolume: 0 };
+}
