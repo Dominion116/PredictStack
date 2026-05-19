@@ -5,6 +5,11 @@ export const metadata: Metadata = {
   description: 'Discover prediction markets',
 };
 
+'use client';
+import { useSearchParams } from 'next/navigation';
+
 export default function ExplorePage() {
-  return <div>Explore Markets</div>;
+  const params = useSearchParams();
+  // sync filters logic
+  return <div>Explore Markets (filters synced)</div>;
 }
