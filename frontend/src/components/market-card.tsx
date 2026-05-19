@@ -1,8 +1,9 @@
 'use client';
 
+import { useState } from 'react';
 import { Badge } from '@/components/ui/badge';
 import { Button } from '@/components/ui/button';
-import { ArrowRight, Clock, TrendingUp } from 'lucide-react';
+import { ArrowRight, Clock, TrendingUp, Copy, Check } from 'lucide-react';
 import Link from 'next/link';
 import { motion } from 'framer-motion';
 
@@ -31,6 +32,16 @@ export function MarketCard({ market, index = 0 }: MarketCardProps) {
     const question = market.question || 'Unknown Market';
     const category = market.category || 'General';
     const isActive = market.status === 'active';
+    const [copied, setCopied] = useState(false);
+
+    function copyRef() {
+        const ref = market.marketRef || market['market-ref'];
+        if (!ref) return;
+        navigator.clipboard.writeText(ref).then(() => {
+            setCopied(true);
+            setTimeout(() => setCopied(false), 1500);
+        });
+    }
 
     // Pool numbers come straight from getMergedMarketByContractId on the backend:
     // max(on-chain pool, backend confirmed bets). Always real data.
@@ -160,9 +171,20 @@ export function MarketCard({ market, index = 0 }: MarketCardProps) {
                             <Clock className="h-3 w-3" />
                             {timeDisplay}
                         </span>
-                        <span className="flex items-center gap-1">
-                            <TrendingUp className="h-3 w-3" />
-                            {market.totalBets ?? 0} bets
+                        <span className="flex items-center gap-2">
+                            <span className="flex items-center gap-1">
+                                <TrendingUp className="h-3 w-3" />
+                                {market.totalBets ?? 0} bets
+                            </span>
+                            {(market.marketRef || market['market-ref']) && (
+                                <button
+                                    onClick={copyRef}
+                                    title="Copy market ref"
+                                    className="flex items-center gap-0.5 hover:text-foreground transition-colors"
+                                >
+                                    {copied ? <Check className="h-3 w-3 text-green-500" /> : <Copy className="h-3 w-3" />}
+                                </button>
+                            )}
                         </span>
                     </div>
 
