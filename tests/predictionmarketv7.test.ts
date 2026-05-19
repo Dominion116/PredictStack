@@ -543,4 +543,40 @@ describe("predictionmarketv7 (STX-native)", () => {
     );
     expect(cvToString(bet.result)).toBe("(err u110)");
   });
+
+  it("resolve-market rejects before deadline", () => {
+    const accounts = simnet.getAccounts();
+    const deployer = accounts.get("deployer")!;
+
+    const init = simnet.callPublicFn(
+      CONTRACT,
+      "initialize",
+      [
+        Cl.standardPrincipal(deployer),
+        Cl.standardPrincipal(deployer),
+        Cl.standardPrincipal(deployer),
+        Cl.uint(10_000),
+        Cl.uint(20_000),
+        Cl.uint(100_000),
+      ],
+      deployer
+    );
+    expect(cvToString(init.result)).toBe("(ok true)");
+
+    const create = simnet.callPublicFn(
+      CONTRACT,
+      "create-market",
+      [Cl.stringAscii("deadline-ref"), Cl.uint(1000)],
+      deployer
+    );
+    expect(cvToString(create.result)).toBe("(ok u1)");
+
+    const resolve = simnet.callPublicFn(
+      CONTRACT,
+      "resolve-market",
+      [Cl.uint(1), Cl.bool(true)],
+      deployer
+    );
+    expect(cvToString(resolve.result)).toBe("(err u112)");
+  });
 });
