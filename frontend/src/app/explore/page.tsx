@@ -1,15 +1,11 @@
 import { Metadata } from 'next';
+import { ExploreClient } from './ExploreClient';
 
 export const metadata: Metadata = {
   title: 'Explore Markets | PredictStack',
-  description: 'Discover prediction markets',
+  description: 'Discover prediction markets — filter by status, date, and sort by volume or ending time.',
 };
 
-'use client';
-import { useSearchParams } from 'next/navigation';
-
 export default function ExplorePage() {
-  const params = useSearchParams();
-  // sync filters logic, trending/ending
-  return <div>Explore Markets (filters synced) + trending/ending</div>;
+  return <ExploreClient />;
 }
