@@ -77,23 +77,19 @@ export async function getPlatformConfig() {
   return backendFetch('/api/platform/config');
 }
 
-export async function getPlatformStats() {
-  return backendFetch('/api/platform/stats');
-}
-
-export async function getMarkets(filters = {}) {
+export async function getMarkets(filters: Record<string, string> = {}): Promise<{ markets: any[] }> {
   const params = new URLSearchParams(filters).toString();
-  return backendFetch(`/api/markets?${params}`);
+  return backendFetch<{ markets: any[] }>(`/api/markets?${params}`);
 }
 
-export async function getMarketByRef(ref) {
+export async function getMarketByRef(ref: string) {
   return backendFetch(`/api/markets/ref/${ref}`);
 }
 
-export async function getOdds(marketId) {
+export async function getOdds(marketId: string | number) {
   return backendFetch(`/api/markets/${marketId}/odds`);
 }
 
-export async function getQuotes(marketId) {
+export async function getQuotes(marketId: string | number) {
   return backendFetch(`/api/markets/${marketId}/quotes`);
 }

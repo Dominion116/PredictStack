@@ -1,7 +1,7 @@
 'use client';
 import { useState, useEffect } from 'react';
 
-export function SearchInput({ value, onChange }) {
+export function SearchInput({ value, onChange }: { value: string; onChange: (v: string) => void }) {
   const [term, setTerm] = useState(value);
   useEffect(() => {
     const t = setTimeout(() => onChange(term), 300);

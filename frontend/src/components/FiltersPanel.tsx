@@ -1,7 +1,7 @@
 'use client';
 import React from 'react';
 
-export function FiltersPanel({ filters, onChange }) {
+export function FiltersPanel({ filters, onChange }: { filters: Record<string, string>; onChange: (f: Record<string, string>) => void }) {
   return (
     <div>
       <select onChange={e => onChange({ ...filters, status: e.target.value })}>
