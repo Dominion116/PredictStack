@@ -89,6 +89,12 @@
   }
 )
 
+;; Index market refs to ids
+(define-map market-ref-index
+  { market-ref: (string-ascii 64) }
+  { market-id: uint }
+)
+
 ;; User positions in markets
 (define-map user-positions
   { user: principal, market-id: uint }
