@@ -749,6 +749,14 @@
   )
 )
 
+;; Get market status by ID
+(define-read-only (get-market-status (market-id uint))
+  (match (map-get? markets { market-id: market-id })
+    market (ok (status-to-string (get status market)))
+    ERR-MARKET-NOT-FOUND
+  )
+)
+
 ;; Get user's position in a market
 (define-read-only (get-user-position (user principal) (market-id uint))
   (match (map-get? user-positions { user: user, market-id: market-id })
