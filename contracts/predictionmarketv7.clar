@@ -472,7 +472,13 @@
     (asserts! (is-platform-active) ERR-PLATFORM-PAUSED)
     (asserts! (is-admin-or-oracle) ERR-NOT-AUTHORIZED)
     (asserts! (> (len market-ref) u0) ERR-INVALID-QUESTION)
+    (asserts! (is-none (map-get? market-ref-index { market-ref: market-ref })) ERR-INVALID-QUESTION)
     (asserts! (> resolve-date block-height) ERR-DEADLINE-PASSED)
+
+    (map-set market-ref-index
+      { market-ref: market-ref }
+      { market-id: market-id }
+    )
     
     (map-set markets
       { market-id: market-id }
