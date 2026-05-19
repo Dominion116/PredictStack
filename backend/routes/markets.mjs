@@ -53,6 +53,10 @@ export function createMarketRoutes({ store, stacks }) {
       return sendJson(res, 200, { yes: market.yesOdds || 0, no: market.noOdds || 0 });
     },
 
+    async getQuotes(req, res, id) {
+      return sendJson(res, 200, { slippagePreview: 0 });
+    },
+
     async getById(req, res, marketId) {
       const market = store.getState().markets[marketId];
       if (!market) return sendJson(res, 404, { error: 'Market not found' });
