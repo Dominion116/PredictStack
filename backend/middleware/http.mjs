@@ -25,3 +25,9 @@ export function requestId(req, res, next) {
   res.setHeader('x-request-id', id);
   next && next();
 }
+
+export function sendError(res, statusCode, message, code = null) {
+  const payload = { error: message };
+  if (code) payload.code = code;
+  sendJson(res, statusCode, payload);
+}
