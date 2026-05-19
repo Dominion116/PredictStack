@@ -8,6 +8,10 @@ PredictStack enables users to:
 - Create binary prediction markets
 - Place YES/NO bets in STX
 - Claim winnings after resolution
+
+## New Endpoints & Storage
+- GET /markets with filters/pagination/sort
+- Storage interface + Mongo adapter flag (USE_DB_ADAPTER)
 - Claim refunds if markets are cancelled
 
 Funds are escrowed in the market contract and distributed during settlement.
