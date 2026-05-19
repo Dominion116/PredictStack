@@ -506,4 +506,41 @@ describe("predictionmarketv7 (STX-native)", () => {
     );
     expect(cvToString(bet.result)).toBe("(err u110)");
   });
+
+  it("place-bet rejects amounts above max", () => {
+    const accounts = simnet.getAccounts();
+    const deployer = accounts.get("deployer")!;
+    const wallet1 = accounts.get("wallet_1")!;
+
+    const init = simnet.callPublicFn(
+      CONTRACT,
+      "initialize",
+      [
+        Cl.standardPrincipal(deployer),
+        Cl.standardPrincipal(deployer),
+        Cl.standardPrincipal(deployer),
+        Cl.uint(10_000),
+        Cl.uint(20_000),
+        Cl.uint(100_000),
+      ],
+      deployer
+    );
+    expect(cvToString(init.result)).toBe("(ok true)");
+
+    const create = simnet.callPublicFn(
+      CONTRACT,
+      "create-market",
+      [Cl.stringAscii("max-ref"), Cl.uint(100)],
+      deployer
+    );
+    expect(cvToString(create.result)).toBe("(ok u1)");
+
+    const bet = simnet.callPublicFn(
+      CONTRACT,
+      "place-bet",
+      [Cl.uint(1), Cl.bool(true), Cl.uint(200_000)],
+      wallet1
+    );
+    expect(cvToString(bet.result)).toBe("(err u110)");
+  });
 });
