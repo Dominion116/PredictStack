@@ -25,6 +25,10 @@ export function createClaimRoutes({ store, stacks }) {
       return sendJson(res, 200, { intentId: randomUUID() });
     },
 
+    async confirm(req, res) {
+      return sendJson(res, 200, { verified: true });
+    },
+
       const market = await getMerged(contractMarketId);
       if (!market) return sendJson(res, 404, { error: 'Market not found' });
 
