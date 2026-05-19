@@ -716,6 +716,14 @@
 ;; READ-ONLY FUNCTIONS
 ;; ============================================================================
 
+;; Get market id by reference
+(define-read-only (get-market-id-by-ref (market-ref (string-ascii 64)))
+  (match (map-get? market-ref-index { market-ref: market-ref })
+    entry (ok (get market-id entry))
+    ERR-MARKET-NOT-FOUND
+  )
+)
+
 ;; Get market details by ID
 (define-read-only (get-market (market-id uint))
   (match (map-get? markets { market-id: market-id })
