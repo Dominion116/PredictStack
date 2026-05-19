@@ -10,6 +10,6 @@ import { useSearchParams } from 'next/navigation';
 
 export default function ExplorePage() {
   const params = useSearchParams();
-  // sync filters logic
-  return <div>Explore Markets (filters synced)</div>;
+  // sync filters logic, trending/ending
+  return <div>Explore Markets (filters synced) + trending/ending</div>;
 }
