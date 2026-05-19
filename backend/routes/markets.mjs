@@ -37,6 +37,12 @@ export function createMarketRoutes({ store, stacks }) {
       return sendJson(res, 200, { market });
     },
 
+    async getByRef(req, res, ref) {
+      const id = await stacks.getMarketIdByRef(ref);
+      if (!id) return sendJson(res, 404, { error: 'Market not found' });
+      return this.getMarketById(req, res, id);
+    },
+
     async getById(req, res, marketId) {
       const market = store.getState().markets[marketId];
       if (!market) return sendJson(res, 404, { error: 'Market not found' });
