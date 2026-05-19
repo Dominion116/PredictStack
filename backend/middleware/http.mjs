@@ -18,3 +18,10 @@ export async function readBody(req) {
   if (!chunks.length) return {};
   return JSON.parse(Buffer.concat(chunks).toString('utf8'));
 }
+
+export function requestId(req, res, next) {
+  const id = req.headers['x-request-id'] || crypto.randomUUID();
+  req.id = id;
+  res.setHeader('x-request-id', id);
+  next && next();
+}
