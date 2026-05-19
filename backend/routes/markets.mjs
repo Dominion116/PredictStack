@@ -14,8 +14,10 @@ export function createMarketRoutes({ store, stacks }) {
     async list(req, res, searchParams) {
       const limit = Number(searchParams.get('limit') || 50);
       const status = searchParams.get('status');
+      const creator = searchParams.get('creator');
       let markets = await getAllMerged();
       if (status) markets = markets.filter(m => m.status === status);
+      if (creator) markets = markets.filter(m => m.creator === creator);
       return sendJson(res, 200, { markets: markets.slice(0, limit) });
     },
 
