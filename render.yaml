@@ -14,9 +14,9 @@ services:
         value: 0.0.0.0
       # PORT is set automatically by Render
       - key: NETWORK
-        value: testnet
+        value: mainnet
       - key: CONTRACT_ADDRESS
-        value: ST30VGN68PSGVWGNMD0HH2WQMM5T486EK3WBNTHCY
+        value: SP30VGN68PSGVWGNMD0HH2WQMM5T486EK3YGP7Z3Y
       - key: CONTRACT_NAME
         value: predictionmarketv7
       - key: PLATFORM_FEE_MICRO
