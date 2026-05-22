@@ -29,7 +29,7 @@ export const APP_DETAILS = {
 export const NETWORK_ENV = process.env.NEXT_PUBLIC_NETWORK || 'testnet';
 export const BACKEND_BASE_URL = process.env.NEXT_PUBLIC_BACKEND_URL || 'http://localhost:4000';
 const CONTRACT_ADDRESS = process.env.NEXT_PUBLIC_CONTRACT_ADDRESS || 'ST30VGN68PSGVWGNMD0HH2WQMM5T486EK3WBNTHCY';
-const CONTRACT_NAME = process.env.NEXT_PUBLIC_CONTRACT_NAME || 'predictionmarketv7';
+const CONTRACT_NAME = process.env.NEXT_PUBLIC_CONTRACT_NAME || 'predictstacks';
 
 export const CONTRACTS = {
   testnet: {

@@ -1,9 +1,9 @@
 import { describe, expect, it } from "vitest";
 import { Cl, cvToString } from "@stacks/transactions";
 
-const CONTRACT = "predictionmarketv7";
+const CONTRACT = "predictstacks";
 
-describe("predictionmarketv7 (STX-native)", () => {
+describe("predictstacks (STX-native)", () => {
   it("allows placing a bet and claiming winnings after resolution", () => {
     const accounts = simnet.getAccounts();
     const deployer = accounts.get("deployer")!;
@@ -655,6 +655,67 @@ describe("predictionmarketv7 (STX-native)", () => {
       wallet1
     );
     expect(cvToString(cancel.result)).toBe("(err u100)");
+  });
+
+  it("supports multi-admin allowlist", () => {
+    const accounts = simnet.getAccounts();
+    const deployer = accounts.get("deployer")!;
+    const wallet1 = accounts.get("wallet_1")!;
+
+    const init = simnet.callPublicFn(
+      CONTRACT,
+      "initialize",
+      [
+        Cl.standardPrincipal(deployer),
+        Cl.standardPrincipal(deployer),
+        Cl.standardPrincipal(deployer),
+        Cl.uint(10_000),
+        Cl.uint(20_000),
+        Cl.uint(100_000),
+      ],
+      deployer
+    );
+    expect(cvToString(init.result)).toBe("(ok true)");
+
+    const addAdmin = simnet.callPublicFn(
+      CONTRACT,
+      "add-admin",
+      [Cl.standardPrincipal(wallet1)],
+      deployer
+    );
+    expect(cvToString(addAdmin.result)).toBe("(ok true)");
+
+    const isAdmin = simnet.callReadOnlyFn(
+      CONTRACT,
+      "is-address-admin",
+      [Cl.standardPrincipal(wallet1)],
+      deployer
+    );
+    expect(cvToString(isAdmin.result)).toBe("(ok true)");
+
+    const createAsAdmin = simnet.callPublicFn(
+      CONTRACT,
+      "create-market",
+      [Cl.stringAscii("admin-ref"), Cl.uint(100)],
+      wallet1
+    );
+    expect(cvToString(createAsAdmin.result)).toBe("(ok u1)");
+
+    const removeAdmin = simnet.callPublicFn(
+      CONTRACT,
+      "remove-admin",
+      [Cl.standardPrincipal(wallet1)],
+      deployer
+    );
+    expect(cvToString(removeAdmin.result)).toBe("(ok true)");
+
+    const createAfterRemoval = simnet.callPublicFn(
+      CONTRACT,
+      "create-market",
+      [Cl.stringAscii("admin-ref-2"), Cl.uint(120)],
+      wallet1
+    );
+    expect(cvToString(createAfterRemoval.result)).toBe("(err u100)");
   });
 
   it("claim-winnings rejects before resolution", () => {

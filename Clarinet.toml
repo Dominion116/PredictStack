@@ -5,9 +5,9 @@ authors = []
 telemetry = true
 cache_dir = "./.cache"
 
-# Main Prediction Market Contract V7 (Latest)
-[contracts.predictionmarketv7]
-path = "contracts/predictionmarketv7.clar"
+# Main Prediction Market Contract (Latest)
+[contracts.predictstacks]
+path = "contracts/predictstacks.clar"
 clarity_version = 2
 epoch = 2.1
 

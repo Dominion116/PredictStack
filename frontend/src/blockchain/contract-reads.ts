@@ -3,6 +3,7 @@ import {
   cvToJSON,
   uintCV,
   boolCV,
+  standardPrincipalCV,
 } from '@stacks/transactions';
 import { STACKS_TESTNET, STACKS_MAINNET, createNetwork } from '@stacks/network';
 import { getContractConfig, NETWORK_ENV } from '@/lib/constants';
@@ -39,6 +40,29 @@ export interface ContractEvent {
   block_height: number;
   timestamp: number;
   data: any;
+}
+
+export async function isAddressAdmin(address: string): Promise<boolean> {
+  if (!address) return false;
+  try {
+    const response = await fetchCallReadOnlyFunction({
+      contractAddress: config.deployer,
+      contractName: config.predictionMarket,
+      functionName: 'is-address-admin',
+      functionArgs: [standardPrincipalCV(address)],
+      network,
+      senderAddress: address,
+    });
+
+    const json: any = cvToJSON(response);
+    if (json.success && json.value) {
+      return Boolean(extractValue(json.value));
+    }
+    return false;
+  } catch (error) {
+    console.error('Error checking admin status:', error);
+    return false;
+  }
 }
 
 export async function getQuotePrice(

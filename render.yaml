@@ -18,7 +18,7 @@ services:
       - key: CONTRACT_ADDRESS
         value: SP30VGN68PSGVWGNMD0HH2WQMM5T486EK3YGP7Z3Y
       - key: CONTRACT_NAME
-        value: predictionmarketv7
+        value: predictstacks
       - key: PLATFORM_FEE_MICRO
         value: "10000"
       # Set these in the Render dashboard — never commit real values:

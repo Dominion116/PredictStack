@@ -3,7 +3,7 @@
 import { useConnect } from '@stacks/connect-react';
 import { Button } from '@/components/ui/button';
 import { Badge } from '@/components/ui/badge';
-import { userSession, getContractConfig, isUserSignedIn, getUserAddress } from '@/lib/constants';
+import { userSession, isUserSignedIn, getUserAddress } from '@/lib/constants';
 import { useEffect, useState } from 'react';
 import { LogOut, Sun, Moon } from 'lucide-react';
 import { useTheme } from 'next-themes';
@@ -39,14 +39,26 @@ function NavbarContent() {
   const { theme, setTheme } = useTheme();
 
   useEffect(() => {
-    if (isUserSignedIn()) {
+    let active = true;
+    const checkAdmin = async () => {
+      if (!isUserSignedIn()) return;
       setIsSignedIn(true);
-      const userAddress = getUserAddress();
+      const userAddress = getUserAddress().trim();
       setAddress(userAddress);
-      
-      const config = getContractConfig();
-      setIsAdmin(userAddress === config.deployer);
-    }
+      if (!userAddress) {
+        setIsAdmin(false);
+        return;
+      }
+
+      const { isAddressAdmin } = await import('@/blockchain/contract-reads');
+      const admin = await isAddressAdmin(userAddress);
+      if (active) setIsAdmin(admin);
+    };
+
+    void checkAdmin();
+    return () => {
+      active = false;
+    };
   }, []);
 
   const handleConnect = () => {

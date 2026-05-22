@@ -8,7 +8,7 @@ export const CONTRACT_ADDRESS =
 export const CONTRACT_NAME =
   process.env.CONTRACT_NAME ||
   process.env.NEXT_PUBLIC_CONTRACT_NAME ||
-  'predictionmarketv7';
+  'predictstacks';
 export const PRIVATE_KEY = process.env.STACKS_PRIVATE_KEY;
 export const MONGODB_URI = process.env.MONGODB_URI;
 export const PLATFORM_FEE_MICRO = Number(process.env.PLATFORM_FEE_MICRO || 10_000);

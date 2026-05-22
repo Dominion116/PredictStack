@@ -4,7 +4,7 @@ This project deploys a single STX-native prediction market contract.
 
 ## Contract
 
-- `prediction-market-v6`
+- `predictstacks`
 
 ## Prerequisites
 

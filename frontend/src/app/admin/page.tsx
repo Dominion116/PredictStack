@@ -10,7 +10,7 @@ import { Badge } from '@/components/ui/badge';
 import { Input } from '@/components/ui/input';
 import { Textarea } from '@/components/ui/textarea';
 import { Label } from '@/components/ui/label';
-import { getContractConfig, userSession, isUserSignedIn, getUserAddress, NETWORK_ENV } from '@/lib/constants';
+import { getContractConfig, isUserSignedIn, getUserAddress, NETWORK_ENV } from '@/lib/constants';
 import { createMarketRecord, getRecentMarkets, resolveMarketRecord, getNextMarketId } from '@/lib/stacks-api';
 import { useConnect } from '@stacks/connect-react';
 import { blockToDate } from '@/lib/date-utils';
@@ -48,18 +48,24 @@ export default function AdminPage() {
         let active = true;
         const t = setTimeout(() => {
             if (!active) return;
-            if (isUserSignedIn()) {
-                const profile  = userSession.loadUserData().profile;
-                const deployer = getContractConfig().deployer.trim().toLowerCase();
-                // Compare both address formats — wallet may return testnet (ST…) or
-                // mainnet (SP…) depending on how it was configured, and the deployer
-                // env var may be stored in either format.
-                const testnet = (profile.stxAddress?.testnet ?? '').trim().toLowerCase();
-                const mainnet = (profile.stxAddress?.mainnet ?? '').trim().toLowerCase();
-                setIsAdmin(testnet === deployer || mainnet === deployer);
-            } else {
-                setIsAdmin(false);
-            }
+            const checkAdmin = async () => {
+                if (!isUserSignedIn()) {
+                    setIsAdmin(false);
+                    return;
+                }
+
+                const address = getUserAddress().trim();
+                if (!address) {
+                    setIsAdmin(false);
+                    return;
+                }
+
+                const { isAddressAdmin } = await import('@/blockchain/contract-reads');
+                const isAdminAddress = await isAddressAdmin(address);
+                if (active) setIsAdmin(isAdminAddress);
+            };
+
+            void checkAdmin();
         }, 0);
         return () => { active = false; clearTimeout(t); };
     }, []);
