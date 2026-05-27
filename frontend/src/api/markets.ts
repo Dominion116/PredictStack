@@ -114,3 +114,14 @@ export async function searchMarkets(query: string, limit = 20) {
     return [];
   }
 }
+
+export async function getTopMarkets(by: 'volume' | 'bets' = 'volume', limit = 10) {
+  try {
+    const data = await backendFetch<{ markets: any[] }>(
+      `/api/markets?sort=${by === 'volume' ? 'volume' : 'bets'}&limit=${limit}&status=active`
+    );
+    return data.markets.map(toMarketShape);
+  } catch {
+    return [];
+  }
+}
