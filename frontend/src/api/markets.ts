@@ -125,3 +125,23 @@ export async function getTopMarkets(by: 'volume' | 'bets' = 'volume', limit = 10
     return [];
   }
 }
+
+export interface MarketActivityEntry {
+  type: 'bet' | 'resolve' | 'cancel';
+  userAddress?: string;
+  outcome?: boolean;
+  amountMicro?: number;
+  txId?: string;
+  createdAt: string;
+}
+
+export async function getMarketActivity(marketId: number, limit = 10): Promise<MarketActivityEntry[]> {
+  try {
+    const data = await backendFetch<{ activity: MarketActivityEntry[] }>(
+      `/api/markets/${marketId}/activity?limit=${limit}`
+    );
+    return data.activity;
+  } catch {
+    return [];
+  }
+}
