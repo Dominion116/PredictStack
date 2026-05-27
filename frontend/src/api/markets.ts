@@ -104,3 +104,13 @@ export async function getMarketsByCategory(category: string, limit = 20) {
     return [];
   }
 }
+
+export async function searchMarkets(query: string, limit = 20) {
+  try {
+    const params = new URLSearchParams({ q: query, limit: String(limit) });
+    const data = await backendFetch<{ markets: any[] }>(`/api/markets/search?${params}`);
+    return data.markets.map(toMarketShape);
+  } catch {
+    return [];
+  }
+}
