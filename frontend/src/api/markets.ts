@@ -93,3 +93,14 @@ export async function getOdds(marketId: string | number) {
 export async function getQuotes(marketId: string | number) {
   return backendFetch(`/api/markets/${marketId}/quotes`);
 }
+
+export async function getMarketsByCategory(category: string, limit = 20) {
+  try {
+    const data = await backendFetch<{ markets: any[] }>(
+      `/api/markets?category=${encodeURIComponent(category)}&limit=${limit}`
+    );
+    return data.markets.map(toMarketShape);
+  } catch {
+    return [];
+  }
+}
