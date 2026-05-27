@@ -70,3 +70,15 @@ export function formatDistanceToNow(date: Date): string {
     }
     return date.toLocaleDateString();
 }
+
+export function formatBlocksRemaining(currentBlock: number, targetBlock: number): string {
+    const blocksLeft = targetBlock - currentBlock;
+    if (blocksLeft <= 0) return 'Ended';
+    const secondsLeft = blocksLeft * SECONDS_PER_BLOCK;
+    const minutes = Math.floor(secondsLeft / 60);
+    const hours = Math.floor(minutes / 60);
+    const days = Math.floor(hours / 24);
+    if (days > 0) return `${days}d ${hours % 24}h`;
+    if (hours > 0) return `${hours}h ${minutes % 60}m`;
+    return `${minutes}m`;
+}
