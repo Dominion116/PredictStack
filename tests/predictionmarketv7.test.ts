@@ -1197,4 +1197,22 @@ describe("predictstacks (STX-native)", () => {
     expect(cvToString(claim1.result)).not.toContain("err");
     expect(cvToString(claim3.result)).not.toContain("err");
   });
+
+  it("get-market returns correct fields after creation", () => {
+    const accounts = simnet.getAccounts();
+    const deployer = accounts.get("deployer")!;
+
+    simnet.callPublicFn(CONTRACT, "initialize", [
+      Cl.standardPrincipal(deployer), Cl.standardPrincipal(deployer), Cl.standardPrincipal(deployer),
+      Cl.uint(10_000), Cl.uint(20_000), Cl.uint(100_000),
+    ], deployer);
+    simnet.callPublicFn(CONTRACT, "create-market", [Cl.stringAscii("get-market-ref"), Cl.uint(100)], deployer);
+
+    const market = simnet.callReadOnlyFn(CONTRACT, "get-market", [Cl.uint(1)], deployer);
+    const marketStr = cvToString(market.result);
+    expect(marketStr).toContain("market-id u1");
+    expect(marketStr).toContain("resolve-date u100");
+    expect(marketStr).toContain("yes-pool u0");
+    expect(marketStr).toContain("no-pool u0");
+  });
 });
