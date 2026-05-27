@@ -1278,4 +1278,30 @@ describe("predictstacks (STX-native)", () => {
     );
     expect(cvToString(create.result)).toBe("(err u109)");
   });
+
+  it("place-bet succeeds at exactly minimum and maximum amounts", () => {
+    const accounts = simnet.getAccounts();
+    const deployer = accounts.get("deployer")!;
+    const wallet1 = accounts.get("wallet_1")!;
+
+    simnet.callPublicFn(CONTRACT, "initialize", [
+      Cl.standardPrincipal(deployer), Cl.standardPrincipal(deployer), Cl.standardPrincipal(deployer),
+      Cl.uint(10_000), Cl.uint(20_000), Cl.uint(100_000),
+    ], deployer);
+    simnet.callPublicFn(CONTRACT, "create-market", [Cl.stringAscii("min-max-ref"), Cl.uint(100)], deployer);
+
+    const atMin = simnet.callPublicFn(
+      CONTRACT, "place-bet",
+      [Cl.uint(1), Cl.bool(true), Cl.uint(20_000)],
+      wallet1
+    );
+    expect(cvToString(atMin.result)).toBe("(ok true)");
+
+    const atMax = simnet.callPublicFn(
+      CONTRACT, "place-bet",
+      [Cl.uint(1), Cl.bool(false), Cl.uint(100_000)],
+      wallet1
+    );
+    expect(cvToString(atMax.result)).toBe("(ok true)");
+  });
 });
