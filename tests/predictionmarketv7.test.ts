@@ -1124,4 +1124,25 @@ describe("predictstacks (STX-native)", () => {
     // NO pool = 40,000; YES pool = 60,000; wallet2 share = 40,000 + 40,000*60,000/40,000 = 40,000+60,000 = 100,000
     expect(cvToString(claim.result)).toBe("(ok u100000)");
   });
+
+  it("NO outcome resolution — YES bettors cannot claim winnings", () => {
+    const accounts = simnet.getAccounts();
+    const deployer = accounts.get("deployer")!;
+    const wallet1 = accounts.get("wallet_1")!;
+    const wallet2 = accounts.get("wallet_2")!;
+
+    simnet.callPublicFn(CONTRACT, "initialize", [
+      Cl.standardPrincipal(deployer), Cl.standardPrincipal(deployer), Cl.standardPrincipal(deployer),
+      Cl.uint(10_000), Cl.uint(20_000), Cl.uint(100_000),
+    ], deployer);
+    simnet.callPublicFn(CONTRACT, "create-market", [Cl.stringAscii("no-outcome-lose-ref"), Cl.uint(10)], deployer);
+    simnet.callPublicFn(CONTRACT, "place-bet", [Cl.uint(1), Cl.bool(true), Cl.uint(60_000)], wallet1);
+    simnet.callPublicFn(CONTRACT, "place-bet", [Cl.uint(1), Cl.bool(false), Cl.uint(40_000)], wallet2);
+    simnet.mineEmptyBlocks(20);
+    simnet.callPublicFn(CONTRACT, "resolve-market", [Cl.uint(1), Cl.bool(false)], deployer);
+
+    // wallet1 bet YES — should fail with wrong outcome
+    const claim = simnet.callPublicFn(CONTRACT, "claim-winnings", [Cl.uint(1)], wallet1);
+    expect(cvToString(claim.result)).toBe("(err u108)");
+  });
 });
