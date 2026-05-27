@@ -38,6 +38,10 @@ export function ExploreClient() {
   const [error, setError] = useState<string | null>(null);
   const [currentPage, setCurrentPage] = useState(1);
 
+  const category = searchParams.get('category') ?? '';
+
+  const CATEGORIES = ['crypto', 'sports', 'politics', 'tech', 'finance', 'culture', 'science'];
+
   // Filters from URL
   const status = searchParams.get('status') ?? '';
   const sort = searchParams.get('sort') ?? 'newest';
@@ -75,10 +79,12 @@ export function ExploreClient() {
 
   useEffect(() => { loadMarkets(); }, [loadMarkets]);
 
-  // Client-side search filter (debounced via URL param)
-  const filtered = allMarkets.filter(m =>
-    !search || m.question?.toLowerCase().includes(search.toLowerCase())
-  );
+  // Client-side search + category filter
+  const filtered = allMarkets.filter(m => {
+    const matchesSearch = !search || m.question?.toLowerCase().includes(search.toLowerCase());
+    const matchesCategory = !category || (m.category ?? '').toLowerCase() === category.toLowerCase();
+    return matchesSearch && matchesCategory;
+  });
 
   // Trending: top 3 by total pool volume (from all markets, not current filtered set)
   const trending = [...allMarkets]
@@ -144,6 +150,15 @@ export function ExploreClient() {
           <h2 className="text-lg font-semibold flex items-center gap-2">
             <TrendingUp className="h-4 w-4" /> All Markets
           </h2>
+
+          {/* Category chips */}
+          <div className="flex flex-wrap gap-2">
+            <Button variant={!category ? 'default' : 'outline'} size="sm" className="h-7 text-xs font-mono" onClick={() => pushParam({ category: '' })}>All</Button>
+            {CATEGORIES.map(cat => (
+              <Button key={cat} variant={category === cat ? 'default' : 'outline'} size="sm" className="h-7 text-xs font-mono capitalize" onClick={() => pushParam({ category: category === cat ? '' : cat })}>{cat}</Button>
+            ))}
+          </div>
+
           <div className="flex flex-wrap gap-3 items-center">
             {/* Search */}
             <div className="relative flex-1 min-w-[200px] max-w-xs">
