@@ -45,8 +45,12 @@ transactions.json
 
 # Secrets
 *.env
+.env.production
 dist/
 config.bat
+
+# Planning docs
+COMMIT_PLAN.md
 
 # Local backend data (replaced by MongoDB)
 backend/data/
