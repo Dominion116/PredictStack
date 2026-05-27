@@ -11,3 +11,16 @@ export function formatVolume(micro: number | string): string {
   if (stx >= 1_000) return `${(stx / 1_000).toFixed(1)}k`;
   return stx.toFixed(0);
 }
+
+export function formatProbability(yesPool: number, noPool: number): string {
+  const total = yesPool + noPool;
+  if (total === 0) return '50%';
+  const pct = Math.round((yesPool / total) * 100);
+  return `${pct}%`;
+}
+
+export function calculateOdds(stake: number, winningPool: number, losingPool: number): number {
+  if (winningPool === 0) return 0;
+  const share = (stake / winningPool) * losingPool;
+  return stake + share;
+}
