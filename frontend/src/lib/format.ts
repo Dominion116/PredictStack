@@ -24,3 +24,14 @@ export function calculateOdds(stake: number, winningPool: number, losingPool: nu
   const share = (stake / winningPool) * losingPool;
   return stake + share;
 }
+
+export function truncateAddress(address: string, prefixLen = 6, suffixLen = 4): string {
+  if (address.length <= prefixLen + suffixLen) return address;
+  return `${address.slice(0, prefixLen)}...${address.slice(-suffixLen)}`;
+}
+
+export function formatWinRate(wins: number, losses: number): string {
+  const total = wins + losses;
+  if (total === 0) return '—';
+  return `${Math.round((wins / total) * 100)}%`;
+}
