@@ -1010,4 +1010,22 @@ describe("predictstacks (STX-native)", () => {
     const second = simnet.callPublicFn(CONTRACT, "claim-winnings", [Cl.uint(1)], wallet1);
     expect(cvToString(second.result)).toBe("(err u106)");
   });
+
+  it("rejects resolve-market when already resolved", () => {
+    const accounts = simnet.getAccounts();
+    const deployer = accounts.get("deployer")!;
+    const wallet1 = accounts.get("wallet_1")!;
+
+    simnet.callPublicFn(CONTRACT, "initialize", [
+      Cl.standardPrincipal(deployer), Cl.standardPrincipal(deployer), Cl.standardPrincipal(deployer),
+      Cl.uint(10_000), Cl.uint(20_000), Cl.uint(100_000),
+    ], deployer);
+    simnet.callPublicFn(CONTRACT, "create-market", [Cl.stringAscii("double-resolve-ref"), Cl.uint(10)], deployer);
+    simnet.callPublicFn(CONTRACT, "place-bet", [Cl.uint(1), Cl.bool(true), Cl.uint(50_000)], wallet1);
+    simnet.mineEmptyBlocks(20);
+    simnet.callPublicFn(CONTRACT, "resolve-market", [Cl.uint(1), Cl.bool(true)], deployer);
+
+    const second = simnet.callPublicFn(CONTRACT, "resolve-market", [Cl.uint(1), Cl.bool(false)], deployer);
+    expect(cvToString(second.result)).toBe("(err u102)");
+  });
 });
