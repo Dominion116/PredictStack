@@ -68,3 +68,21 @@ export async function getUserBetHistory(address: string, limit = 20): Promise<Be
     return [];
   }
 }
+
+export interface UserStats {
+  totalBets: number;
+  totalWageredMicro: number;
+  totalWonMicro: number;
+  winCount: number;
+  lossCount: number;
+  activePositions: number;
+}
+
+export async function getUserStats(address: string): Promise<UserStats | null> {
+  try {
+    const data = await backendFetch<{ stats: UserStats }>(`/api/users/${address}/stats`);
+    return data.stats;
+  } catch {
+    return null;
+  }
+}
