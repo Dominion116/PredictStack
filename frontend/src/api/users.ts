@@ -46,3 +46,25 @@ export async function getUserDashboard(address: string) {
     positions: Array<{ market: any; position: any }>;
   }>(`/api/users/${address}/dashboard`);
 }
+
+export interface BetHistoryEntry {
+  betId: string;
+  marketId: number;
+  marketQuestion: string;
+  outcome: boolean;
+  amountMicro: number;
+  status: 'pending' | 'confirmed' | 'failed';
+  txId?: string;
+  createdAt: string;
+}
+
+export async function getUserBetHistory(address: string, limit = 20): Promise<BetHistoryEntry[]> {
+  try {
+    const data = await backendFetch<{ bets: BetHistoryEntry[] }>(
+      `/api/users/${address}/bets?limit=${limit}`
+    );
+    return data.bets;
+  } catch {
+    return [];
+  }
+}
