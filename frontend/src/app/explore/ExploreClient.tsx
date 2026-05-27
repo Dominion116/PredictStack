@@ -97,8 +97,9 @@ export function ExploreClient() {
   // Debounced search
   const [searchDraft, setSearchDraft] = useState(search);
   useEffect(() => {
-    const t = setTimeout(() => pushParam({ search: searchDraft }), 300);
+    const t = setTimeout(() => pushParam({ search: searchDraft }), 400);
     return () => clearTimeout(t);
+    // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [searchDraft]);
 
   return (
@@ -148,10 +149,12 @@ export function ExploreClient() {
             <div className="relative flex-1 min-w-[200px] max-w-xs">
               <Search className="absolute left-2.5 top-2.5 h-4 w-4 text-muted-foreground" />
               <Input
-                placeholder="Search markets..."
+                id="explore-search"
+                placeholder="Search markets…"
                 className="pl-9"
                 value={searchDraft}
                 onChange={e => setSearchDraft(e.target.value)}
+                aria-label="Search prediction markets"
               />
             </div>
 
