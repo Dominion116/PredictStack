@@ -147,9 +147,16 @@ export function ExploreClient() {
 
         {/* Filters */}
         <section className="space-y-4">
-          <h2 className="text-lg font-semibold flex items-center gap-2">
-            <TrendingUp className="h-4 w-4" /> All Markets
-          </h2>
+          <div className="flex items-center justify-between gap-4">
+            <h2 className="text-lg font-semibold flex items-center gap-2">
+              <TrendingUp className="h-4 w-4" /> All Markets
+            </h2>
+            {!loading && (
+              <span className="text-xs font-mono text-muted-foreground">
+                {filtered.length} {filtered.length === 1 ? 'market' : 'markets'}
+              </span>
+            )}
+          </div>
 
           {/* Category chips */}
           <div className="flex flex-wrap gap-2">
