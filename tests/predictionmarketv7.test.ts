@@ -1080,4 +1080,24 @@ describe("predictstacks (STX-native)", () => {
     const refund = simnet.callPublicFn(CONTRACT, "claim-refund", [Cl.uint(1)], wallet2);
     expect(cvToString(refund.result)).toBe("(err u107)");
   });
+
+  it("prevents double refund on a cancelled market", () => {
+    const accounts = simnet.getAccounts();
+    const deployer = accounts.get("deployer")!;
+    const wallet1 = accounts.get("wallet_1")!;
+
+    simnet.callPublicFn(CONTRACT, "initialize", [
+      Cl.standardPrincipal(deployer), Cl.standardPrincipal(deployer), Cl.standardPrincipal(deployer),
+      Cl.uint(10_000), Cl.uint(20_000), Cl.uint(100_000),
+    ], deployer);
+    simnet.callPublicFn(CONTRACT, "create-market", [Cl.stringAscii("double-refund-ref"), Cl.uint(100)], deployer);
+    simnet.callPublicFn(CONTRACT, "place-bet", [Cl.uint(1), Cl.bool(true), Cl.uint(50_000)], wallet1);
+    simnet.callPublicFn(CONTRACT, "cancel-market", [Cl.uint(1)], deployer);
+
+    const first = simnet.callPublicFn(CONTRACT, "claim-refund", [Cl.uint(1)], wallet1);
+    expect(cvToString(first.result)).toBe("(ok u50000)");
+
+    const second = simnet.callPublicFn(CONTRACT, "claim-refund", [Cl.uint(1)], wallet1);
+    expect(cvToString(second.result)).toBe("(err u106)");
+  });
 });
