@@ -1235,4 +1235,29 @@ describe("predictstacks (STX-native)", () => {
     expect(poolsStr).toContain("yes-pool u70000");
     expect(poolsStr).toContain("no-pool u30000");
   });
+
+  it("can-claim-winnings returns correct reason when user has no position", () => {
+    const accounts = simnet.getAccounts();
+    const deployer = accounts.get("deployer")!;
+    const wallet1 = accounts.get("wallet_1")!;
+    const wallet2 = accounts.get("wallet_2")!;
+
+    simnet.callPublicFn(CONTRACT, "initialize", [
+      Cl.standardPrincipal(deployer), Cl.standardPrincipal(deployer), Cl.standardPrincipal(deployer),
+      Cl.uint(10_000), Cl.uint(20_000), Cl.uint(100_000),
+    ], deployer);
+    simnet.callPublicFn(CONTRACT, "create-market", [Cl.stringAscii("can-claim-ref"), Cl.uint(10)], deployer);
+    simnet.callPublicFn(CONTRACT, "place-bet", [Cl.uint(1), Cl.bool(true), Cl.uint(50_000)], wallet1);
+    simnet.mineEmptyBlocks(20);
+    simnet.callPublicFn(CONTRACT, "resolve-market", [Cl.uint(1), Cl.bool(true)], deployer);
+
+    const result = simnet.callReadOnlyFn(
+      CONTRACT, "can-claim-winnings",
+      [Cl.standardPrincipal(wallet2), Cl.uint(1)],
+      deployer
+    );
+    const resultStr = cvToString(result.result);
+    expect(resultStr).toContain("can-claim false");
+    expect(resultStr).toContain("no-position");
+  });
 });
