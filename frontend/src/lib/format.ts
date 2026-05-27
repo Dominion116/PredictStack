@@ -35,3 +35,14 @@ export function formatWinRate(wins: number, losses: number): string {
   if (total === 0) return '—';
   return `${Math.round((wins / total) * 100)}%`;
 }
+
+export function isMarketActive(status: string): boolean {
+  return status === 'active';
+}
+
+export function getMarketStatus(status: string): 'active' | 'resolved' | 'cancelled' | 'unknown' {
+  if (status === 'active') return 'active';
+  if (status === 'resolved') return 'resolved';
+  if (status === 'cancelled') return 'cancelled';
+  return 'unknown';
+}
