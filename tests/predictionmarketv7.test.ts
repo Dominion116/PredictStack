@@ -1173,4 +1173,28 @@ describe("predictstacks (STX-native)", () => {
     const claim2 = simnet.callPublicFn(CONTRACT, "claim-winnings", [Cl.uint(1)], wallet2);
     expect(cvToString(claim2.result)).toBe("(ok u60000)");
   });
+
+  it("wallet_3 can bet and claim alongside wallet_1 and wallet_2", () => {
+    const accounts = simnet.getAccounts();
+    const deployer = accounts.get("deployer")!;
+    const wallet1 = accounts.get("wallet_1")!;
+    const wallet2 = accounts.get("wallet_2")!;
+    const wallet3 = accounts.get("wallet_3")!;
+
+    simnet.callPublicFn(CONTRACT, "initialize", [
+      Cl.standardPrincipal(deployer), Cl.standardPrincipal(deployer), Cl.standardPrincipal(deployer),
+      Cl.uint(10_000), Cl.uint(20_000), Cl.uint(100_000),
+    ], deployer);
+    simnet.callPublicFn(CONTRACT, "create-market", [Cl.stringAscii("three-wallet-ref"), Cl.uint(10)], deployer);
+    simnet.callPublicFn(CONTRACT, "place-bet", [Cl.uint(1), Cl.bool(true), Cl.uint(50_000)], wallet1);
+    simnet.callPublicFn(CONTRACT, "place-bet", [Cl.uint(1), Cl.bool(false), Cl.uint(30_000)], wallet2);
+    simnet.callPublicFn(CONTRACT, "place-bet", [Cl.uint(1), Cl.bool(true), Cl.uint(50_000)], wallet3);
+    simnet.mineEmptyBlocks(20);
+    simnet.callPublicFn(CONTRACT, "resolve-market", [Cl.uint(1), Cl.bool(true)], deployer);
+
+    const claim1 = simnet.callPublicFn(CONTRACT, "claim-winnings", [Cl.uint(1)], wallet1);
+    const claim3 = simnet.callPublicFn(CONTRACT, "claim-winnings", [Cl.uint(1)], wallet3);
+    expect(cvToString(claim1.result)).not.toContain("err");
+    expect(cvToString(claim3.result)).not.toContain("err");
+  });
 });
