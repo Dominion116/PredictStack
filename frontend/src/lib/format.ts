@@ -46,3 +46,11 @@ export function getMarketStatus(status: string): 'active' | 'resolved' | 'cancel
   if (status === 'cancelled') return 'cancelled';
   return 'unknown';
 }
+
+const KNOWN_CATEGORIES = ['crypto', 'sports', 'politics', 'tech', 'finance', 'culture', 'science', 'other'] as const;
+export type MarketCategory = typeof KNOWN_CATEGORIES[number];
+
+export function parseMarketCategory(raw: string | undefined | null): MarketCategory {
+  const lower = (raw ?? '').toLowerCase().trim() as MarketCategory;
+  return KNOWN_CATEGORIES.includes(lower) ? lower : 'other';
+}
