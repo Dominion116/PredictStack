@@ -1145,4 +1145,32 @@ describe("predictstacks (STX-native)", () => {
     const claim = simnet.callPublicFn(CONTRACT, "claim-winnings", [Cl.uint(1)], wallet1);
     expect(cvToString(claim.result)).toBe("(err u108)");
   });
+
+  it("multiple YES bettors share the losing pool proportionally", () => {
+    const accounts = simnet.getAccounts();
+    const deployer = accounts.get("deployer")!;
+    const wallet1 = accounts.get("wallet_1")!;
+    const wallet2 = accounts.get("wallet_2")!;
+    const wallet3 = accounts.get("wallet_3")!;
+
+    simnet.callPublicFn(CONTRACT, "initialize", [
+      Cl.standardPrincipal(deployer), Cl.standardPrincipal(deployer), Cl.standardPrincipal(deployer),
+      Cl.uint(10_000), Cl.uint(20_000), Cl.uint(100_000),
+    ], deployer);
+    simnet.callPublicFn(CONTRACT, "create-market", [Cl.stringAscii("multi-winner-ref"), Cl.uint(10)], deployer);
+    // wallet1: 60k YES, wallet2: 40k YES, wallet3: 50k NO
+    simnet.callPublicFn(CONTRACT, "place-bet", [Cl.uint(1), Cl.bool(true), Cl.uint(60_000)], wallet1);
+    simnet.callPublicFn(CONTRACT, "place-bet", [Cl.uint(1), Cl.bool(true), Cl.uint(40_000)], wallet2);
+    simnet.callPublicFn(CONTRACT, "place-bet", [Cl.uint(1), Cl.bool(false), Cl.uint(50_000)], wallet3);
+    simnet.mineEmptyBlocks(20);
+    simnet.callPublicFn(CONTRACT, "resolve-market", [Cl.uint(1), Cl.bool(true)], deployer);
+
+    // wallet1: 60k + 60k*50k/100k = 60k + 30k = 90k
+    const claim1 = simnet.callPublicFn(CONTRACT, "claim-winnings", [Cl.uint(1)], wallet1);
+    expect(cvToString(claim1.result)).toBe("(ok u90000)");
+
+    // wallet2: 40k + 40k*50k/100k = 40k + 20k = 60k
+    const claim2 = simnet.callPublicFn(CONTRACT, "claim-winnings", [Cl.uint(1)], wallet2);
+    expect(cvToString(claim2.result)).toBe("(ok u60000)");
+  });
 });
