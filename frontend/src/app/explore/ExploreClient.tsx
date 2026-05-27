@@ -108,6 +108,18 @@ export function ExploreClient() {
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [searchDraft]);
 
+  // Press "/" to focus search input
+  useEffect(() => {
+    const handler = (e: KeyboardEvent) => {
+      if (e.key === '/' && document.activeElement?.tagName !== 'INPUT') {
+        e.preventDefault();
+        document.getElementById('explore-search')?.focus();
+      }
+    };
+    window.addEventListener('keydown', handler);
+    return () => window.removeEventListener('keydown', handler);
+  }, []);
+
   return (
     <div className="min-h-screen bg-background">
       <div className="max-w-7xl mx-auto px-4 py-10 space-y-12">
