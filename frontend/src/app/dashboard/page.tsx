@@ -75,6 +75,8 @@ function DashboardContent() {
         }
     }, []);
 
+    const [lastRefreshed, setLastRefreshed] = useState<Date | null>(null);
+
     const loadDashboardData = async () => {
         setLoading(true);
         try {
@@ -85,6 +87,7 @@ function DashboardContent() {
             ]);
             setBalance(bal);
             setSummary(dashboard.summary);
+            setLastRefreshed(new Date());
             const bets = dashboard.positions.map(item => ({
                 ...item.market,
                 position: {
@@ -193,16 +196,23 @@ function DashboardContent() {
                                 <p className="text-xs font-mono text-muted-foreground mt-1">{shortAddress}</p>
                             )}
                         </motion.div>
-                        <Button
-                            variant="outline"
-                            size="sm"
-                            onClick={loadDashboardData}
-                            disabled={loading}
-                            className="font-mono text-xs self-start md:self-auto"
-                        >
-                            <RefreshCcw className={`mr-2 h-3.5 w-3.5 ${loading ? 'animate-spin' : ''}`} />
-                            Refresh
-                        </Button>
+                        <div className="flex flex-col items-end gap-1">
+                            <Button
+                                variant="outline"
+                                size="sm"
+                                onClick={loadDashboardData}
+                                disabled={loading}
+                                className="font-mono text-xs self-start md:self-auto"
+                            >
+                                <RefreshCcw className={`mr-2 h-3.5 w-3.5 ${loading ? 'animate-spin' : ''}`} />
+                                Refresh
+                            </Button>
+                            {lastRefreshed && (
+                                <span className="text-[10px] font-mono text-muted-foreground">
+                                    Updated {lastRefreshed.toLocaleTimeString()}
+                                </span>
+                            )}
+                        </div>
                     </div>
                 </div>
             </div>
