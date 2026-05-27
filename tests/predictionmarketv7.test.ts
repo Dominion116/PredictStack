@@ -1215,4 +1215,24 @@ describe("predictstacks (STX-native)", () => {
     expect(marketStr).toContain("yes-pool u0");
     expect(marketStr).toContain("no-pool u0");
   });
+
+  it("get-market-pools reflects updated balances after bets are placed", () => {
+    const accounts = simnet.getAccounts();
+    const deployer = accounts.get("deployer")!;
+    const wallet1 = accounts.get("wallet_1")!;
+    const wallet2 = accounts.get("wallet_2")!;
+
+    simnet.callPublicFn(CONTRACT, "initialize", [
+      Cl.standardPrincipal(deployer), Cl.standardPrincipal(deployer), Cl.standardPrincipal(deployer),
+      Cl.uint(10_000), Cl.uint(20_000), Cl.uint(100_000),
+    ], deployer);
+    simnet.callPublicFn(CONTRACT, "create-market", [Cl.stringAscii("pools-update-ref"), Cl.uint(100)], deployer);
+    simnet.callPublicFn(CONTRACT, "place-bet", [Cl.uint(1), Cl.bool(true), Cl.uint(70_000)], wallet1);
+    simnet.callPublicFn(CONTRACT, "place-bet", [Cl.uint(1), Cl.bool(false), Cl.uint(30_000)], wallet2);
+
+    const pools = simnet.callReadOnlyFn(CONTRACT, "get-market-pools", [Cl.uint(1)], deployer);
+    const poolsStr = cvToString(pools.result);
+    expect(poolsStr).toContain("yes-pool u70000");
+    expect(poolsStr).toContain("no-pool u30000");
+  });
 });
