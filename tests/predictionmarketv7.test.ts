@@ -887,4 +887,22 @@ describe("predictstacks (STX-native)", () => {
     );
     expect(cvToString(bet.result)).toBe("(ok true)");
   });
+
+  it("rejects place-bet on a non-existent market", () => {
+    const accounts = simnet.getAccounts();
+    const deployer = accounts.get("deployer")!;
+    const wallet1 = accounts.get("wallet_1")!;
+
+    simnet.callPublicFn(CONTRACT, "initialize", [
+      Cl.standardPrincipal(deployer), Cl.standardPrincipal(deployer), Cl.standardPrincipal(deployer),
+      Cl.uint(10_000), Cl.uint(20_000), Cl.uint(100_000),
+    ], deployer);
+
+    const bet = simnet.callPublicFn(
+      CONTRACT, "place-bet",
+      [Cl.uint(999), Cl.bool(true), Cl.uint(50_000)],
+      wallet1
+    );
+    expect(cvToString(bet.result)).toBe("(err u101)");
+  });
 });
