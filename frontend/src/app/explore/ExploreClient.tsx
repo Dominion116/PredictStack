@@ -243,8 +243,15 @@ export function ExploreClient() {
               </Button>
             </div>
           ) : filtered.length === 0 ? (
-            <div className="border border-dashed rounded-xl p-12 text-center text-muted-foreground">
-              No markets match your filters.
+            <div className="border border-dashed rounded-xl p-12 text-center space-y-3">
+              <p className="text-sm text-muted-foreground font-mono">
+                {search ? `No markets matching "${search}"` : 'No markets match your filters.'}
+              </p>
+              {(search || status || category || dateFrom || dateTo) && (
+                <Button variant="outline" size="sm" className="font-mono text-xs" onClick={() => { setSearchDraft(''); pushParam({ status: '', search: '', dateFrom: '', dateTo: '', category: '' }); }}>
+                  Clear all filters
+                </Button>
+              )}
             </div>
           ) : (
             <>
