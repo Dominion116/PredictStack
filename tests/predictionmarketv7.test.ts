@@ -987,4 +987,27 @@ describe("predictstacks (STX-native)", () => {
     const claim = simnet.callPublicFn(CONTRACT, "claim-winnings", [Cl.uint(1)], wallet2);
     expect(cvToString(claim.result)).toBe("(err u108)");
   });
+
+  it("prevents double claim on the same market", () => {
+    const accounts = simnet.getAccounts();
+    const deployer = accounts.get("deployer")!;
+    const wallet1 = accounts.get("wallet_1")!;
+    const wallet2 = accounts.get("wallet_2")!;
+
+    simnet.callPublicFn(CONTRACT, "initialize", [
+      Cl.standardPrincipal(deployer), Cl.standardPrincipal(deployer), Cl.standardPrincipal(deployer),
+      Cl.uint(10_000), Cl.uint(20_000), Cl.uint(100_000),
+    ], deployer);
+    simnet.callPublicFn(CONTRACT, "create-market", [Cl.stringAscii("double-claim-ref"), Cl.uint(10)], deployer);
+    simnet.callPublicFn(CONTRACT, "place-bet", [Cl.uint(1), Cl.bool(true), Cl.uint(50_000)], wallet1);
+    simnet.callPublicFn(CONTRACT, "place-bet", [Cl.uint(1), Cl.bool(false), Cl.uint(20_000)], wallet2);
+    simnet.mineEmptyBlocks(20);
+    simnet.callPublicFn(CONTRACT, "resolve-market", [Cl.uint(1), Cl.bool(true)], deployer);
+
+    const first = simnet.callPublicFn(CONTRACT, "claim-winnings", [Cl.uint(1)], wallet1);
+    expect(cvToString(first.result)).not.toContain("err");
+
+    const second = simnet.callPublicFn(CONTRACT, "claim-winnings", [Cl.uint(1)], wallet1);
+    expect(cvToString(second.result)).toBe("(err u106)");
+  });
 });
