@@ -1260,4 +1260,22 @@ describe("predictstacks (STX-native)", () => {
     expect(resultStr).toContain("can-claim false");
     expect(resultStr).toContain("no-position");
   });
+
+  it("pause blocks market creation by admin", () => {
+    const accounts = simnet.getAccounts();
+    const deployer = accounts.get("deployer")!;
+
+    simnet.callPublicFn(CONTRACT, "initialize", [
+      Cl.standardPrincipal(deployer), Cl.standardPrincipal(deployer), Cl.standardPrincipal(deployer),
+      Cl.uint(10_000), Cl.uint(20_000), Cl.uint(100_000),
+    ], deployer);
+    simnet.callPublicFn(CONTRACT, "pause-platform", [], deployer);
+
+    const create = simnet.callPublicFn(
+      CONTRACT, "create-market",
+      [Cl.stringAscii("pause-create-ref"), Cl.uint(100)],
+      deployer
+    );
+    expect(cvToString(create.result)).toBe("(err u109)");
+  });
 });
