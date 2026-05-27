@@ -168,7 +168,7 @@ function DashboardContent() {
         : '—';
 
     const addr = isUserSignedIn() ? getUserAddress() : '';
-    const shortAddress = addr ? `${addr.slice(0, 6)}...${addr.slice(-4)}` : '';
+    const shortAddress = addr ? `${addr.slice(0, 8)}...${addr.slice(-6)}` : '';
 
     return (
         <main className="min-h-screen flex flex-col bg-background">
