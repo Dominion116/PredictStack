@@ -1046,4 +1046,20 @@ describe("predictstacks (STX-native)", () => {
     const cancel = simnet.callPublicFn(CONTRACT, "cancel-market", [Cl.uint(1)], deployer);
     expect(cvToString(cancel.result)).toBe("(err u102)");
   });
+
+  it("rejects re-initialization of an already-initialized contract", () => {
+    const accounts = simnet.getAccounts();
+    const deployer = accounts.get("deployer")!;
+
+    simnet.callPublicFn(CONTRACT, "initialize", [
+      Cl.standardPrincipal(deployer), Cl.standardPrincipal(deployer), Cl.standardPrincipal(deployer),
+      Cl.uint(10_000), Cl.uint(20_000), Cl.uint(100_000),
+    ], deployer);
+
+    const second = simnet.callPublicFn(CONTRACT, "initialize", [
+      Cl.standardPrincipal(deployer), Cl.standardPrincipal(deployer), Cl.standardPrincipal(deployer),
+      Cl.uint(10_000), Cl.uint(20_000), Cl.uint(100_000),
+    ], deployer);
+    expect(cvToString(second.result)).toBe("(err u115)");
+  });
 });
