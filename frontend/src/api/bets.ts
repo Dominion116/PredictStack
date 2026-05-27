@@ -18,3 +18,14 @@ export async function createBetIntent(payload: unknown): Promise<BetIntentRespon
 export async function confirmBet(payload: unknown): Promise<{ success: boolean }> {
   return backendFetch<{ success: boolean }>('/api/bets/confirm', { method: 'POST', body: JSON.stringify(payload) });
 }
+
+export interface IntentStatus {
+  betId: string;
+  status: 'pending' | 'confirmed' | 'failed';
+  txId?: string;
+  confirmedAt?: string;
+}
+
+export async function getIntentStatus(betId: string): Promise<IntentStatus> {
+  return backendFetch<IntentStatus>(`/api/bets/intents/${betId}/status`);
+}
