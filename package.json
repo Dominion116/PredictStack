@@ -6,7 +6,10 @@
   "private": false,
   "scripts": {
     "backend": "node backend/server.mjs",
+    "frontend": "cd frontend && npm run dev",
+    "dev": "concurrently \"npm run backend\" \"npm run frontend\"",
     "test": "vitest run",
+    "test:coverage": "vitest run --coverage",
     "test:report": "vitest run -- --coverage --costs",
     "test:watch": "chokidar \"tests/**/*.ts\" \"contracts/**/*.clar\" -c \"npm run test:report\"",
     "deploy:testnet": "clarinet deployments generate --testnet --medium-cost && clarinet deployments apply --testnet --use-on-disk-deployment-plan --no-dashboard",
@@ -14,7 +17,10 @@
     "deploy-and-init": "node scripts/deploy-and-init.mjs",
     "init-contract": "node scripts/deploy-and-init.mjs --init",
     "check": "clarinet check",
-    "console": "clarinet console"
+    "console": "clarinet console",
+    "validate:env": "node scripts/validate-env.mjs",
+    "audit:gitignore": "node scripts/audit-gitignore.mjs",
+    "list:markets": "node scripts/list-markets.mjs"
   },
   "author": "",
   "license": "MIT",
