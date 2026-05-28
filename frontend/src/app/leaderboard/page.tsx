@@ -221,8 +221,10 @@ export default function LeaderboardPage() {
                             ))}
                         </div>
                     ) : paginated.length === 0 && rest.length === 0 ? (
-                        <div className="py-12 text-center text-sm font-mono text-muted-foreground">
-                            No additional entries.
+                        <div className="py-16 text-center space-y-3">
+                            <Trophy className="h-8 w-8 text-muted-foreground/40 mx-auto" />
+                            <p className="text-sm font-mono text-muted-foreground">No additional entries yet.</p>
+                            <p className="text-xs font-mono text-muted-foreground/60">Place a bet to appear on the leaderboard.</p>
                         </div>
                     ) : (
                         <div className="divide-y divide-border/40">
