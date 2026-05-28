@@ -17,5 +17,16 @@ export default defineConfig({
         ...getClarinetVitestsArgv(),
       },
     },
+    coverage: {
+      provider: "v8",
+      reporter: ["text", "json", "html"],
+      reportsDirectory: "./coverage",
+      thresholds: {
+        lines: 50,
+        functions: 50,
+        branches: 50,
+        statements: 50,
+      },
+    },
   },
 });
