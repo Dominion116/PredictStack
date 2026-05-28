@@ -349,6 +349,16 @@ export default function MarketPage() {
                             <span className="relative inline-flex rounded-full h-1.5 w-1.5 bg-green-500" />
                         </span>
                     )}
+                    <span className="ml-auto">
+                        <a
+                            href={`https://x.com/intent/tweet?text=${encodeURIComponent(`${question} — Predict on PredictStack`)}&url=${encodeURIComponent(typeof window !== 'undefined' ? window.location.href : '')}`}
+                            target="_blank"
+                            rel="noopener noreferrer"
+                            className="inline-flex items-center gap-1 text-[11px] font-mono text-muted-foreground hover:text-foreground transition-colors"
+                        >
+                            Share on X
+                        </a>
+                    </span>
                 </motion.div>
 
                 <div className="grid grid-cols-1 lg:grid-cols-3 gap-8">
