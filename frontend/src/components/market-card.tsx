@@ -1,38 +1,23 @@
 'use client';
 
 import { useState } from 'react';
-import { Badge } from '@/components/ui/badge';
 import { Button } from '@/components/ui/button';
-import { ArrowRight, Clock, TrendingUp, Copy, Check } from 'lucide-react';
+import { ArrowRight, TrendingUp, Copy, Check } from 'lucide-react';
 import Link from 'next/link';
 import { motion } from 'framer-motion';
+import { TimeRemaining } from '@/components/TimeRemaining';
+import { CategoryBadge } from '@/components/CategoryBadge';
+import { MarketStatusBadge } from '@/components/MarketStatusBadge';
 
 interface MarketCardProps {
     market: any;
     index?: number;
 }
 
-// Compute display from the real ISO timestamp the admin entered.
-// We avoid block-height arithmetic (which uses a hardcoded reference).
-function timeFromIso(iso?: string | null): string {
-    if (!iso) return 'Active';
-    const target = new Date(iso).getTime();
-    const diff   = target - Date.now();
-    if (diff < 0) return 'Ended';
-    const mins  = Math.floor(diff / 60_000);
-    const hours = Math.floor(mins / 60);
-    const days  = Math.floor(hours / 24);
-    if (mins  < 60) return `Ends in ${mins}m`;
-    if (hours < 24) return `Ends in ${hours}h`;
-    if (days  < 30) return `Ends in ${days}d`;
-    return `Ends ${new Date(iso).toLocaleDateString()}`;
-}
-
 export function MarketCard({ market, index = 0 }: MarketCardProps) {
     const question = market.question || 'Unknown Market';
-    const category = market.category || 'General';
-    const isActive = market.status === 'active';
     const [copied, setCopied] = useState(false);
+    const isoDate = market['resolve-time-iso'] ?? market.resolveTimeIso ?? null;
 
     function copyRef() {
         const ref = market.marketRef || market['market-ref'];
@@ -57,9 +42,6 @@ export function MarketCard({ market, index = 0 }: MarketCardProps) {
     const yesPercent    = totalPool > 0 ? (yesPool / totalPool) * 100 : 50;
     const noPercent     = 100 - yesPercent;
 
-    // Use the ISO timestamp the admin entered (stored as resolve-time-iso).
-    const timeDisplay = timeFromIso(market['resolve-time-iso'] ?? market.resolveTimeIso);
-
     const volumeDisplay = totalPool >= 1000
         ? `${(totalPool / 1000).toFixed(1)}k`
         : totalPool.toFixed(2);
@@ -80,28 +62,10 @@ export function MarketCard({ market, index = 0 }: MarketCardProps) {
                 {/* Header */}
                 <div className="px-5 pt-5 pb-4 space-y-3 flex-1">
 
-                    {/* Category + live indicator */}
+                    {/* Category + status indicator */}
                     <div className="flex items-center justify-between">
-                        <Badge
-                            variant="outline"
-                            className="text-[11px] font-mono tracking-wide border-border/80 text-muted-foreground px-2 py-0.5"
-                        >
-                            {category}
-                        </Badge>
-
-                        <div className="flex items-center gap-1.5 text-muted-foreground">
-                            {isActive ? (
-                                <>
-                                    <span className="relative flex h-2 w-2">
-                                        <span className="animate-ping absolute inline-flex h-full w-full rounded-full bg-green-500 opacity-60" />
-                                        <span className="relative inline-flex rounded-full h-2 w-2 bg-green-500" />
-                                    </span>
-                                    <span className="text-[11px] font-mono text-green-500">LIVE</span>
-                                </>
-                            ) : (
-                                <span className="text-[11px] font-mono uppercase">{market.status}</span>
-                            )}
-                        </div>
+                        <CategoryBadge category={market.category} />
+                        <MarketStatusBadge status={market.status ?? 'active'} />
                     </div>
 
                     {/* Question */}
@@ -167,10 +131,7 @@ export function MarketCard({ market, index = 0 }: MarketCardProps) {
                 {/* Footer */}
                 <div className="px-5 pb-5">
                     <div className="flex items-center justify-between text-[11px] text-muted-foreground font-mono mb-3">
-                        <span className="flex items-center gap-1">
-                            <Clock className="h-3 w-3" />
-                            {timeDisplay}
-                        </span>
+                        <TimeRemaining isoDate={isoDate} />
                         <span className="flex items-center gap-2">
                             <span className="flex items-center gap-1">
                                 <TrendingUp className="h-3 w-3" />
