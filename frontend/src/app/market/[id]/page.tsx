@@ -418,6 +418,14 @@ export default function MarketPage() {
                                 <span className="flex items-center gap-1">
                                     <Users className="h-3 w-3" />{totalBets} bets
                                 </span>
+                                {market.marketRef && (
+                                    <>
+                                        <span className="text-border">·</span>
+                                        <span className="text-muted-foreground/60 truncate max-w-[120px]" title={market.marketRef}>
+                                            ref: {market.marketRef}
+                                        </span>
+                                    </>
+                                )}
                             </div>
                         </div>
 
