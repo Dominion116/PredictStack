@@ -24,6 +24,14 @@ yarn-error.log*
 coverage/
 *.info
 .nyc_output/
+*.lcov
+
+# Next.js
+frontend/.next/
+frontend/out/
+
+# Build outputs
+frontend/build/
 
 # IDEs
 .vscode/
