@@ -12,6 +12,7 @@ import {
 import { Footer } from '@/components/footer';
 import { Button } from '@/components/ui/button';
 import { Badge } from '@/components/ui/badge';
+import { MarketStatusBadge } from '@/components/MarketStatusBadge';
 import { Input } from '@/components/ui/input';
 import { Separator } from '@/components/ui/separator';
 import {
@@ -46,20 +47,6 @@ function resolveDisplay(market: any): string {
     if (mins < 60)  return `Ends in ${mins}m`;
     if (hours < 24) return `Ends in ${hours}h`;
     return `Ends in ${days}d`;
-}
-
-function statusColor(status: string) {
-    if (status === 'active')    return 'text-green-500 border-green-500/40';
-    if (status === 'resolved')  return 'text-primary border-primary/40';
-    if (status === 'cancelled') return 'text-muted-foreground border-border';
-    return 'text-muted-foreground border-border';
-}
-
-function statusLabel(status: string) {
-    if (status === 'active')    return 'LIVE';
-    if (status === 'resolved')  return 'RESOLVED';
-    if (status === 'cancelled') return 'CANCELLED';
-    return status.toUpperCase();
 }
 
 // ─── skeleton ────────────────────────────────────────────────────────────────
@@ -337,12 +324,7 @@ export default function MarketPage() {
                     </Link>
                     <span>/</span>
                     <span>Market #{marketId}</span>
-                    <Badge
-                        variant="outline"
-                        className={`ml-1 text-[10px] px-1.5 py-0 font-mono ${statusColor(status)}`}
-                    >
-                        {statusLabel(status)}
-                    </Badge>
+                    <MarketStatusBadge status={status} className="ml-1" />
                     {isActive && (
                         <span className="relative flex h-1.5 w-1.5 ml-0.5">
                             <span className="animate-ping absolute inline-flex h-full w-full rounded-full bg-green-500 opacity-60" />
