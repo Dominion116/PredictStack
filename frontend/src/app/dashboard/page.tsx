@@ -20,40 +20,13 @@ import { useConnect } from '@stacks/connect-react';
 import { toast } from 'sonner';
 import Link from 'next/link';
 import { Footer } from '@/components/footer';
+import { StatCard } from '@/components/StatCard';
 
 export default function DashboardPage() {
     const [mounted, setMounted] = useState(false);
     useEffect(() => { setMounted(true); }, []);
     if (!mounted) return null;
     return <DashboardContent />;
-}
-
-function StatCard({
-    label, value, sub, icon: Icon, accent = false,
-}: {
-    label: string; value: string | number; sub?: string;
-    icon: React.ElementType; accent?: boolean;
-}) {
-    return (
-        <motion.div variants={fadeInUp}>
-            <div className="relative rounded-xl border border-border/60 bg-card p-5 overflow-hidden group hover:border-primary/30 transition-colors duration-300">
-                <div className="flex items-start justify-between mb-3">
-                    <span className="text-[11px] font-mono tracking-widest text-muted-foreground uppercase">
-                        {label}
-                    </span>
-                    <Icon className={`h-4 w-4 ${accent ? 'text-primary' : 'text-muted-foreground'}`} />
-                </div>
-                <div className={`text-2xl font-bold font-mono ${accent ? 'text-primary' : ''}`}>
-                    {value}
-                </div>
-                {sub && (
-                    <p className="text-xs text-muted-foreground mt-1">{sub}</p>
-                )}
-                {/* Subtle corner accent */}
-                <div className="absolute bottom-0 right-0 w-16 h-16 rounded-tl-3xl bg-primary/5 opacity-0 group-hover:opacity-100 transition-opacity duration-300" />
-            </div>
-        </motion.div>
-    );
 }
 
 function DashboardContent() {
