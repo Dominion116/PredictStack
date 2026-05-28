@@ -83,7 +83,12 @@ export default function LeaderboardPage() {
                                 <span className="text-[11px] font-mono tracking-widest text-primary uppercase">Rankings</span>
                             </div>
                             <h1 className="text-3xl font-bold tracking-tight sm:text-4xl">Leaderboard</h1>
-                            <p className="text-muted-foreground mt-1">Top predictors ranked by total profit.</p>
+                            <p className="text-muted-foreground mt-1">
+                                Top predictors ranked by total profit
+                                {!loading && leaderboard.length > 0 && (
+                                    <span className="ml-1 font-mono text-sm text-primary">· {leaderboard.length} participants</span>
+                                )}
+                            </p>
                         </motion.div>
 
                         {/* Top stats strip */}
