@@ -12,6 +12,7 @@ import { Textarea } from '@/components/ui/textarea';
 import { Label } from '@/components/ui/label';
 import { getContractConfig, isUserSignedIn, getUserAddress, NETWORK_ENV } from '@/lib/constants';
 import { createMarketRecord, getRecentMarkets, resolveMarketRecord, getNextMarketId } from '@/lib/stacks-api';
+import { MarketStatusBadge } from '@/components/MarketStatusBadge';
 import { useConnect } from '@stacks/connect-react';
 import { blockToDate } from '@/lib/date-utils';
 import {
@@ -408,13 +409,14 @@ function AdminDashboard() {
                                 <div className="divide-y divide-border/40">
                                     {markets.slice(0, 5).map(m => (
                                         <div key={m.id} className="flex items-center gap-4 px-5 py-3">
-                                            <Badge variant="outline" className={`text-[10px] font-mono shrink-0 ${
-                                                m.status === 'active' || m.status === 0 || m.status === '0'
-                                                    ? 'text-green-500 border-green-500/40'
-                                                    : 'text-muted-foreground'
-                                            }`}>
-                                                {m.status === 'active' || m.status === 0 || m.status === '0' ? 'LIVE' : String(m.status).toUpperCase()}
-                                            </Badge>
+                                            <MarketStatusBadge
+                                                status={
+                                                    m.status === 0 || m.status === '0'
+                                                        ? 'active'
+                                                        : String(m.status)
+                                                }
+                                                className="shrink-0"
+                                            />
                                             <p className="text-sm flex-1 truncate">{m.question}</p>
                                             <span className="text-xs font-mono text-muted-foreground shrink-0">#{m.id}</span>
                                         </div>
