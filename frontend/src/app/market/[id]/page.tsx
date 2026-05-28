@@ -332,11 +332,11 @@ export default function MarketPage() {
                     animate={{ opacity: 1, y: 0 }}
                     transition={defaultTransition}
                 >
-                    <Link href="/markets" className="hover:text-foreground transition-colors flex items-center gap-1">
-                        <ArrowLeft className="h-3 w-3" /> Markets
+                    <Link href="/markets" className="hover:text-foreground transition-colors flex items-center gap-1 rounded px-1.5 py-0.5 hover:bg-muted">
+                        <ArrowLeft className="h-3 w-3" /> Back to Markets
                     </Link>
                     <span>/</span>
-                    <span>#{marketId}</span>
+                    <span>Market #{marketId}</span>
                     <Badge
                         variant="outline"
                         className={`ml-1 text-[10px] px-1.5 py-0 font-mono ${statusColor(status)}`}
