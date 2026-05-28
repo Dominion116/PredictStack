@@ -22,7 +22,7 @@
     "@hirosystems/clarinet-sdk": "^3.8.1",
     "@sinclair/typebox": "^0.32.35",
     "@stacks/network": "^7.3.1",
-    "@stacks/transactions": "^7.0.5",
+    "@stacks/transactions": "^7.4.0",
     "axios": "^1.13.2",
     "chokidar-cli": "^3.0.0",
     "dotenv": "^16.6.1",
