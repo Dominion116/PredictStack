@@ -497,24 +497,25 @@ export default function MarketPage() {
 
                                 <div className="p-5 space-y-5">
                                     {/* YES / NO toggle */}
-                                    <div className="grid grid-cols-2 gap-2">
+                                    <div className="grid grid-cols-2 gap-2" role="group" aria-label="Choose outcome">
                                         {(['YES', 'NO'] as const).map(side => (
                                             <button
                                                 key={side}
                                                 onClick={() => setOutcome(side)}
                                                 disabled={!isActive}
+                                                aria-pressed={outcome === side}
                                                 className={`h-11 rounded-lg border font-mono font-bold text-sm transition-all duration-150 ${
                                                     outcome === side && side === 'YES'
                                                         ? 'bg-green-500 border-green-500 text-white shadow-lg shadow-green-500/20'
                                                         : outcome === side && side === 'NO'
                                                         ? 'bg-red-500 border-red-500 text-white shadow-lg shadow-red-500/20'
                                                         : 'bg-muted/30 border-border/60 text-muted-foreground hover:border-border hover:text-foreground'
-                                                } disabled:opacity-40 disabled:cursor-not-allowed`}
+                                                } disabled:opacity-40 disabled:cursor-not-allowed focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2`}
                                             >
                                                 {side}
                                                 <span className={`ml-1.5 text-[10px] font-normal ${
                                                     outcome === side ? 'opacity-80' : 'opacity-50'
-                                                }`}>
+                                                }`} aria-hidden="true">
                                                     {side === 'YES' ? yesMult : noMult}x
                                                 </span>
                                             </button>
@@ -524,18 +525,22 @@ export default function MarketPage() {
                                     {/* Amount input */}
                                     <div className="space-y-2">
                                         <div className="flex items-center justify-between">
-                                            <label className="text-[10px] font-mono uppercase tracking-widest text-muted-foreground">
+                                            <label
+                                                htmlFor="bet-amount"
+                                                className="text-[10px] font-mono uppercase tracking-widest text-muted-foreground"
+                                            >
                                                 Amount
                                             </label>
-                                            <span className="text-[10px] font-mono text-muted-foreground">
+                                            <span className="text-[10px] font-mono text-muted-foreground" aria-hidden="true">
                                                 {MIN_BET_STX}–{MAX_BET_STX} STX
                                             </span>
                                         </div>
                                         <div className="relative">
-                                            <span className="absolute left-3 top-1/2 -translate-y-1/2 text-xs font-mono text-muted-foreground">
+                                            <span className="absolute left-3 top-1/2 -translate-y-1/2 text-xs font-mono text-muted-foreground" aria-hidden="true">
                                                 STX
                                             </span>
                                             <Input
+                                                id="bet-amount"
                                                 type="number"
                                                 placeholder="0.00"
                                                 value={betAmount}
@@ -544,18 +549,24 @@ export default function MarketPage() {
                                                 max={MAX_BET_STX}
                                                 step="0.01"
                                                 disabled={!isActive}
+                                                aria-describedby="bet-amount-hint"
                                                 className="pl-9 h-11 font-mono text-sm"
                                             />
                                         </div>
 
+                                        <p id="bet-amount-hint" className="sr-only">
+                                            Minimum {MIN_BET_STX} STX, maximum {MAX_BET_STX} STX
+                                        </p>
                                         {/* Quick amounts */}
-                                        <div className="flex gap-1.5">
+                                        <div className="flex gap-1.5" role="group" aria-label="Quick bet amounts">
                                             {QUICK_AMOUNTS.map(amt => (
                                                 <button
                                                     key={amt}
                                                     onClick={() => setBetAmount(String(amt))}
                                                     disabled={!isActive}
-                                                    className={`flex-1 h-7 rounded-md text-[11px] font-mono border transition-colors disabled:opacity-40 disabled:cursor-not-allowed ${
+                                                    aria-label={`Set bet amount to ${amt} STX`}
+                                                    aria-pressed={betAmount === String(amt)}
+                                                    className={`flex-1 h-7 rounded-md text-[11px] font-mono border transition-colors disabled:opacity-40 disabled:cursor-not-allowed focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-1 ${
                                                         betAmount === String(amt)
                                                             ? 'border-primary/60 bg-primary/10 text-primary'
                                                             : 'border-border/60 bg-muted/30 text-muted-foreground hover:border-border hover:text-foreground'
