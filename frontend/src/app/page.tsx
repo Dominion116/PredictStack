@@ -124,7 +124,7 @@ export default function Home() {
 
       {/* FAQ Section */}
       <section className="bg-muted/30">
-        <div className="container px-6 py-16 md:py-24">
+        <div className="container py-16 md:py-24">
           <motion.div
             initial={{ opacity: 0, y: 20 }}
             whileInView={{ opacity: 1, y: 0 }}
@@ -144,7 +144,7 @@ export default function Home() {
               viewport={{ once: true }}
               transition={{ ...defaultTransition, delay: 0.1 }}
             >
-              <h2 className="font-semibold text-4xl leading-[1.15] tracking-[-0.035em] lg:text-5xl">
+              <h2 className="font-semibold text-4xl leading-snug tracking-tight lg:text-5xl">
                 Frequently Asked <br /> Questions
               </h2>
 
