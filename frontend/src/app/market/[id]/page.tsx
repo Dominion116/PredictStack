@@ -15,6 +15,7 @@ import { Badge } from '@/components/ui/badge';
 import { MarketStatusBadge } from '@/components/MarketStatusBadge';
 import { TimeRemaining } from '@/components/TimeRemaining';
 import { ShareButton } from '@/components/ShareButton';
+import { BackButton } from '@/components/BackButton';
 import { Input } from '@/components/ui/input';
 import { Separator } from '@/components/ui/separator';
 import {
@@ -304,9 +305,7 @@ export default function MarketPage() {
                     animate={{ opacity: 1, y: 0 }}
                     transition={defaultTransition}
                 >
-                    <Link href="/markets" className="hover:text-foreground transition-colors flex items-center gap-1 rounded px-1.5 py-0.5 hover:bg-muted">
-                        <ArrowLeft className="h-3 w-3" /> Back to Markets
-                    </Link>
+                    <BackButton href="/markets" label="Markets" />
                     <span>/</span>
                     <span>Market #{marketId}</span>
                     <MarketStatusBadge status={status} className="ml-1" />
