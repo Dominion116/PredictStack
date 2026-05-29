@@ -14,6 +14,7 @@ import { Button } from '@/components/ui/button';
 import { Badge } from '@/components/ui/badge';
 import { MarketStatusBadge } from '@/components/MarketStatusBadge';
 import { TimeRemaining } from '@/components/TimeRemaining';
+import { ShareButton } from '@/components/ShareButton';
 import { Input } from '@/components/ui/input';
 import { Separator } from '@/components/ui/separator';
 import {
@@ -316,14 +317,7 @@ export default function MarketPage() {
                         </span>
                     )}
                     <span className="ml-auto">
-                        <a
-                            href={`https://x.com/intent/tweet?text=${encodeURIComponent(`${question} — Predict on PredictStack`)}&url=${encodeURIComponent(typeof window !== 'undefined' ? window.location.href : '')}`}
-                            target="_blank"
-                            rel="noopener noreferrer"
-                            className="inline-flex items-center gap-1 text-[11px] font-mono text-muted-foreground hover:text-foreground transition-colors"
-                        >
-                            Share on X
-                        </a>
+                        <ShareButton text={`${question} — Predict on PredictStack`} />
                     </span>
                 </motion.div>
 
