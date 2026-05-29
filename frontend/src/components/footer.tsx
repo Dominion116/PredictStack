@@ -2,7 +2,7 @@
 
 import Link from "next/link";
 import { Github, Twitter, ArrowUpRight, ExternalLink } from "lucide-react";
-import { NETWORK_ENV, BACKEND_BASE_URL } from "@/lib/constants";
+import { NETWORK_ENV, BACKEND_BASE_URL, getContractConfig } from "@/lib/constants";
 
 const NAV = [
     {
@@ -30,7 +30,7 @@ const NAV = [
     },
 ];
 
-const DEPLOYER = process.env.NEXT_PUBLIC_CONTRACT_ADDRESS ?? "ST30VGN68PSGVWGNMD0HH2WQMM5T486EK3WBNTHCY";
+const DEPLOYER = getContractConfig().deployer;
 const SHORT    = `${DEPLOYER.slice(0, 6)}…${DEPLOYER.slice(-4)}`;
 
 export function Footer() {
