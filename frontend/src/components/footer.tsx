@@ -137,14 +137,16 @@ export function Footer() {
 
                     <div className="flex flex-wrap items-center gap-4 text-[11px] font-mono text-muted-foreground">
                         {/* Contract address chip */}
-                        <div
-                            className="flex items-center gap-1.5 rounded-md border border-border/50 bg-muted/30 px-2.5 py-1 cursor-pointer hover:border-primary/30 transition-colors"
-                            title={DEPLOYER}
+                        <button
+                            type="button"
+                            title={`Copy contract address: ${DEPLOYER}`}
+                            aria-label={`Copy contract address ${DEPLOYER}`}
                             onClick={() => navigator.clipboard?.writeText(DEPLOYER)}
+                            className="flex items-center gap-1.5 rounded-md border border-border/50 bg-muted/30 px-2.5 py-1 cursor-pointer hover:border-primary/30 transition-colors focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2"
                         >
                             <span className="text-[10px] uppercase tracking-widest text-muted-foreground">contract</span>
                             <span className="text-foreground/70">{SHORT}</span>
-                        </div>
+                        </button>
 
                         <span className="hidden sm:inline text-border">·</span>
 
