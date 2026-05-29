@@ -21,6 +21,8 @@ import { toast } from 'sonner';
 import Link from 'next/link';
 import { Footer } from '@/components/footer';
 import { StatCard } from '@/components/StatCard';
+import { BetOutcomeBadge } from '@/components/BetOutcomeBadge';
+import { MarketStatusBadge } from '@/components/MarketStatusBadge';
 
 export default function DashboardPage() {
     const [mounted, setMounted] = useState(false);
@@ -330,19 +332,8 @@ function BetRow({ bet, onClaim, isClaiming }: { bet: any; onClaim: (id: number) 
                 {/* Info */}
                 <div className="flex-1 min-w-0 space-y-1.5">
                     <div className="flex items-center gap-2 flex-wrap">
-                        <Badge
-                            variant="outline"
-                            className={`text-[10px] font-mono px-1.5 py-0 border-border/80 ${
-                                !isResolved ? 'text-green-500 border-green-500/40' : 'text-muted-foreground'
-                            }`}
-                        >
-                            {!isResolved ? 'LIVE' : bet.status === 'cancelled' ? 'CANCELLED' : 'RESOLVED'}
-                        </Badge>
-                        <span className={`text-xs font-mono font-bold ${
-                            userOutcome === 'YES' ? 'text-green-500' : 'text-red-500'
-                        }`}>
-                            {userOutcome}
-                        </span>
+                        <MarketStatusBadge status={!isResolved ? 'active' : (bet.status === 'cancelled' ? 'cancelled' : 'resolved')} />
+                        <BetOutcomeBadge outcome={userOutcome as 'YES' | 'NO'} />
                         <span className="text-xs font-mono text-muted-foreground">
                             {userStake.toFixed(4)} STX staked
                         </span>
