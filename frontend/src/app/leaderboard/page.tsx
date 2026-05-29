@@ -62,7 +62,7 @@ export default function LeaderboardPage() {
     const topWinRate   = [...leaderboard].sort((a, b) => b.winRate - a.winRate)[0]?.winRate ?? 0;
 
     return (
-        <main className="min-h-screen flex flex-col bg-background">
+        <main id="main-content" className="min-h-screen flex flex-col bg-background">
             <Navbar />
 
             {/* Page header */}

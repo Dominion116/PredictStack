@@ -39,7 +39,7 @@ const QUICK_AMOUNTS = [0.02, 0.05, 0.1];
 
 function PageSkeleton() {
     return (
-        <main className="min-h-screen flex flex-col bg-background">
+        <main id="main-content" className="min-h-screen flex flex-col bg-background">
             <Navbar />
             <div className="container py-8 flex-1">
                 <div className="grid grid-cols-1 lg:grid-cols-3 gap-8">
@@ -241,7 +241,7 @@ export default function MarketPage() {
 
     if (!market) {
         return (
-            <main className="min-h-screen flex flex-col bg-background">
+            <main id="main-content" className="min-h-screen flex flex-col bg-background">
                 <Navbar />
                 <div className="flex-1 flex flex-col items-center justify-center gap-4 p-6 text-center">
                     <AlertCircle className="h-10 w-10 text-destructive" />
@@ -293,7 +293,7 @@ export default function MarketPage() {
     // ── render ───────────────────────────────────────────────────────────────
 
     return (
-        <main className="min-h-screen flex flex-col bg-background">
+        <main id="main-content" className="min-h-screen flex flex-col bg-background">
             <Navbar />
 
             <div className="container py-8 md:py-10 flex-1">

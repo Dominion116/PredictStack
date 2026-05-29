@@ -39,7 +39,7 @@ export default function Home() {
   const totalVolume = Number(stats?.['total-volume'] || 0) / 1000000;
 
   return (
-    <main className="min-h-screen flex flex-col">
+    <main id="main-content" className="min-h-screen flex flex-col">
       <Navbar />
       
       {/* Hero */}

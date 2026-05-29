@@ -36,6 +36,9 @@ export default function RootLayout({
           "min-h-screen bg-background font-sans antialiased relative"
         )}
       >
+        <a href="#main-content" className="skip-link">
+          Skip to content
+        </a>
         <Providers>
           {children}
           <Toaster />

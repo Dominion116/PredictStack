@@ -116,7 +116,7 @@ function DashboardContent() {
 
     if (!isUserSignedIn()) {
         return (
-            <main className="min-h-screen flex flex-col bg-background">
+            <main id="main-content" className="min-h-screen flex flex-col bg-background">
                 <Navbar />
                 <div className="flex-1 flex items-center justify-center p-6">
                     <div className="text-center space-y-4 max-w-sm">

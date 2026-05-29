@@ -27,7 +27,7 @@ export default function MarketsPage() {
             : totalVolume.toFixed(0);
 
     return (
-        <main className="min-h-screen flex flex-col bg-background">
+        <main id="main-content" className="min-h-screen flex flex-col bg-background">
             <Navbar />
 
             {/* Page header */}
