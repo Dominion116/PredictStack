@@ -54,6 +54,10 @@ export function MarketCard({ market, index = 0 }: MarketCardProps) {
             whileHover={{ y: -3 }}
             className="h-full"
         >
+            {/* Screen-reader announcement for copy action */}
+            <span role="status" aria-live="polite" className="sr-only">
+                {copied ? 'Market ref copied to clipboard' : ''}
+            </span>
             <div className="group relative flex flex-col h-full rounded-xl border border-border/60 bg-card overflow-hidden transition-all duration-300 hover:border-primary/40 hover:shadow-lg hover:shadow-primary/5">
 
                 {/* Top accent line — animates to primary on hover */}
@@ -141,9 +145,13 @@ export function MarketCard({ market, index = 0 }: MarketCardProps) {
                                 <button
                                     onClick={copyRef}
                                     title="Copy market ref"
-                                    className="flex items-center gap-0.5 hover:text-foreground transition-colors"
+                                    aria-label={copied ? 'Market ref copied' : 'Copy market ref'}
+                                    className="flex items-center gap-0.5 hover:text-foreground transition-colors focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-1 rounded"
                                 >
-                                    {copied ? <Check className="h-3 w-3 text-green-500" /> : <Copy className="h-3 w-3" />}
+                                    {copied
+                                        ? <Check className="h-3 w-3 text-green-500" aria-hidden="true" />
+                                        : <Copy className="h-3 w-3" aria-hidden="true" />
+                                    }
                                 </button>
                             )}
                         </span>
