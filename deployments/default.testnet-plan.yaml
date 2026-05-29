@@ -9,10 +9,10 @@ plan:
     - id: 0
       transactions:
         - contract-publish:
-            contract-name: predictstacks
+          contract-name: predictstacksv2
             expected-sender: ST30VGN68PSGVWGNMD0HH2WQMM5T486EK3WBNTHCY
             cost: 316200
-            path: contracts/predictstacks.clar
+          path: contracts/predictstacksv2.clar
             anchor-block-only: true
-            clarity-version: 1
-      epoch: "2.05"
+          clarity-version: 2
+        epoch: "2.1"

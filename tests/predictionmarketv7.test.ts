@@ -1,9 +1,9 @@
 import { describe, expect, it } from "vitest";
 import { Cl, cvToString } from "@stacks/transactions";
 
-const CONTRACT = "predictstacks";
+const CONTRACT = "predictstacksv2";
 
-describe("predictstacks (STX-native)", () => {
+describe("predictstacksv2 (STX-native)", () => {
   it("allows placing a bet and claiming winnings after resolution", () => {
     const accounts = simnet.getAccounts();
     const deployer = accounts.get("deployer")!;

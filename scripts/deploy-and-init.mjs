@@ -1,6 +1,6 @@
 #!/usr/bin/env node
 /**
- * Deploys predictstacks and initialises it with the deployer
+ * Deploys predictstacksv2 and initialises it with the deployer
  * address as admin, oracle, and treasury.
  *
  * Usage:
@@ -21,7 +21,8 @@ import {
 import { STACKS_TESTNET, STACKS_MAINNET, createNetwork } from '@stacks/network';
 
 const PRIVATE_KEY = process.env.STACKS_PRIVATE_KEY;
-const CONTRACT_NAME = process.env.CONTRACT_NAME || 'predictstacks';
+const CONTRACT_NAME = process.env.CONTRACT_NAME || 'predictstacksv2';
+const CONTRACT_PATH = process.env.CONTRACT_PATH || `contracts/${CONTRACT_NAME}.clar`;
 const NETWORK_ENV = process.env.NETWORK || 'testnet';
 const PLATFORM_FEE_MICRO = Number(process.env.PLATFORM_FEE_MICRO || 10_000);
 const MIN_BET_MICRO = 20_000;
@@ -36,6 +37,9 @@ const isMainnet = NETWORK_ENV === 'mainnet';
 const network = createNetwork(isMainnet ? STACKS_MAINNET : STACKS_TESTNET);
 const deployer = getAddressFromPrivateKey(PRIVATE_KEY, isMainnet ? 'mainnet' : 'testnet');
 const INIT_ONLY = process.argv.includes('--init');
+const ADMIN_PRINCIPAL = process.env.ADMIN_PRINCIPAL || deployer;
+const ORACLE_PRINCIPAL = process.env.ORACLE_PRINCIPAL || deployer;
+const TREASURY_PRINCIPAL = process.env.TREASURY_PRINCIPAL || deployer;
 
 const ADMIN_ADDRESSES = [
   'SP2RVJGCGABWB5G0WEPE936G270D1RKF1WV2GD7SM',
@@ -74,12 +78,12 @@ async function broadcast(tx, label) {
   if (result.error) {
     throw new Error(`${label} failed: ${result.reason ?? result.error}`);
   }
-  console.log(`${label} TX: https://explorer.hiro.so/txid/${result.txid}?chain=testnet`);
+  console.log(`${label} TX: https://explorer.hiro.so/txid/${result.txid}?chain=${isMainnet ? 'mainnet' : 'testnet'}`);
   return result.txid;
 }
 
 async function waitForConfirmation(txid, label) {
-  const apiUrl = 'https://api.testnet.hiro.so';
+  const apiUrl = isMainnet ? 'https://api.hiro.so' : 'https://api.testnet.hiro.so';
   console.log(`Waiting for ${label} to confirm…`);
   for (let attempt = 0; attempt < 40; attempt++) {
     await new Promise(r => setTimeout(r, 15_000));
@@ -100,7 +104,7 @@ async function waitForConfirmation(txid, label) {
 
 // ── Deploy ────────────────────────────────────────────────────────────────────
 if (!INIT_ONLY) {
-  const codeBody = await readFile('contracts/predictstacks.clar', 'utf8');
+  const codeBody = await readFile(CONTRACT_PATH, 'utf8');
   const deployTx = await makeContractDeploy({
     contractName: CONTRACT_NAME,
     codeBody,
@@ -120,9 +124,9 @@ const initTx = await makeContractCall({
   contractName: CONTRACT_NAME,
   functionName: 'initialize',
   functionArgs: [
-    Cl.principal(deployer),   // admin
-    Cl.principal(deployer),   // oracle
-    Cl.principal(deployer),   // treasury
+    Cl.principal(ADMIN_PRINCIPAL),
+    Cl.principal(ORACLE_PRINCIPAL),
+    Cl.principal(TREASURY_PRINCIPAL),
     Cl.uint(PLATFORM_FEE_MICRO),
     Cl.uint(MIN_BET_MICRO),
     Cl.uint(MAX_BET_MICRO),
@@ -159,6 +163,8 @@ for (const adminAddress of uniqueAdmins) {
 }
 
 console.log('Done. Contract is deployed and initialized.');
-console.log(`Admin / Oracle / Treasury: ${deployer}`);
+console.log(`Admin:    ${ADMIN_PRINCIPAL}`);
+console.log(`Oracle:   ${ORACLE_PRINCIPAL}`);
+console.log(`Treasury: ${TREASURY_PRINCIPAL}`);
 console.log(`Platform fee: ${PLATFORM_FEE_MICRO} microSTX`);
 console.log(`Bet range:    ${MIN_BET_MICRO} – ${MAX_BET_MICRO} microSTX`);

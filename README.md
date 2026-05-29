@@ -18,7 +18,7 @@ Funds are escrowed in the market contract and distributed during settlement.
 
 ## Contracts
 
-- `contracts/predictstacks.clar`: Main market logic using STX transfers
+- `contracts/predictstacksv2.clar`: Main market logic using STX transfers
 
 ## Quick Start
 
