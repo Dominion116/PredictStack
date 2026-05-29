@@ -13,6 +13,7 @@ import { Footer } from '@/components/footer';
 import { Button } from '@/components/ui/button';
 import { Badge } from '@/components/ui/badge';
 import { MarketStatusBadge } from '@/components/MarketStatusBadge';
+import { TimeRemaining } from '@/components/TimeRemaining';
 import { Input } from '@/components/ui/input';
 import { Separator } from '@/components/ui/separator';
 import {
@@ -31,23 +32,6 @@ const MIN_BET_STX  = 0.02;
 const MAX_BET_STX  = 0.1;
 const FIXED_FEE_STX = 0.01;
 const QUICK_AMOUNTS = [0.02, 0.05, 0.1];
-
-// ─── helpers ─────────────────────────────────────────────────────────────────
-
-function resolveDisplay(market: any): string {
-    const iso = market['resolve-time-iso'] ?? market.resolveTimeIso;
-    if (!iso) return 'Active';
-    const d = new Date(iso);
-    const now = Date.now();
-    const diff = d.getTime() - now;
-    if (diff < 0) return `Ended ${d.toLocaleDateString()}`;
-    const mins  = Math.floor(diff / 60_000);
-    const hours = Math.floor(mins / 60);
-    const days  = Math.floor(hours / 24);
-    if (mins < 60)  return `Ends in ${mins}m`;
-    if (hours < 24) return `Ends in ${hours}h`;
-    return `Ends in ${days}d`;
-}
 
 // ─── skeleton ────────────────────────────────────────────────────────────────
 
@@ -287,7 +271,7 @@ export default function MarketPage() {
     const yesMult = yesPool > 0 ? (totalPool / yesPool).toFixed(2) : '2.00';
     const noMult  = noPool  > 0 ? (totalPool / noPool).toFixed(2)  : '2.00';
 
-    const timeDisplay = resolveDisplay(market);
+    const resolveIso  = market['resolve-time-iso'] ?? market.resolveTimeIso ?? null;
     const totalBets   = market.totalBets ?? 0;
     const volDisplay  = totalPool >= 1000 ? `${(totalPool / 1000).toFixed(1)}k` : totalPool.toFixed(2);
 
@@ -399,9 +383,7 @@ export default function MarketPage() {
 
                             {/* Stats strip */}
                             <div className="flex flex-wrap items-center gap-2 text-[11px] font-mono text-muted-foreground">
-                                <span className="flex items-center gap-1">
-                                    <Clock className="h-3 w-3" />{timeDisplay}
-                                </span>
+                                <TimeRemaining isoDate={resolveIso} />
                                 <span className="text-border">·</span>
                                 <span className="flex items-center gap-1">
                                     <BarChart2 className="h-3 w-3" />${volDisplay} vol
