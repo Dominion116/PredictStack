@@ -19,7 +19,7 @@ import { BackButton } from '@/components/BackButton';
 import { Input } from '@/components/ui/input';
 import { Separator } from '@/components/ui/separator';
 import {
-    Loader2, TrendingUp, Clock, AlertCircle,
+    Loader2, TrendingUp, AlertCircle,
     Wallet, CheckCircle, ArrowLeft, Zap,
     BarChart2, Users, ArrowRight,
 } from 'lucide-react';
