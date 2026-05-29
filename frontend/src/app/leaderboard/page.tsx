@@ -281,25 +281,41 @@ export default function LeaderboardPage() {
 
                 {/* Pagination */}
                 {totalPages > 1 && (
-                    <div className="flex items-center justify-center gap-2">
-                        <Button variant="outline" size="sm" onClick={() => setCurrentPage(p => Math.max(1, p - 1))} disabled={currentPage === 1}>
-                            <ChevronLeft className="h-4 w-4" />
-                        </Button>
-                        {Array.from({ length: Math.min(totalPages, 5) }, (_, i) => i + 1).map(page => (
+                    <nav aria-label="Leaderboard pagination">
+                        <div className="flex items-center justify-center gap-2">
                             <Button
-                                key={page}
-                                variant={currentPage === page ? 'default' : 'outline'}
+                                variant="outline"
                                 size="sm"
-                                onClick={() => setCurrentPage(page)}
-                                className="w-8 h-8 p-0 font-mono text-xs"
+                                onClick={() => setCurrentPage(p => Math.max(1, p - 1))}
+                                disabled={currentPage === 1}
+                                aria-label="Previous page"
                             >
-                                {page}
+                                <ChevronLeft className="h-4 w-4" aria-hidden="true" />
                             </Button>
-                        ))}
-                        <Button variant="outline" size="sm" onClick={() => setCurrentPage(p => Math.min(totalPages, p + 1))} disabled={currentPage === totalPages}>
-                            <ChevronRight className="h-4 w-4" />
-                        </Button>
-                    </div>
+                            {Array.from({ length: Math.min(totalPages, 5) }, (_, i) => i + 1).map(page => (
+                                <Button
+                                    key={page}
+                                    variant={currentPage === page ? 'default' : 'outline'}
+                                    size="sm"
+                                    onClick={() => setCurrentPage(page)}
+                                    aria-label={`Page ${page}`}
+                                    aria-current={currentPage === page ? 'page' : undefined}
+                                    className="w-8 h-8 p-0 font-mono text-xs"
+                                >
+                                    {page}
+                                </Button>
+                            ))}
+                            <Button
+                                variant="outline"
+                                size="sm"
+                                onClick={() => setCurrentPage(p => Math.min(totalPages, p + 1))}
+                                disabled={currentPage === totalPages}
+                                aria-label="Next page"
+                            >
+                                <ChevronRight className="h-4 w-4" aria-hidden="true" />
+                            </Button>
+                        </div>
+                    </nav>
                 )}
 
                 <p className="text-[11px] font-mono text-muted-foreground text-center">
