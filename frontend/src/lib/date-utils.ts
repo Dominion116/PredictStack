@@ -1,9 +1,10 @@
-// Approximate block time for Stacks in seconds (10 minutes)
 export const SECONDS_PER_BLOCK = 600;
 
-// Approximate current block height — kept as a static fallback.
-// The market page uses resolve-time-iso from the backend instead of this.
-export const CURRENT_BLOCK_HEIGHT = 3981916;
+// Static fallback block height for blockToDate(). Used only when no live
+// chain data is available. All market pages use resolve-time-iso (ISO timestamp)
+// from the backend instead — this constant is only a last resort.
+// Updated: 2026-05-29 (~block 4,320,000 on mainnet)
+export const CURRENT_BLOCK_HEIGHT = 4_320_000;
 
 /**
  * Converts a Stacks block height to an estimated Javascript Date object.
