@@ -1304,4 +1304,52 @@ describe("predictstacks (STX-native)", () => {
     );
     expect(cvToString(atMax.result)).toBe("(ok true)");
   });
+
+  it("tracks unique-bettors per market correctly", () => {
+    const accounts = simnet.getAccounts();
+    const deployer = accounts.get("deployer")!;
+    const wallet1 = accounts.get("wallet_1")!;
+    const wallet2 = accounts.get("wallet_2")!;
+
+    simnet.callPublicFn(CONTRACT, "initialize", [
+      Cl.standardPrincipal(deployer), Cl.standardPrincipal(deployer), Cl.standardPrincipal(deployer),
+      Cl.uint(10_000), Cl.uint(20_000), Cl.uint(100_000),
+    ], deployer);
+    simnet.callPublicFn(CONTRACT, "create-market", [Cl.stringAscii("unique-bettors-ref"), Cl.uint(100)], deployer);
+
+    // No bets yet — count should be 0
+    const zero = simnet.callReadOnlyFn(CONTRACT, "get-market-bettors-count", [Cl.uint(1)], deployer);
+    expect(cvToString(zero.result)).toBe("(ok u0)");
+
+    // wallet1 bets for the first time — count becomes 1
+    simnet.callPublicFn(CONTRACT, "place-bet", [Cl.uint(1), Cl.bool(true), Cl.uint(50_000)], wallet1);
+    const afterFirst = simnet.callReadOnlyFn(CONTRACT, "get-market-bettors-count", [Cl.uint(1)], deployer);
+    expect(cvToString(afterFirst.result)).toBe("(ok u1)");
+
+    // wallet1 bets again — count must NOT increase (same address)
+    simnet.callPublicFn(CONTRACT, "place-bet", [Cl.uint(1), Cl.bool(true), Cl.uint(20_000)], wallet1);
+    const afterSame = simnet.callReadOnlyFn(CONTRACT, "get-market-bettors-count", [Cl.uint(1)], deployer);
+    expect(cvToString(afterSame.result)).toBe("(ok u1)");
+
+    // wallet2 bets — count becomes 2
+    simnet.callPublicFn(CONTRACT, "place-bet", [Cl.uint(1), Cl.bool(false), Cl.uint(30_000)], wallet2);
+    const afterSecond = simnet.callReadOnlyFn(CONTRACT, "get-market-bettors-count", [Cl.uint(1)], deployer);
+    expect(cvToString(afterSecond.result)).toBe("(ok u2)");
+  });
+
+  it("includes unique-bettors in get-market output", () => {
+    const accounts = simnet.getAccounts();
+    const deployer = accounts.get("deployer")!;
+    const wallet1 = accounts.get("wallet_1")!;
+
+    simnet.callPublicFn(CONTRACT, "initialize", [
+      Cl.standardPrincipal(deployer), Cl.standardPrincipal(deployer), Cl.standardPrincipal(deployer),
+      Cl.uint(10_000), Cl.uint(20_000), Cl.uint(100_000),
+    ], deployer);
+    simnet.callPublicFn(CONTRACT, "create-market", [Cl.stringAscii("unique-bettors-market-ref"), Cl.uint(100)], deployer);
+    simnet.callPublicFn(CONTRACT, "place-bet", [Cl.uint(1), Cl.bool(true), Cl.uint(50_000)], wallet1);
+
+    const market = simnet.callReadOnlyFn(CONTRACT, "get-market", [Cl.uint(1)], deployer);
+    expect(cvToString(market.result)).toContain("unique-bettors u1");
+  });
 });

@@ -90,6 +90,7 @@
     yes-pool: uint,
     no-pool: uint,
     total-bets: uint,
+    unique-bettors: uint,
     status: uint,
     winning-outcome: (optional bool),
     resolved-at: (optional uint)
@@ -200,6 +201,7 @@
   (let
     (
       (market (unwrap! (map-get? markets { market-id: market-id }) ERR-MARKET-NOT-FOUND))
+      (is-new-bettor (is-none (map-get? user-positions { user: tx-sender, market-id: market-id })))
       (existing-position (default-to
         { yes-amount: u0, no-amount: u0, total-wagered: u0, last-bet-at: u0, claimed: false }
         (map-get? user-positions { user: tx-sender, market-id: market-id })
@@ -241,13 +243,16 @@
       }
     )
 
-    ;; Update market pools
+    ;; Update market pools and bettor count
     (map-set markets
       { market-id: market-id }
       (merge market {
         yes-pool: new-yes-pool,
         no-pool: new-no-pool,
-        total-bets: (+ (get total-bets market) u1)
+        total-bets: (+ (get total-bets market) u1),
+        unique-bettors: (if is-new-bettor
+          (+ (get unique-bettors market) u1)
+          (get unique-bettors market))
       })
     )
 
@@ -556,6 +561,7 @@
         yes-pool: u0,
         no-pool: u0,
         total-bets: u0,
+        unique-bettors: u0,
         status: STATUS-ACTIVE,
         winning-outcome: none,
         resolved-at: none
@@ -807,6 +813,7 @@
       yes-pool: (get yes-pool market),
       no-pool: (get no-pool market),
       total-bets: (get total-bets market),
+      unique-bettors: (get unique-bettors market),
       status: (status-to-string (get status market)),
       winning-outcome: (get winning-outcome market),
       resolved-at: (get resolved-at market)
@@ -1072,6 +1079,14 @@
   )
 )
 
+;; Get the count of unique wallets that have bet on a market
+(define-read-only (get-market-bettors-count (market-id uint))
+  (match (map-get? markets { market-id: market-id })
+    market (ok (get unique-bettors market))
+    ERR-MARKET-NOT-FOUND
+  )
+)
+
 ;; Get next market ID
 (define-read-only (get-next-market-id)
   (ok (var-get next-market-id))
@@ -1107,6 +1122,7 @@
         no-pool: no-pool,
         total-pool: total-pool,
         total-bets: (get total-bets market),
+        unique-bettors: (get unique-bettors market),
         status: (status-to-string (get status market)),
         blocks-until-resolution: (if (> (get resolve-date market) block-height)
           (- (get resolve-date market) block-height)

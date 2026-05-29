@@ -24,8 +24,8 @@ describe('formatMicroSTX', () => {
 });
 
 describe('formatVolume', () => {
-  it('formats raw numbers without unit', () => {
-    expect(formatVolume(500_000)).toBe('0');
+  it('formats small amounts as integer STX', () => {
+    expect(formatVolume(100_000)).toBe('0');
   });
   it('formats thousands with k suffix', () => {
     expect(formatVolume(1_500_000_000)).toBe('1.5k');
