@@ -26,10 +26,10 @@ export const APP_DETAILS = {
   icon: typeof window !== 'undefined' ? `${window.location.origin}/icon.png` : '/icon.png',
 };
 
-export const NETWORK_ENV = process.env.NEXT_PUBLIC_NETWORK || 'testnet';
+export const NETWORK_ENV = process.env.NEXT_PUBLIC_NETWORK || 'mainnet';
 export const BACKEND_BASE_URL = process.env.NEXT_PUBLIC_BACKEND_URL || 'http://localhost:4000';
-const CONTRACT_ADDRESS = process.env.NEXT_PUBLIC_CONTRACT_ADDRESS || 'ST30VGN68PSGVWGNMD0HH2WQMM5T486EK3WBNTHCY';
-const CONTRACT_NAME = process.env.NEXT_PUBLIC_CONTRACT_NAME || 'predictstacks';
+const CONTRACT_ADDRESS = process.env.NEXT_PUBLIC_CONTRACT_ADDRESS || 'SP30VGN68PSGVWGNMD0HH2WQMM5T486EK3YGP7Z3Y';
+const CONTRACT_NAME = process.env.NEXT_PUBLIC_CONTRACT_NAME || 'predictstacksv2';
 
 export const CONTRACTS = {
   testnet: {
@@ -47,7 +47,7 @@ export const CONTRACTS = {
 };
 
 export const getContractConfig = () => {
-  return CONTRACTS[NETWORK_ENV as keyof typeof CONTRACTS] || CONTRACTS.testnet;
+  return CONTRACTS[NETWORK_ENV as keyof typeof CONTRACTS] || CONTRACTS.mainnet;
 };
 
 /** Returns the wallet address for the current network (mainnet SP… or testnet ST…). */
