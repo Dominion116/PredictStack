@@ -38,7 +38,7 @@ export default function Hero() {
             variant="secondary"
           >
             <Link href="/markets">
-              Now Live on Stacks Testnet <ArrowUpRight className="ml-1 size-4" />
+              Now Live on Stacks Mainnet <ArrowUpRight className="ml-1 size-4" />
             </Link>
           </Badge>
         </motion.div>
