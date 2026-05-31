@@ -10,6 +10,7 @@ import { useTheme } from 'next-themes';
 import { Logo } from '@/components/logo';
 import { NavMenu } from '@/components/nav-menu';
 import { NavigationSheet } from '@/components/navigation-sheet';
+import { useBnsName } from '@/hooks/use-bns-name';
 
 export function Navbar() {
   const [mounted, setMounted] = useState(false);
@@ -77,7 +78,9 @@ function NavbarContent() {
     setTheme(theme === 'dark' ? 'light' : 'dark');
   };
 
+  const bnsName = useBnsName(address);
   const truncatedAddress = address ? `${address.slice(0, 6)}...${address.slice(-4)}` : '';
+  const displayAddress = bnsName ?? truncatedAddress;
 
   const navLinks = [
     { href: '/markets', label: 'Markets' },
@@ -100,8 +103,12 @@ function NavbarContent() {
           {/* Desktop Auth */}
           {isSignedIn ? (
             <>
-              <Badge variant="outline" className="hidden sm:flex h-9 px-4 py-2 font-mono">
-                {truncatedAddress}
+              <Badge
+                variant="outline"
+                className="hidden sm:flex h-9 px-4 py-2 font-mono"
+                title={address ?? undefined}
+              >
+                {displayAddress}
               </Badge>
               <Button variant="ghost" size="icon" onClick={handleDisconnect} className="hidden sm:inline-flex">
                 <LogOut className="h-4 w-4" />
