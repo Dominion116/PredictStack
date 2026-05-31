@@ -6,7 +6,6 @@ import { fadeInUp, staggerContainer, defaultTransition } from '@/lib/animations'
 import { Navbar } from '@/components/navbar';
 import { Footer } from '@/components/footer';
 import { Button } from '@/components/ui/button';
-import { Badge } from '@/components/ui/badge';
 import {
     Loader2, Zap, Lock, Unlock, Bitcoin, Clock,
     BarChart2, ArrowUpRight, RefreshCcw, CircleDot,
@@ -133,7 +132,7 @@ function EarnContent() {
                                     <span className="text-[11px] font-mono tracking-widest text-muted-foreground uppercase">
                                         {label}
                                     </span>
-                                    <Icon className={`h-4 w-4 ${accent ? 'text-primary' : 'text-muted-foreground'}`} />
+                                    <Icon className={`h-4 w-4 ${accent ? 'text-primary' : 'text-muted-foreground'}`} aria-hidden="true" />
                                 </div>
                                 <div className={`text-2xl font-bold font-mono ${accent ? 'text-primary' : ''}`}>
                                     {loading ? <span className="inline-block h-7 w-24 bg-muted animate-pulse rounded" /> : value}
@@ -152,7 +151,7 @@ function EarnContent() {
                         transition={defaultTransition}
                         className="flex items-center gap-2"
                     >
-                        <span className={`relative flex h-2 w-2`}>
+                        <span className="relative flex h-2 w-2">
                             <span className={`animate-ping absolute inline-flex h-full w-full rounded-full opacity-60 ${isPoxActive ? 'bg-green-500' : 'bg-muted-foreground'}`} />
                             <span className={`relative inline-flex rounded-full h-2 w-2 ${isPoxActive ? 'bg-green-500' : 'bg-muted-foreground'}`} />
                         </span>
@@ -167,7 +166,7 @@ function EarnContent() {
 
                 {error && (
                     <div className="flex items-center gap-2 text-sm text-destructive font-mono">
-                        <AlertCircle className="h-4 w-4 shrink-0" />
+                        <AlertCircle className="h-4 w-4 shrink-0" aria-hidden="true" />
                         {error}
                     </div>
                 )}
@@ -184,18 +183,18 @@ function EarnContent() {
                         <div className="h-px w-full bg-gradient-to-r from-transparent via-primary/40 to-transparent" />
                         <div className="px-5 py-4 border-b border-border/60 flex items-center justify-between">
                             <div className="flex items-center gap-2">
-                                <CircleDot className="h-3.5 w-3.5 text-primary" />
+                                <CircleDot className="h-3.5 w-3.5 text-primary" aria-hidden="true" />
                                 <span className="text-xs font-mono uppercase tracking-widest text-primary">
                                     Your Stacking Status
                                 </span>
                             </div>
-                            {loading && <Loader2 className="h-3.5 w-3.5 animate-spin text-muted-foreground" />}
+                            {loading && <Loader2 className="h-3.5 w-3.5 animate-spin text-muted-foreground" aria-label="Loading" />}
                         </div>
 
                         <div className="p-5">
                             {!address ? (
                                 <div className="text-center py-8 space-y-3">
-                                    <Lock className="h-8 w-8 text-muted-foreground/40 mx-auto" />
+                                    <Lock className="h-8 w-8 text-muted-foreground/40 mx-auto" aria-hidden="true" />
                                     <p className="text-sm text-muted-foreground font-mono">
                                         Connect your wallet to view stacking status
                                     </p>
@@ -203,50 +202,25 @@ function EarnContent() {
                             ) : loading ? (
                                 <div className="space-y-3">
                                     {[80, 60, 72, 48].map(w => (
-                                        <div key={w} className={`h-4 w-${w} bg-muted animate-pulse rounded`} />
+                                        <div key={w} className="h-4 bg-muted animate-pulse rounded" style={{ width: `${w}%` }} />
                                     ))}
                                 </div>
                             ) : isStacking && details ? (
                                 <div className="space-y-4">
-                                    {/* Status pill */}
                                     <div className="flex items-center gap-2">
-                                        <CheckCircle className="h-4 w-4 text-green-500" />
+                                        <CheckCircle className="h-4 w-4 text-green-500" aria-hidden="true" />
                                         <span className="text-sm font-semibold text-green-500">Currently Stacking</span>
                                     </div>
 
-                                    <div className="space-y-3 divide-y divide-border/40">
+                                    <div className="space-y-0 divide-y divide-border/40">
                                         {[
-                                            {
-                                                label: 'Locked Amount',
-                                                value: lockedMicroStx !== null
-                                                    ? `${formatSTX(lockedMicroStx)} STX`
-                                                    : '—',
-                                                icon: Lock,
-                                            },
-                                            {
-                                                label: 'Unlock Block',
-                                                value: `#${details.unlock_height.toLocaleString()}`,
-                                                icon: Unlock,
-                                            },
-                                            {
-                                                label: 'Lock Period',
-                                                value: `${details.lock_period} cycle${details.lock_period !== 1 ? 's' : ''}`,
-                                                icon: Clock,
-                                            },
-                                            {
-                                                label: 'First Reward Cycle',
-                                                value: `#${details.first_reward_cycle}`,
-                                                icon: CircleDot,
-                                            },
-                                            {
-                                                label: 'BTC Reward Address',
-                                                value: decodePoxBtcAddress(details.pox_address),
-                                                icon: Bitcoin,
-                                                mono: true,
-                                                truncate: true,
-                                            },
+                                            { label: 'Locked Amount',      value: lockedMicroStx !== null ? `${formatSTX(lockedMicroStx)} STX` : '—', icon: Lock },
+                                            { label: 'Unlock Block',       value: `#${details.unlock_height.toLocaleString()}`, icon: Unlock },
+                                            { label: 'Lock Period',        value: `${details.lock_period} cycle${details.lock_period !== 1 ? 's' : ''}`, icon: Clock },
+                                            { label: 'First Reward Cycle', value: `#${details.first_reward_cycle}`, icon: CircleDot },
+                                            { label: 'BTC Reward Address', value: decodePoxBtcAddress(details.pox_address), icon: Bitcoin, mono: true, truncate: true },
                                         ].map(({ label, value, icon: Icon, mono, truncate }) => (
-                                            <div key={label} className="flex items-center justify-between pt-3 first:pt-0">
+                                            <div key={label} className="flex items-center justify-between py-2.5">
                                                 <div className="flex items-center gap-2 text-xs text-muted-foreground">
                                                     <Icon className="h-3.5 w-3.5 shrink-0" aria-hidden="true" />
                                                     {label}
@@ -263,7 +237,7 @@ function EarnContent() {
                                 </div>
                             ) : (
                                 <div className="text-center py-8 space-y-3">
-                                    <Unlock className="h-8 w-8 text-muted-foreground/40 mx-auto" />
+                                    <Unlock className="h-8 w-8 text-muted-foreground/40 mx-auto" aria-hidden="true" />
                                     <p className="text-sm font-semibold">Not currently stacking</p>
                                     <p className="text-xs text-muted-foreground font-mono max-w-xs mx-auto">
                                         Lock at least {minThresholdSTX?.toLocaleString() ?? '—'} STX for one or more cycles
@@ -274,34 +248,21 @@ function EarnContent() {
                         </div>
                     </motion.div>
 
-                    {/* How stacking works + CTA */}
+                    {/* How it works + CTA */}
                     <motion.div
                         initial={{ opacity: 0, y: 16 }}
                         animate={{ opacity: 1, y: 0 }}
                         transition={{ ...defaultTransition, delay: 0.25 }}
                         className="space-y-4"
                     >
-                        {/* How it works */}
                         <div className="rounded-xl border border-border/60 bg-card p-5 space-y-4">
                             <div className="text-[10px] font-mono uppercase tracking-widest text-muted-foreground">
                                 How It Works
                             </div>
                             {[
-                                {
-                                    step: '01',
-                                    title: 'Lock STX',
-                                    desc: `Stack at least ${minThresholdSTX?.toLocaleString() ?? '—'} STX in your wallet for 1–12 cycles.`,
-                                },
-                                {
-                                    step: '02',
-                                    title: 'Earn BTC',
-                                    desc: 'Miners transfer BTC to stackers each cycle (~2 weeks) as part of Proof of Transfer.',
-                                },
-                                {
-                                    step: '03',
-                                    title: 'Unlock',
-                                    desc: 'Your STX unlocks automatically after your chosen lock period ends — no manual action needed.',
-                                },
+                                { step: '01', title: 'Lock STX',  desc: `Stack at least ${minThresholdSTX?.toLocaleString() ?? '—'} STX in your wallet for 1–12 cycles.` },
+                                { step: '02', title: 'Earn BTC',  desc: 'Miners transfer BTC to stackers each cycle (~2 weeks) as part of Proof of Transfer.' },
+                                { step: '03', title: 'Unlock',    desc: 'Your STX unlocks automatically after your chosen lock period ends — no manual action needed.' },
                             ].map(({ step, title, desc }) => (
                                 <div key={step} className="flex gap-3">
                                     <span className="text-[11px] font-mono text-primary/60 shrink-0 w-5 pt-0.5">{step}</span>
@@ -313,7 +274,6 @@ function EarnContent() {
                             ))}
                         </div>
 
-                        {/* CTA buttons */}
                         <div className="rounded-xl border border-border/60 bg-card p-5 space-y-3">
                             <div className="text-[10px] font-mono uppercase tracking-widest text-muted-foreground">
                                 Stack via your wallet
@@ -323,33 +283,14 @@ function EarnContent() {
                                 initiate stacking with full control over your keys.
                             </p>
                             <div className="flex flex-col sm:flex-row gap-2 pt-1">
-                                <Button
-                                    asChild
-                                    className="flex-1 font-mono text-sm rounded-lg"
-                                    size="sm"
-                                >
-                                    <a
-                                        href="https://leather.io"
-                                        target="_blank"
-                                        rel="noopener noreferrer"
-                                        aria-label="Open Leather wallet (opens in new tab)"
-                                    >
+                                <Button asChild className="flex-1 font-mono text-sm rounded-lg" size="sm">
+                                    <a href="https://leather.io" target="_blank" rel="noopener noreferrer" aria-label="Open Leather wallet (opens in new tab)">
                                         Leather Wallet
                                         <ArrowUpRight className="ml-1.5 h-3.5 w-3.5" aria-hidden="true" />
                                     </a>
                                 </Button>
-                                <Button
-                                    asChild
-                                    variant="outline"
-                                    className="flex-1 font-mono text-sm rounded-lg"
-                                    size="sm"
-                                >
-                                    <a
-                                        href="https://www.xverse.app"
-                                        target="_blank"
-                                        rel="noopener noreferrer"
-                                        aria-label="Open Xverse wallet (opens in new tab)"
-                                    >
+                                <Button asChild variant="outline" className="flex-1 font-mono text-sm rounded-lg" size="sm">
+                                    <a href="https://www.xverse.app" target="_blank" rel="noopener noreferrer" aria-label="Open Xverse wallet (opens in new tab)">
                                         Xverse Wallet
                                         <ArrowUpRight className="ml-1.5 h-3.5 w-3.5" aria-hidden="true" />
                                     </a>
@@ -357,7 +298,6 @@ function EarnContent() {
                             </div>
                         </div>
 
-                        {/* Refresh */}
                         {address && (
                             <Button
                                 variant="ghost"
