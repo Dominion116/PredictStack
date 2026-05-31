@@ -6,11 +6,11 @@ import { fadeInUp, staggerContainer, defaultTransition } from '@/lib/animations'
 import { Navbar } from "@/components/navbar";
 import { Badge } from '@/components/ui/badge';
 import { Button } from '@/components/ui/button';
-import { Trophy, Medal, Award, ChevronLeft, ChevronRight, RefreshCcw, Users, Search, X } from 'lucide-react';
+import { Trophy, Medal, Award, ChevronLeft, ChevronRight, RefreshCcw, Users } from 'lucide-react';
 import { Footer } from "@/components/footer";
-import { Input } from '@/components/ui/input';
 import { getLeaderboardData } from '@/lib/stacks-api';
-import { useBnsNames, useBnsAddress } from '@/hooks/use-bns-name';
+import { useBnsNames } from '@/hooks/use-bns-name';
+import { useProfiles } from '@/hooks/use-profile';
 
 interface LeaderboardEntry {
     address: string;
@@ -40,12 +40,6 @@ export default function LeaderboardPage() {
     const [loading, setLoading]         = useState(true);
     const [leaderboard, setLeaderboard] = useState<LeaderboardEntry[]>([]);
     const [currentPage, setCurrentPage] = useState(1);
-    const [searchQuery, setSearchQuery] = useState('');
-
-    // Forward BNS lookup: typed name → owner address
-    const { address: bnsSearchAddress, loading: bnsSearchLoading } = useBnsAddress(
-        searchQuery.trim().length > 2 ? searchQuery.trim() : null
-    );
 
     const load = async () => {
         setLoading(true);
@@ -72,6 +66,7 @@ export default function LeaderboardPage() {
         ...paginated.map(e => e.address),
     ];
     const bnsNames = useBnsNames(visibleAddresses);
+    const profiles = useProfiles(visibleAddresses);
 
     const topProfit    = leaderboard[0]?.totalProfit ?? 0;
     const topWinRate   = [...leaderboard].sort((a, b) => b.winRate - a.winRate)[0]?.winRate ?? 0;
@@ -172,9 +167,19 @@ export default function LeaderboardPage() {
                                             <Icon className={`h-4 w-4 ${style.text}`} />
                                         </div>
 
-                                        <div title={entry.address}>
+                                        <div className="flex items-center gap-2" title={entry.address}>
+                                            {profiles.get(entry.address)?.avatarUrl && (
+                                                <img
+                                                    src={profiles.get(entry.address)!.avatarUrl!}
+                                                    alt=""
+                                                    className="h-6 w-6 rounded-full object-cover shrink-0 border border-border/40"
+                                                    onError={e => { (e.target as HTMLImageElement).style.display = 'none'; }}
+                                                />
+                                            )}
                                             <p className="text-xs font-mono text-muted-foreground truncate">
-                                                {bnsNames.get(entry.address) ?? entry.address}
+                                                {profiles.get(entry.address)?.displayName
+                                                    ?? bnsNames.get(entry.address)
+                                                    ?? entry.address}
                                             </p>
                                         </div>
 
@@ -262,11 +267,22 @@ export default function LeaderboardPage() {
 
                                     {/* Address */}
                                     <div className="flex items-center gap-3 min-w-0" title={entry.address}>
-                                        <div className="h-7 w-7 rounded-full bg-muted flex items-center justify-center text-[11px] font-mono font-bold shrink-0" aria-hidden="true">
-                                            {entry.address.slice(2, 4).toUpperCase()}
+                                        <div className="h-7 w-7 rounded-full bg-muted flex items-center justify-center text-[11px] font-mono font-bold shrink-0 overflow-hidden" aria-hidden="true">
+                                            {profiles.get(entry.address)?.avatarUrl ? (
+                                                <img
+                                                    src={profiles.get(entry.address)!.avatarUrl!}
+                                                    alt=""
+                                                    className="h-full w-full object-cover"
+                                                    onError={e => { (e.target as HTMLImageElement).style.display = 'none'; }}
+                                                />
+                                            ) : (
+                                                entry.address.slice(2, 4).toUpperCase()
+                                            )}
                                         </div>
                                         <span className="font-mono text-sm truncate">
-                                            {bnsNames.get(entry.address) ?? entry.address}
+                                            {profiles.get(entry.address)?.displayName
+                                                ?? bnsNames.get(entry.address)
+                                                ?? entry.address}
                                         </span>
                                     </div>
 
