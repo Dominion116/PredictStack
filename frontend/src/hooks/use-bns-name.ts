@@ -1,30 +1,54 @@
 'use client';
 
 import { useEffect, useState } from 'react';
+import { BNS_CONTRACT_NAME } from '@stacks/bns';
 import { NETWORK_ENV } from '@/lib/constants';
+
+// BNS_CONTRACT_NAME = "bns" — the on-chain contract powering all lookups below.
+export { BNS_CONTRACT_NAME };
 
 const API_BASE = NETWORK_ENV === 'mainnet'
   ? 'https://api.hiro.so'
   : 'https://api.testnet.hiro.so';
 
-// Module-level cache: address → resolved name (or null = no BNS name)
-const cache = new Map<string, string | null>();
+// ── reverse lookup cache: address → BNS name ──────────────────────────────
+const reverseCache = new Map<string, string | null>();
 
 async function resolveBnsName(address: string): Promise<string | null> {
-  if (cache.has(address)) return cache.get(address)!;
-
+  if (reverseCache.has(address)) return reverseCache.get(address)!;
   try {
     const res = await fetch(`${API_BASE}/v1/addresses/stacks/${address}`);
-    if (!res.ok) { cache.set(address, null); return null; }
+    if (!res.ok) { reverseCache.set(address, null); return null; }
     const data: { names?: string[] } = await res.json();
     const name = data.names?.[0] ?? null;
-    cache.set(address, name);
+    reverseCache.set(address, name);
     return name;
   } catch {
-    cache.set(address, null);
+    reverseCache.set(address, null);
     return null;
   }
 }
+
+// ── forward lookup cache: BNS name → address ──────────────────────────────
+const forwardCache = new Map<string, string | null>();
+
+async function resolveBnsAddress(name: string): Promise<string | null> {
+  const key = name.toLowerCase();
+  if (forwardCache.has(key)) return forwardCache.get(key)!;
+  try {
+    const res = await fetch(`${API_BASE}/v1/names/${encodeURIComponent(key)}`);
+    if (!res.ok) { forwardCache.set(key, null); return null; }
+    const data: { address?: string } = await res.json();
+    const address = data.address ?? null;
+    forwardCache.set(key, address);
+    return address;
+  } catch {
+    forwardCache.set(key, null);
+    return null;
+  }
+}
+
+// ── hooks ─────────────────────────────────────────────────────────────────
 
 /**
  * Resolves a Stacks address to its primary BNS name (e.g. "satoshi.btc").
@@ -35,8 +59,7 @@ export function useBnsName(address: string | null | undefined): string | null {
 
   useEffect(() => {
     if (!address) { setName(null); return; }
-    // Serve from cache synchronously when available
-    if (cache.has(address)) { setName(cache.get(address)!); return; }
+    if (reverseCache.has(address)) { setName(reverseCache.get(address)!); return; }
     void resolveBnsName(address).then(setName);
   }, [address]);
 
@@ -61,4 +84,31 @@ export function useBnsNames(addresses: string[]): Map<string, string> {
   }, [addresses.join(',')]);
 
   return names;
+}
+
+/**
+ * Resolves a BNS name to its owner's Stacks address (forward lookup).
+ * Returns null while loading or when the name is not registered.
+ */
+export function useBnsAddress(name: string | null | undefined): {
+  address: string | null;
+  loading: boolean;
+} {
+  const [address, setAddress] = useState<string | null>(null);
+  const [loading, setLoading] = useState(false);
+
+  useEffect(() => {
+    const trimmed = name?.trim().toLowerCase() ?? '';
+    if (!trimmed) { setAddress(null); return; }
+
+    const key = trimmed;
+    if (forwardCache.has(key)) { setAddress(forwardCache.get(key)!); return; }
+
+    setLoading(true);
+    void resolveBnsAddress(trimmed)
+      .then(setAddress)
+      .finally(() => setLoading(false));
+  }, [name]);
+
+  return { address, loading };
 }
