@@ -86,6 +86,7 @@ function NavbarContent() {
     { href: '/markets', label: 'Markets' },
     { href: '/dashboard', label: 'Dashboard' },
     { href: '/leaderboard', label: 'Leaderboard' },
+    { href: '/earn', label: 'Earn' },
     ...(isAdmin ? [{ href: '/admin', label: 'Admin' }] : []),
   ];
 
