@@ -6,10 +6,11 @@ import { fadeInUp, staggerContainer, defaultTransition } from '@/lib/animations'
 import { Navbar } from "@/components/navbar";
 import { Badge } from '@/components/ui/badge';
 import { Button } from '@/components/ui/button';
-import { Trophy, Medal, Award, ChevronLeft, ChevronRight, RefreshCcw, Users } from 'lucide-react';
+import { Trophy, Medal, Award, ChevronLeft, ChevronRight, RefreshCcw, Users, Search, X } from 'lucide-react';
 import { Footer } from "@/components/footer";
+import { Input } from '@/components/ui/input';
 import { getLeaderboardData } from '@/lib/stacks-api';
-import { useBnsNames } from '@/hooks/use-bns-name';
+import { useBnsNames, useBnsAddress } from '@/hooks/use-bns-name';
 
 interface LeaderboardEntry {
     address: string;
@@ -39,6 +40,12 @@ export default function LeaderboardPage() {
     const [loading, setLoading]         = useState(true);
     const [leaderboard, setLeaderboard] = useState<LeaderboardEntry[]>([]);
     const [currentPage, setCurrentPage] = useState(1);
+    const [searchQuery, setSearchQuery] = useState('');
+
+    // Forward BNS lookup: typed name → owner address
+    const { address: bnsSearchAddress, loading: bnsSearchLoading } = useBnsAddress(
+        searchQuery.trim().length > 2 ? searchQuery.trim() : null
+    );
 
     const load = async () => {
         setLoading(true);
