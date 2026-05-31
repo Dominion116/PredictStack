@@ -9,6 +9,7 @@ import { Button } from '@/components/ui/button';
 import { Trophy, Medal, Award, ChevronLeft, ChevronRight, RefreshCcw, Users } from 'lucide-react';
 import { Footer } from "@/components/footer";
 import { getLeaderboardData } from '@/lib/stacks-api';
+import { useBnsNames } from '@/hooks/use-bns-name';
 
 interface LeaderboardEntry {
     address: string;
@@ -57,6 +58,13 @@ export default function LeaderboardPage() {
     const rest   = leaderboard.slice(3);
     const totalPages   = Math.ceil(rest.length / ITEMS_PER_PAGE);
     const paginated    = rest.slice((currentPage - 1) * ITEMS_PER_PAGE, currentPage * ITEMS_PER_PAGE);
+
+    // Resolve BNS names for all currently visible addresses
+    const visibleAddresses = [
+        ...top3.map(e => e.address),
+        ...paginated.map(e => e.address),
+    ];
+    const bnsNames = useBnsNames(visibleAddresses);
 
     const topProfit    = leaderboard[0]?.totalProfit ?? 0;
     const topWinRate   = [...leaderboard].sort((a, b) => b.winRate - a.winRate)[0]?.winRate ?? 0;
@@ -157,8 +165,10 @@ export default function LeaderboardPage() {
                                             <Icon className={`h-4 w-4 ${style.text}`} />
                                         </div>
 
-                                        <div>
-                                            <p className="text-xs font-mono text-muted-foreground truncate">{entry.address}</p>
+                                        <div title={entry.address}>
+                                            <p className="text-xs font-mono text-muted-foreground truncate">
+                                                {bnsNames.get(entry.address) ?? entry.address}
+                                            </p>
                                         </div>
 
                                         <div>
@@ -244,11 +254,13 @@ export default function LeaderboardPage() {
                                     </span>
 
                                     {/* Address */}
-                                    <div className="flex items-center gap-3 min-w-0">
-                                        <div className="h-7 w-7 rounded-full bg-muted flex items-center justify-center text-[11px] font-mono font-bold shrink-0">
+                                    <div className="flex items-center gap-3 min-w-0" title={entry.address}>
+                                        <div className="h-7 w-7 rounded-full bg-muted flex items-center justify-center text-[11px] font-mono font-bold shrink-0" aria-hidden="true">
                                             {entry.address.slice(2, 4).toUpperCase()}
                                         </div>
-                                        <span className="font-mono text-sm truncate">{entry.address}</span>
+                                        <span className="font-mono text-sm truncate">
+                                            {bnsNames.get(entry.address) ?? entry.address}
+                                        </span>
                                     </div>
 
                                     {/* Profit */}

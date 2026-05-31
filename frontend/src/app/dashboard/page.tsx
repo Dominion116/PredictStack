@@ -23,6 +23,7 @@ import { Footer } from '@/components/footer';
 import { StatCard } from '@/components/StatCard';
 import { BetOutcomeBadge } from '@/components/BetOutcomeBadge';
 import { MarketStatusBadge } from '@/components/MarketStatusBadge';
+import { useBnsName } from '@/hooks/use-bns-name';
 
 export default function DashboardPage() {
     const [mounted, setMounted] = useState(false);
@@ -40,6 +41,8 @@ function DashboardContent() {
     const [summary, setSummary]       = useState<any>(null);
 
     const { doContractCall } = useConnect();
+    const connectedAddress = isUserSignedIn() ? getUserAddress() : null;
+    const bnsName = useBnsName(connectedAddress);
 
     useEffect(() => {
         if (isUserSignedIn()) {
@@ -167,8 +170,13 @@ function DashboardContent() {
                                 <span className="text-[11px] font-mono tracking-widest text-primary uppercase">Portfolio</span>
                             </div>
                             <h1 className="text-2xl font-bold tracking-tight">Dashboard</h1>
-                            {shortAddress && (
-                                <p className="text-xs font-mono text-muted-foreground mt-1">{shortAddress}</p>
+                            {(bnsName || shortAddress) && (
+                                <p
+                                    className="text-xs font-mono text-muted-foreground mt-1"
+                                    title={shortAddress || undefined}
+                                >
+                                    {bnsName ?? shortAddress}
+                                </p>
                             )}
                         </motion.div>
                         <div className="flex flex-col items-end gap-1">
