@@ -24,6 +24,7 @@ import { StatCard } from '@/components/StatCard';
 import { BetOutcomeBadge } from '@/components/BetOutcomeBadge';
 import { MarketStatusBadge } from '@/components/MarketStatusBadge';
 import { useBnsName } from '@/hooks/use-bns-name';
+import { useProfile } from '@/hooks/use-profile';
 
 export default function DashboardPage() {
     const [mounted, setMounted] = useState(false);
@@ -43,6 +44,7 @@ function DashboardContent() {
     const { doContractCall } = useConnect();
     const connectedAddress = isUserSignedIn() ? getUserAddress() : null;
     const bnsName = useBnsName(connectedAddress);
+    const { displayName, avatarUrl } = useProfile(connectedAddress);
 
     useEffect(() => {
         if (isUserSignedIn()) {
@@ -169,15 +171,33 @@ function DashboardContent() {
                                 <CircleDot className="h-3 w-3 text-primary" />
                                 <span className="text-[11px] font-mono tracking-widest text-primary uppercase">Portfolio</span>
                             </div>
-                            <h1 className="text-2xl font-bold tracking-tight">Dashboard</h1>
-                            {(bnsName || shortAddress) && (
-                                <p
-                                    className="text-xs font-mono text-muted-foreground mt-1"
-                                    title={shortAddress || undefined}
-                                >
-                                    {bnsName ?? shortAddress}
-                                </p>
-                            )}
+                            <div className="flex items-center gap-3">
+                                {/* Profile avatar */}
+                                <div className="h-10 w-10 rounded-full border border-border/60 bg-muted flex items-center justify-center overflow-hidden shrink-0">
+                                    {avatarUrl ? (
+                                        <img
+                                            src={avatarUrl}
+                                            alt={displayName ?? bnsName ?? 'Profile'}
+                                            className="h-full w-full object-cover"
+                                            onError={e => { (e.target as HTMLImageElement).style.display = 'none'; }}
+                                        />
+                                    ) : (
+                                        <span className="text-sm font-mono font-bold text-muted-foreground">
+                                            {(connectedAddress ?? '??').slice(2, 4).toUpperCase()}
+                                        </span>
+                                    )}
+                                </div>
+                                <div>
+                                    <h1 className="text-2xl font-bold tracking-tight">
+                                        {displayName ?? 'Dashboard'}
+                                    </h1>
+                                    {(bnsName || shortAddress) && (
+                                        <p className="text-xs font-mono text-muted-foreground" title={shortAddress || undefined}>
+                                            {bnsName ?? shortAddress}
+                                        </p>
+                                    )}
+                                </div>
+                            </div>
                         </motion.div>
                         <div className="flex flex-col items-end gap-1">
                             <Button
