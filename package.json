@@ -7,7 +7,7 @@
   "scripts": {
     "backend": "node backend/server.mjs",
     "frontend": "cd frontend && npm run dev",
-    "dev": "concurrently \"npm run backend\" \"npm run frontend\"",
+    "dev": "node init && concurrently \"npm run backend\" \"npm run frontend\"",
     "test": "vitest run",
     "test:coverage": "vitest run --coverage",
     "test:report": "vitest run -- --coverage --costs",
@@ -29,7 +29,7 @@
     "@sinclair/typebox": "^0.32.35",
     "@stacks/network": "^7.3.1",
     "@stacks/transactions": "^7.0.5",
-    "axios": "^1.13.2",
+    "axios": "^1.18.1",
     "chokidar-cli": "^3.0.0",
     "clarityxo-ai": "^0.1.0",
     "dotenv": "^16.6.1",
