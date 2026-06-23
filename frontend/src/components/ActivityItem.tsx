@@ -1,7 +1,6 @@
 'use client';
 
 import { ActivityEvent } from '@/api/feed';
-import { formatDistanceToNow } from 'date-fns';
 
 const TYPE_LABELS: Record<string, string> = {
   bet_placed: 'placed a bet',
@@ -26,6 +25,17 @@ function formatAmount(micro: number) {
   return `${(micro / 1_000_000).toFixed(2)} STX`;
 }
 
+function relativeTime(iso: string): string {
+  const diff = Date.now() - new Date(iso).getTime();
+  const s = Math.floor(diff / 1000);
+  if (s < 60) return `${s}s ago`;
+  const m = Math.floor(s / 60);
+  if (m < 60) return `${m}m ago`;
+  const h = Math.floor(m / 60);
+  if (h < 24) return `${h}h ago`;
+  return `${Math.floor(h / 24)}d ago`;
+}
+
 interface Props {
   event: ActivityEvent;
 }
@@ -44,7 +54,7 @@ export function ActivityItem({ event }: Props) {
     detail = `outcome: ${meta.winningOutcome ? 'YES' : 'NO'}`;
   }
 
-  const timeAgo = formatDistanceToNow(new Date(event.createdAt), { addSuffix: true });
+  const timeAgo = relativeTime(event.createdAt);
 
   return (
     <div className="flex items-start gap-3 py-3 border-b border-border last:border-0">
