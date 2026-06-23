@@ -59,6 +59,7 @@ config.bat
 
 # Planning docs
 COMMIT_PLAN.md
+newfeatures.md
 
 # Local backend data (replaced by MongoDB)
 backend/data/
