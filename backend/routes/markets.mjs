@@ -5,6 +5,7 @@ import {
   getAllMergedMarkets,
 } from '../services/market-service.mjs';
 import { recomputeUser } from '../services/user-service.mjs';
+import { emitMarketCreated, emitMarketResolved } from '../services/activity-service.mjs';
 
 export function createMarketRoutes({ store, stacks }) {
   const getMerged = id => getMergedMarketByContractId(store, stacks, id);
@@ -129,6 +130,8 @@ export function createMarketRoutes({ store, stacks }) {
       state.marketRefsByContractId[String(contractMarketId)] = marketRef;
       await store.save();
 
+      emitMarketCreated(createdBy, contractMarketId, question);
+
       return sendJson(res, 201, { market: await getMerged(contractMarketId) });
     },
 
@@ -151,6 +154,8 @@ export function createMarketRoutes({ store, stacks }) {
       }
 
       await store.save();
+      emitMarketResolved(stacks.signerAddress ?? '', market.contractMarketId, market.question, winningOutcome);
+
       return sendJson(res, 200, { market: await getMerged(market.contractMarketId) });
     },
   };
