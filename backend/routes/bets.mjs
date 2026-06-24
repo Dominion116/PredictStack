@@ -3,6 +3,7 @@ import { sendJson, readBody, sanitizeAddress } from '../middleware/http.mjs';
 import { getMergedMarketByContractId } from '../services/market-service.mjs';
 import { upsertUser, recomputeUser } from '../services/user-service.mjs';
 import { emitBetPlaced } from '../services/activity-service.mjs';
+import { notifyBetConfirmed } from '../services/notification-service.mjs';
 
 export function createBetRoutes({ store, stacks, config }) {
   const getMerged = id => getMergedMarketByContractId(store, stacks, id);
@@ -100,6 +101,7 @@ export function createBetRoutes({ store, stacks, config }) {
 
       const market = await getMerged(bet.contractMarketId);
       emitBetPlaced(address, bet.contractMarketId, market?.question ?? '', bet.amountMicro, bet.outcome);
+      notifyBetConfirmed(address, market?.question ?? '', bet.contractMarketId);
 
       return sendJson(res, 200, { success: true, position });
     },
