@@ -29,6 +29,7 @@ import { userSession, getContractConfig, isUserSignedIn, getUserAddress, NETWORK
 // @stacks/transactions is NOT statically imported — Turbopack cannot bundle
 // it for the browser. All Clarity helpers are loaded dynamically inside handlers.
 import Link from 'next/link';
+import { CommentThread } from '@/components/CommentThread';
 
 const MIN_BET_STX  = 0.02;
 const MAX_BET_STX  = 0.1;
@@ -712,6 +713,14 @@ export default function MarketPage() {
                             )}
                         </div>
                     </motion.div>
+                </div>
+
+                {/* Comment thread below the main grid */}
+                <div className="mt-10 max-w-2xl">
+                  <CommentThread
+                    marketId={Number(marketId)}
+                    connectedAddress={isUserSignedIn() ? getUserAddress() : null}
+                  />
                 </div>
             </div>
 
