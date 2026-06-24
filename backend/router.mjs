@@ -9,6 +9,7 @@ import { createUserRoutes } from './routes/users.mjs';
 import { createUploadRoutes } from './routes/upload.mjs';
 import { createDocsRoutes } from './routes/docs.mjs';
 import { createFeedRoutes } from './routes/feed.mjs';
+import { createCommentRoutes } from './routes/comments.mjs';
 
 export function createRouter({ store, stacks, config, specs }) {
   const getAllMerged = () => getAllMergedMarkets(store, stacks);
@@ -21,6 +22,7 @@ export function createRouter({ store, stacks, config, specs }) {
   const upload = createUploadRoutes({ config });
   const docs = createDocsRoutes({ specs });
   const feed = createFeedRoutes();
+  const comments = createCommentRoutes({ config });
 
   return async (req, res) => {
     const url = new URL(req.url || '/', `http://${req.headers.host}`);
@@ -92,6 +94,19 @@ export function createRouter({ store, stacks, config, specs }) {
 
     // Activity feed
     if (method === 'GET' && pathname === '/api/feed') return feed.list(req, res, searchParams);
+
+    // Comments — /api/markets/:id/comments and /api/markets/:id/comments/:commentId
+    const commentDeleteMatch = pathname.match(/^\/api\/markets\/([^/]+)\/comments\/([^/]+)$/);
+    if (method === 'DELETE' && commentDeleteMatch) {
+      return comments.remove(req, res, commentDeleteMatch[1], commentDeleteMatch[2]);
+    }
+    const commentListMatch = pathname.match(/^\/api\/markets\/([^/]+)\/comments$/);
+    if (method === 'GET' && commentListMatch) {
+      return comments.list(req, res, commentListMatch[1], searchParams);
+    }
+    if (method === 'POST' && commentListMatch) {
+      return comments.create(req, res, commentListMatch[1]);
+    }
 
     return sendJson(res, 404, { error: 'Not found' });
   };
