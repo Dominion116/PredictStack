@@ -10,6 +10,7 @@ import { sendJson } from './middleware/http.mjs';
 import { initActivityService } from './services/activity-service.mjs';
 import { initCommentService } from './services/comment-service.mjs';
 import { initNotificationService } from './services/notification-service.mjs';
+import { initReferralService } from './services/referral-service.mjs';
 
 if (!config.PRIVATE_KEY) {
   throw new Error('STACKS_PRIVATE_KEY is required to run the backend signer.');
@@ -22,6 +23,7 @@ const store = await new MongoStore(config.MONGODB_URI).init();
 initActivityService(store.client.db('predictstack').collection('activities'));
 initCommentService(store.client.db('predictstack').collection('comments'));
 initNotificationService(store.client.db('predictstack').collection('notifications'));
+initReferralService(store.client.db('predictstack').collection('referrals'));
 
 const stacks = createStacksClient({
   network: config.NETWORK,

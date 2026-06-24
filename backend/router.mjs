@@ -14,6 +14,7 @@ import { createAnalyticsRoutes } from './routes/analytics.mjs';
 import { createCategoryRoutes } from './routes/categories.mjs';
 import { createSearchRoutes } from './routes/search.mjs';
 import { createNotificationRoutes } from './routes/notifications.mjs';
+import { createReferralRoutes } from './routes/referrals.mjs';
 
 export function createRouter({ store, stacks, config, specs }) {
   const getAllMerged = () => getAllMergedMarkets(store, stacks);
@@ -31,6 +32,7 @@ export function createRouter({ store, stacks, config, specs }) {
   const categories = createCategoryRoutes({ store });
   const search = createSearchRoutes({ store });
   const notifications = createNotificationRoutes();
+  const referrals = createReferralRoutes();
 
   return async (req, res) => {
     const url = new URL(req.url || '/', `http://${req.headers.host}`);
@@ -96,6 +98,11 @@ export function createRouter({ store, stacks, config, specs }) {
     if (method === 'GET' && /^\/api\/users\/[^/]+\/analytics$/.test(pathname)) {
       return analytics.userAnalytics(req, res, pathname.split('/')[3]);
     }
+
+    // Referrals
+    if (method === 'POST' && pathname === '/api/referrals/generate') return referrals.generate(req, res);
+    const referralStats = pathname.match(/^\/api\/referrals\/([^/]+)\/stats$/);
+    if (method === 'GET' && referralStats) return referrals.stats(req, res, referralStats[1]);
 
     // Notifications
     const notifBase = pathname.match(/^\/api\/notifications\/([^/]+)$/);
