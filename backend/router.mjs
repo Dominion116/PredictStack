@@ -11,6 +11,7 @@ import { createDocsRoutes } from './routes/docs.mjs';
 import { createFeedRoutes } from './routes/feed.mjs';
 import { createCommentRoutes } from './routes/comments.mjs';
 import { createAnalyticsRoutes } from './routes/analytics.mjs';
+import { createCategoryRoutes } from './routes/categories.mjs';
 
 export function createRouter({ store, stacks, config, specs }) {
   const getAllMerged = () => getAllMergedMarkets(store, stacks);
@@ -25,6 +26,7 @@ export function createRouter({ store, stacks, config, specs }) {
   const feed = createFeedRoutes();
   const comments = createCommentRoutes({ config });
   const analytics = createAnalyticsRoutes({ store });
+  const categories = createCategoryRoutes({ store });
 
   return async (req, res) => {
     const url = new URL(req.url || '/', `http://${req.headers.host}`);
@@ -96,6 +98,9 @@ export function createRouter({ store, stacks, config, specs }) {
       const limit = Number(searchParams.get('limit') || 50);
       return sendJson(res, 200, { leaderboard: buildLeaderboard(store.getState(), limit) });
     }
+
+    // Categories
+    if (method === 'GET' && pathname === '/api/categories') return categories.list(req, res);
 
     // Activity feed
     if (method === 'GET' && pathname === '/api/feed') return feed.list(req, res, searchParams);
