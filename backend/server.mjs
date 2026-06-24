@@ -11,6 +11,7 @@ import { initActivityService } from './services/activity-service.mjs';
 import { initCommentService } from './services/comment-service.mjs';
 import { initNotificationService } from './services/notification-service.mjs';
 import { initReferralService } from './services/referral-service.mjs';
+import { initAdminService } from './services/admin-service.mjs';
 
 if (!config.PRIVATE_KEY) {
   throw new Error('STACKS_PRIVATE_KEY is required to run the backend signer.');
@@ -24,6 +25,7 @@ initActivityService(store.client.db('predictstack').collection('activities'));
 initCommentService(store.client.db('predictstack').collection('comments'));
 initNotificationService(store.client.db('predictstack').collection('notifications'));
 initReferralService(store.client.db('predictstack').collection('referrals'));
+initAdminService(store.client.db('predictstack').collection('audit_log'));
 
 const stacks = createStacksClient({
   network: config.NETWORK,

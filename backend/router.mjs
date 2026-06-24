@@ -15,6 +15,7 @@ import { createCategoryRoutes } from './routes/categories.mjs';
 import { createSearchRoutes } from './routes/search.mjs';
 import { createNotificationRoutes } from './routes/notifications.mjs';
 import { createReferralRoutes } from './routes/referrals.mjs';
+import { createAdminRoutes } from './routes/admin.mjs';
 
 export function createRouter({ store, stacks, config, specs }) {
   const getAllMerged = () => getAllMergedMarkets(store, stacks);
@@ -33,6 +34,7 @@ export function createRouter({ store, stacks, config, specs }) {
   const search = createSearchRoutes({ store });
   const notifications = createNotificationRoutes();
   const referrals = createReferralRoutes();
+  const adminRoutes = createAdminRoutes({ store, stacks });
 
   return async (req, res) => {
     const url = new URL(req.url || '/', `http://${req.headers.host}`);
@@ -98,6 +100,11 @@ export function createRouter({ store, stacks, config, specs }) {
     if (method === 'GET' && /^\/api\/users\/[^/]+\/analytics$/.test(pathname)) {
       return analytics.userAnalytics(req, res, pathname.split('/')[3]);
     }
+
+    // Admin
+    if (method === 'GET' && pathname === '/api/admin/stats') return adminRoutes.stats(req, res);
+    if (method === 'GET' && pathname === '/api/admin/audit-log') return adminRoutes.auditLog(req, res, searchParams);
+    if (method === 'POST' && pathname === '/api/admin/markets/bulk-resolve') return adminRoutes.bulkResolve(req, res);
 
     // Referrals
     if (method === 'POST' && pathname === '/api/referrals/generate') return referrals.generate(req, res);
