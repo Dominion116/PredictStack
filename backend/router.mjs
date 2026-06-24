@@ -12,6 +12,7 @@ import { createFeedRoutes } from './routes/feed.mjs';
 import { createCommentRoutes } from './routes/comments.mjs';
 import { createAnalyticsRoutes } from './routes/analytics.mjs';
 import { createCategoryRoutes } from './routes/categories.mjs';
+import { createSearchRoutes } from './routes/search.mjs';
 
 export function createRouter({ store, stacks, config, specs }) {
   const getAllMerged = () => getAllMergedMarkets(store, stacks);
@@ -27,6 +28,7 @@ export function createRouter({ store, stacks, config, specs }) {
   const comments = createCommentRoutes({ config });
   const analytics = createAnalyticsRoutes({ store });
   const categories = createCategoryRoutes({ store });
+  const search = createSearchRoutes({ store });
 
   return async (req, res) => {
     const url = new URL(req.url || '/', `http://${req.headers.host}`);
@@ -101,6 +103,10 @@ export function createRouter({ store, stacks, config, specs }) {
 
     // Categories
     if (method === 'GET' && pathname === '/api/categories') return categories.list(req, res);
+
+    // Search — must come before /api/markets/:id to avoid capturing 'search' as an id
+    if (method === 'GET' && pathname === '/api/markets/search') return search.search(req, res, searchParams);
+    if (method === 'GET' && pathname === '/api/markets/suggest') return search.suggest(req, res, searchParams);
 
     // Activity feed
     if (method === 'GET' && pathname === '/api/feed') return feed.list(req, res, searchParams);
