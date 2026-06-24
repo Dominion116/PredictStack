@@ -10,6 +10,7 @@ import { createUploadRoutes } from './routes/upload.mjs';
 import { createDocsRoutes } from './routes/docs.mjs';
 import { createFeedRoutes } from './routes/feed.mjs';
 import { createCommentRoutes } from './routes/comments.mjs';
+import { createAnalyticsRoutes } from './routes/analytics.mjs';
 
 export function createRouter({ store, stacks, config, specs }) {
   const getAllMerged = () => getAllMergedMarkets(store, stacks);
@@ -23,6 +24,7 @@ export function createRouter({ store, stacks, config, specs }) {
   const docs = createDocsRoutes({ specs });
   const feed = createFeedRoutes();
   const comments = createCommentRoutes({ config });
+  const analytics = createAnalyticsRoutes({ store });
 
   return async (req, res) => {
     const url = new URL(req.url || '/', `http://${req.headers.host}`);
@@ -84,6 +86,9 @@ export function createRouter({ store, stacks, config, specs }) {
     }
     if (method === 'GET' && /^\/api\/users\/[^/]+\/dashboard$/.test(pathname)) {
       return users.dashboard(req, res, sanitizeAddress(pathname.split('/')[3]));
+    }
+    if (method === 'GET' && /^\/api\/users\/[^/]+\/analytics$/.test(pathname)) {
+      return analytics.userAnalytics(req, res, pathname.split('/')[3]);
     }
 
     // Leaderboard
