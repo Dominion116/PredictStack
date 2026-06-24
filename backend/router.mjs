@@ -13,6 +13,7 @@ import { createCommentRoutes } from './routes/comments.mjs';
 import { createAnalyticsRoutes } from './routes/analytics.mjs';
 import { createCategoryRoutes } from './routes/categories.mjs';
 import { createSearchRoutes } from './routes/search.mjs';
+import { createNotificationRoutes } from './routes/notifications.mjs';
 
 export function createRouter({ store, stacks, config, specs }) {
   const getAllMerged = () => getAllMergedMarkets(store, stacks);
@@ -29,6 +30,7 @@ export function createRouter({ store, stacks, config, specs }) {
   const analytics = createAnalyticsRoutes({ store });
   const categories = createCategoryRoutes({ store });
   const search = createSearchRoutes({ store });
+  const notifications = createNotificationRoutes();
 
   return async (req, res) => {
     const url = new URL(req.url || '/', `http://${req.headers.host}`);
@@ -94,6 +96,13 @@ export function createRouter({ store, stacks, config, specs }) {
     if (method === 'GET' && /^\/api\/users\/[^/]+\/analytics$/.test(pathname)) {
       return analytics.userAnalytics(req, res, pathname.split('/')[3]);
     }
+
+    // Notifications
+    const notifBase = pathname.match(/^\/api\/notifications\/([^/]+)$/);
+    if (method === 'GET' && notifBase) return notifications.list(req, res, notifBase[1], searchParams);
+    if (method === 'POST' && notifBase) return notifications.markAll(req, res, notifBase[1]);
+    const notifRead = pathname.match(/^\/api\/notifications\/([^/]+)\/read\/([^/]+)$/);
+    if (method === 'POST' && notifRead) return notifications.markOne(req, res, notifRead[1], notifRead[2]);
 
     // Leaderboard
     if (method === 'GET' && pathname === '/api/leaderboard') {
