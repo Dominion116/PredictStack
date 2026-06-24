@@ -11,6 +11,7 @@ import { Logo } from '@/components/logo';
 import { NavMenu } from '@/components/nav-menu';
 import { NavigationSheet } from '@/components/navigation-sheet';
 import { useBnsName } from '@/hooks/use-bns-name';
+import { NotificationBell } from '@/components/NotificationBell';
 
 export function Navbar() {
   const [mounted, setMounted] = useState(false);
@@ -120,6 +121,9 @@ function NavbarContent() {
               Connect Wallet
             </Button>
           )}
+
+          {/* Notification Bell */}
+          {isSignedIn && <NotificationBell address={address} />}
 
           {/* Theme Toggle */}
           <Button size="icon" variant="outline" onClick={toggleTheme} className="rounded-full shadow-none">
