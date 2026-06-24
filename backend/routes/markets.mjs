@@ -6,6 +6,7 @@ import {
 } from '../services/market-service.mjs';
 import { recomputeUser } from '../services/user-service.mjs';
 import { emitMarketCreated, emitMarketResolved } from '../services/activity-service.mjs';
+import { CATEGORIES, DEFAULT_CATEGORY, isValidCategory } from '../models/category.mjs';
 
 export function createMarketRoutes({ store, stacks }) {
   const getMerged = id => getMergedMarketByContractId(store, stacks, id);
@@ -18,9 +19,19 @@ export function createMarketRoutes({ store, stacks }) {
       const creator = searchParams.get('creator');
       const dateFrom = searchParams.get('dateFrom');
       const dateTo = searchParams.get('dateTo');
+      const category = searchParams.get('category');
+      const tagsParam = searchParams.get('tags');
+      const filterTags = tagsParam ? tagsParam.split(',').map(t => t.trim().toLowerCase()).filter(Boolean) : [];
+
       let markets = await getAllMerged();
       if (status) markets = markets.filter(m => m.status === status);
       if (creator) markets = markets.filter(m => m.creator === creator);
+      if (category) markets = markets.filter(m => m.category === category);
+      if (filterTags.length) {
+        markets = markets.filter(m =>
+          Array.isArray(m.tags) && filterTags.every(t => m.tags.map(x => x.toLowerCase()).includes(t))
+        );
+      }
       if (dateFrom) markets = markets.filter(m => m.resolveTimeIso && m.resolveTimeIso >= dateFrom);
       if (dateTo) markets = markets.filter(m => m.resolveTimeIso && m.resolveTimeIso <= dateTo);
       const sort = searchParams.get('sort');
@@ -80,7 +91,11 @@ export function createMarketRoutes({ store, stacks }) {
       const body = await readBody(req);
       const question = String(body.question || '').trim();
       const description = String(body.description || '').trim();
-      const category = String(body.category || 'General').trim();
+      const rawCategory = String(body.category || DEFAULT_CATEGORY).trim();
+      const category = isValidCategory(rawCategory) ? rawCategory : DEFAULT_CATEGORY;
+      const tags = Array.isArray(body.tags)
+        ? body.tags.map(t => String(t).trim().toLowerCase()).filter(Boolean).slice(0, 10)
+        : [];
       const marketRef = String(body.marketRef || question).trim();
       if (marketRef.length < 3 || marketRef.length > 64) {
         return sendJson(res, 400, { error: 'Invalid market-ref length' });
@@ -115,6 +130,7 @@ export function createMarketRoutes({ store, stacks }) {
         question,
         description,
         category,
+        tags,
         imageUrl,
         resolveTimeIso,
         resolveBlock,
