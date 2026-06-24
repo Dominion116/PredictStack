@@ -8,6 +8,7 @@ import { recomputeUser } from '../services/user-service.mjs';
 import { emitMarketCreated, emitMarketResolved } from '../services/activity-service.mjs';
 import { CATEGORIES, DEFAULT_CATEGORY, isValidCategory } from '../models/category.mjs';
 import { notifyMarketResolved, notifyClaimAvailable } from '../services/notification-service.mjs';
+import { logAudit } from '../services/admin-service.mjs';
 
 export function createMarketRoutes({ store, stacks }) {
   const getMerged = id => getMergedMarketByContractId(store, stacks, id);
@@ -148,6 +149,7 @@ export function createMarketRoutes({ store, stacks }) {
       await store.save();
 
       emitMarketCreated(createdBy, contractMarketId, question);
+      logAudit('market_created', createdBy, marketRef, { contractMarketId, question });
 
       return sendJson(res, 201, { market: await getMerged(contractMarketId) });
     },
@@ -172,6 +174,7 @@ export function createMarketRoutes({ store, stacks }) {
 
       await store.save();
       emitMarketResolved(stacks.signerAddress ?? '', market.contractMarketId, market.question, winningOutcome);
+      logAudit('market_resolved', stacks.signerAddress ?? '', marketId, { winningOutcome, contractMarketId: market.contractMarketId });
 
       // Notify all unique bettors on this market
       const bettors = [...new Set(
