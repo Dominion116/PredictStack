@@ -23,6 +23,7 @@ export function Providers({ children }: ProvidersProps) {
             defaultTheme="system"
             enableSystem
             disableTransitionOnChange
+            storageKey="predictstack-theme"
         >
             <StacksConnectWrapper>
                 {children}
