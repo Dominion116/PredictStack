@@ -12,6 +12,8 @@ import { NavMenu } from '@/components/nav-menu';
 import { NavigationSheet } from '@/components/navigation-sheet';
 import { useBnsName } from '@/hooks/use-bns-name';
 import { NotificationBell } from '@/components/NotificationBell';
+import { TransactionDrawer } from '@/components/TransactionDrawer';
+import { useStxBalance } from '@/hooks/use-stx-balance';
 
 export function Navbar() {
   const [mounted, setMounted] = useState(false);
@@ -80,6 +82,7 @@ function NavbarContent() {
   };
 
   const bnsName = useBnsName(address);
+  const { balance } = useStxBalance(address, NETWORK_ENV === 'mainnet' ? 'mainnet' : 'testnet');
   const truncatedAddress = address ? `${address.slice(0, 6)}...${address.slice(-4)}` : '';
   const displayAddress = bnsName ?? truncatedAddress;
 
@@ -120,6 +123,18 @@ function NavbarContent() {
             <Button onClick={handleConnect} className="hidden sm:inline-flex rounded-full">
               Connect Wallet
             </Button>
+          )}
+
+          {/* STX Balance */}
+          {isSignedIn && balance !== null && (
+            <span className="hidden sm:inline-flex items-center text-xs font-mono text-muted-foreground">
+              {balance.toFixed(2)} STX
+            </span>
+          )}
+
+          {/* Transaction Drawer */}
+          {isSignedIn && (
+            <TransactionDrawer address={address} network={NETWORK_ENV === 'mainnet' ? 'mainnet' : 'testnet'} />
           )}
 
           {/* Notification Bell */}
