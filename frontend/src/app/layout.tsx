@@ -18,8 +18,16 @@ const fontMono = JetBrains_Mono({
 export const metadata: Metadata = {
   title: "PredictStack",
   description: "Peer-to-peer prediction markets on Stacks",
+  manifest: "/manifest.json",
+  appleWebApp: {
+    capable: true,
+    statusBarStyle: "black-translucent",
+    title: "PredictStack",
+  },
   other: {
     "talentapp:project_verification": "5d269813bdb631cd000764a4472da8002f5d22be33786d0725ef14827fd518d92c2baa1f7281932ddeef1033192a7af8bf325d5cb2b6c75e1d5c9f0a3d9c957e",
+    "mobile-web-app-capable": "yes",
+    "theme-color": "#09090b",
   },
 };
 
