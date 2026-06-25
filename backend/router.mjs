@@ -100,6 +100,12 @@ export function createRouter({ store, stacks, config, specs }) {
     if (method === 'GET' && /^\/api\/users\/[^/]+\/analytics$/.test(pathname)) {
       return analytics.userAnalytics(req, res, pathname.split('/')[3]);
     }
+    if (method === 'GET' && /^\/api\/users\/[^/]+\/created-markets$/.test(pathname)) {
+      return users.createdMarkets(req, res, pathname.split('/')[3]);
+    }
+    if (method === 'GET' && /^\/api\/users\/[^/]+\/creator-stats$/.test(pathname)) {
+      return users.creatorStats(req, res, pathname.split('/')[3]);
+    }
 
     // Admin
     if (method === 'GET' && pathname === '/api/admin/stats') return adminRoutes.stats(req, res);
