@@ -30,6 +30,7 @@ import { userSession, getContractConfig, isUserSignedIn, getUserAddress, NETWORK
 // it for the browser. All Clarity helpers are loaded dynamically inside handlers.
 import Link from 'next/link';
 import { CommentThread } from '@/components/CommentThread';
+import { PriceHistoryChart } from '@/components/PriceHistoryChart';
 
 const MIN_BET_STX  = 0.02;
 const MAX_BET_STX  = 0.1;
@@ -713,6 +714,14 @@ export default function MarketPage() {
                             )}
                         </div>
                     </motion.div>
+                </div>
+
+                {/* Price history chart */}
+                <div className="mt-8 max-w-2xl">
+                  <h2 className="text-sm font-semibold text-muted-foreground uppercase tracking-widest mb-3">
+                    Odds History
+                  </h2>
+                  <PriceHistoryChart marketId={Number(marketId)} />
                 </div>
 
                 {/* Comment thread below the main grid */}
