@@ -18,8 +18,11 @@ import { blockToDate } from '@/lib/date-utils';
 import {
     Loader2, ShieldAlert, Gavel, LayoutDashboard,
     PlusCircle, CheckSquare, ChevronRight, Upload,
-    BarChart3, Zap, Globe,
+    BarChart3, Zap, Globe, ClipboardList,
 } from 'lucide-react';
+import { AdminStatsCard } from '@/components/AdminStatsCard';
+import { AuditLogTable } from '@/components/AuditLogTable';
+import { useAdminStats, useAuditLog } from '@/hooks/use-admin-stats';
 import { Footer } from "@/components/footer";
 import { toast } from 'sonner';
 
@@ -37,9 +40,11 @@ const getErrorMessage = (error: unknown, fallback: string) =>
     error instanceof Error && error.message ? error.message : fallback;
 
 const NAV_ITEMS = [
-    { id: 'overview', label: 'Overview',      icon: LayoutDashboard },
-    { id: 'create',   label: 'Create Market', icon: PlusCircle      },
-    { id: 'resolve',  label: 'Resolve',       icon: CheckSquare     },
+    { id: 'overview',   label: 'Overview',      icon: LayoutDashboard },
+    { id: 'create',     label: 'Create Market', icon: PlusCircle      },
+    { id: 'resolve',    label: 'Resolve',       icon: CheckSquare     },
+    { id: 'analytics',  label: 'Analytics',     icon: BarChart3       },
+    { id: 'audit-log',  label: 'Audit Log',     icon: ClipboardList   },
 ];
 
 export default function AdminPage() {
@@ -634,11 +639,46 @@ function AdminDashboard() {
                             )}
                         </div>
                     )}
+                    {activeTab === 'analytics' && <AdminAnalyticsTab />}
+                    {activeTab === 'audit-log' && <AdminAuditLogTab />}
                 </motion.div>
             </div>
 
             <Footer />
         </main>
+    );
+}
+
+function AdminAnalyticsTab() {
+    const { stats, loading, error } = useAdminStats();
+    return (
+        <div className="space-y-6">
+            <SectionHeader icon={BarChart3} title="Platform Analytics" sub="7-day rolling window" />
+            {loading && <div className="h-40 bg-muted animate-pulse rounded-xl" />}
+            {error && <p className="text-sm text-destructive">{error}</p>}
+            {stats && <AdminStatsCard days={stats.days} />}
+        </div>
+    );
+}
+
+function AdminAuditLogTab() {
+    const [page, setPage] = useState(1);
+    const { data, loading } = useAuditLog(page);
+    const totalPages = data ? Math.ceil(data.total / 20) : 1;
+    return (
+        <div className="space-y-4">
+            <SectionHeader icon={ClipboardList} title="Audit Log" sub="All admin actions recorded" />
+            <AuditLogTable entries={data?.entries ?? []} loading={loading} />
+            {totalPages > 1 && (
+                <div className="flex items-center justify-center gap-2 pt-2">
+                    <button disabled={page <= 1 || loading} onClick={() => setPage(p => p - 1)}
+                        className="px-3 py-1 text-xs border rounded disabled:opacity-40">Previous</button>
+                    <span className="text-xs text-muted-foreground">{page} / {totalPages}</span>
+                    <button disabled={page >= totalPages || loading} onClick={() => setPage(p => p + 1)}
+                        className="px-3 py-1 text-xs border rounded disabled:opacity-40">Next</button>
+                </div>
+            )}
+        </div>
     );
 }
 
