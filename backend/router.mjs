@@ -16,6 +16,7 @@ import { createSearchRoutes } from './routes/search.mjs';
 import { createNotificationRoutes } from './routes/notifications.mjs';
 import { createReferralRoutes } from './routes/referrals.mjs';
 import { createAdminRoutes } from './routes/admin.mjs';
+import { createPriceHistoryRoutes } from './routes/price-history.mjs';
 
 export function createRouter({ store, stacks, config, specs }) {
   const getAllMerged = () => getAllMergedMarkets(store, stacks);
@@ -35,6 +36,7 @@ export function createRouter({ store, stacks, config, specs }) {
   const notifications = createNotificationRoutes();
   const referrals = createReferralRoutes();
   const adminRoutes = createAdminRoutes({ store, stacks });
+  const priceHistory = createPriceHistoryRoutes();
 
   return async (req, res) => {
     const url = new URL(req.url || '/', `http://${req.headers.host}`);
@@ -68,6 +70,9 @@ export function createRouter({ store, stacks, config, specs }) {
     }
     if (method === 'GET' && /^\/api\/markets\/[^/]+\/quotes$/.test(pathname)) {
       return markets.getQuotes(req, res, pathname.split('/')[3]);
+    }
+    if (method === 'GET' && /^\/api\/markets\/[^/]+\/price-history$/.test(pathname)) {
+      return priceHistory.list(req, res, pathname.split('/')[3], searchParams);
     }
     if (method === 'POST' && pathname.endsWith('/resolve')) {
       return markets.resolve(req, res, pathname.split('/').at(-2));

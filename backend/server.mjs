@@ -12,6 +12,8 @@ import { initCommentService } from './services/comment-service.mjs';
 import { initNotificationService } from './services/notification-service.mjs';
 import { initReferralService } from './services/referral-service.mjs';
 import { initAdminService } from './services/admin-service.mjs';
+import { initPriceSnapshotCron, stopPriceSnapshotCron } from './jobs/price-snapshot-cron.mjs';
+import { initPriceHistoryService } from './routes/price-history.mjs';
 
 if (!config.PRIVATE_KEY) {
   throw new Error('STACKS_PRIVATE_KEY is required to run the backend signer.');
@@ -26,6 +28,9 @@ initCommentService(store.client.db('predictstack').collection('comments'));
 initNotificationService(store.client.db('predictstack').collection('notifications'));
 initReferralService(store.client.db('predictstack').collection('referrals'));
 initAdminService(store.client.db('predictstack').collection('audit_log'));
+const snapshotCol = store.client.db('predictstack').collection('price_snapshots');
+initPriceHistoryService(snapshotCol);
+initPriceSnapshotCron(snapshotCol, store);
 
 const stacks = createStacksClient({
   network: config.NETWORK,
@@ -106,6 +111,7 @@ const reconcileTimer = setInterval(reconcileIntents, RECONCILE_INTERVAL_MS);
 
 async function shutdown() {
   clearInterval(reconcileTimer);
+  stopPriceSnapshotCron();
   server.close(async () => {
     await store.close();
     process.exit(0);
