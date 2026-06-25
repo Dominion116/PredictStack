@@ -3,6 +3,7 @@
 import { ReactNode } from 'react';
 import { ThemeProvider } from 'next-themes';
 import dynamic from 'next/dynamic';
+import { OfflineBanner } from './OfflineBanner';
 
 // Load the Stacks Connect provider only on the client — it depends on
 // @stacks/transactions / @noble/secp256k1 which cannot run during SSR.
@@ -25,6 +26,7 @@ export function Providers({ children }: ProvidersProps) {
         >
             <StacksConnectWrapper>
                 {children}
+                <OfflineBanner />
             </StacksConnectWrapper>
         </ThemeProvider>
     );
