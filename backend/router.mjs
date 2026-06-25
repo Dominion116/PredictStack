@@ -17,6 +17,7 @@ import { createNotificationRoutes } from './routes/notifications.mjs';
 import { createReferralRoutes } from './routes/referrals.mjs';
 import { createAdminRoutes } from './routes/admin.mjs';
 import { createPriceHistoryRoutes } from './routes/price-history.mjs';
+import { createExportRoutes } from './routes/export.mjs';
 
 export function createRouter({ store, stacks, config, specs }) {
   const getAllMerged = () => getAllMergedMarkets(store, stacks);
@@ -37,6 +38,7 @@ export function createRouter({ store, stacks, config, specs }) {
   const referrals = createReferralRoutes();
   const adminRoutes = createAdminRoutes({ store, stacks });
   const priceHistory = createPriceHistoryRoutes();
+  const exportRoutes = createExportRoutes({ store });
 
   return async (req, res) => {
     const url = new URL(req.url || '/', `http://${req.headers.host}`);
@@ -110,6 +112,9 @@ export function createRouter({ store, stacks, config, specs }) {
     }
     if (method === 'GET' && /^\/api\/users\/[^/]+\/creator-stats$/.test(pathname)) {
       return users.creatorStats(req, res, pathname.split('/')[3]);
+    }
+    if (method === 'GET' && /^\/api\/users\/[^/]+\/export$/.test(pathname)) {
+      return exportRoutes.csvExport(req, res, pathname.split('/')[3]);
     }
 
     // Admin
