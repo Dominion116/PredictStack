@@ -25,6 +25,8 @@ import { BetOutcomeBadge } from '@/components/BetOutcomeBadge';
 import { MarketStatusBadge } from '@/components/MarketStatusBadge';
 import { useBnsName } from '@/hooks/use-bns-name';
 import { useProfile } from '@/hooks/use-profile';
+import { useExport } from '@/hooks/use-export';
+import { Download } from 'lucide-react';
 
 export default function DashboardPage() {
     const [mounted, setMounted] = useState(false);
@@ -200,16 +202,19 @@ function DashboardContent() {
                             </div>
                         </motion.div>
                         <div className="flex flex-col items-end gap-1">
-                            <Button
-                                variant="outline"
-                                size="sm"
-                                onClick={loadDashboardData}
-                                disabled={loading}
-                                className="font-mono text-xs self-start md:self-auto"
-                            >
-                                <RefreshCcw className={`mr-2 h-3.5 w-3.5 ${loading ? 'animate-spin' : ''}`} />
-                                Refresh
-                            </Button>
+                            <div className="flex gap-2">
+                                <ExportButton address={addr} />
+                                <Button
+                                    variant="outline"
+                                    size="sm"
+                                    onClick={loadDashboardData}
+                                    disabled={loading}
+                                    className="font-mono text-xs self-start md:self-auto"
+                                >
+                                    <RefreshCcw className={`mr-2 h-3.5 w-3.5 ${loading ? 'animate-spin' : ''}`} />
+                                    Refresh
+                                </Button>
+                            </div>
                             {lastRefreshed && (
                                 <span className="text-[10px] font-mono text-muted-foreground">
                                     Updated {lastRefreshed.toLocaleTimeString()}
@@ -413,5 +418,25 @@ function BetRow({ bet, onClaim, isClaiming }: { bet: any; onClaim: (id: number) 
                 </div>
             </div>
         </motion.div>
+    );
+}
+
+function ExportButton({ address }: { address: string }) {
+    const { downloadCsv, loading } = useExport(address);
+    return (
+        <Button
+            variant="outline"
+            size="sm"
+            onClick={downloadCsv}
+            disabled={loading || !address}
+            className="font-mono text-xs"
+        >
+            {loading ? (
+                <Loader2 className="mr-2 h-3.5 w-3.5 animate-spin" />
+            ) : (
+                <Download className="mr-2 h-3.5 w-3.5" />
+            )}
+            Export CSV
+        </Button>
     );
 }
