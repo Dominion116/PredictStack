@@ -126,6 +126,7 @@ export function createRouter({ store, stacks, config, specs }) {
     if (method === 'POST' && pathname === '/api/referrals/generate') return referrals.generate(req, res);
     const referralStats = pathname.match(/^\/api\/referrals\/([^/]+)\/stats$/);
     if (method === 'GET' && referralStats) return referrals.stats(req, res, referralStats[1]);
+    if (method === 'GET' && pathname === '/api/referrals/leaderboard') return referrals.leaderboard(req, res, searchParams);
 
     // Notifications
     const notifBase = pathname.match(/^\/api\/notifications\/([^/]+)$/);
