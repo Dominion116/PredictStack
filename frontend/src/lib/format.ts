@@ -54,3 +54,41 @@ export function parseMarketCategory(raw: string | undefined | null): MarketCateg
   const lower = (raw ?? '').toLowerCase().trim() as MarketCategory;
   return KNOWN_CATEGORIES.includes(lower) ? lower : 'other';
 }
+
+/**
+ * Format a number of basis points (0–10000) as a percentage string.
+ * @example bpsToPercent(5500) // "55.0%"
+ */
+export function bpsToPercent(bps: number, decimals = 1): string {
+  return `${(bps / 100).toFixed(decimals)}%`;
+}
+
+/**
+ * Format a Unix epoch timestamp (ms) as a relative time string.
+ */
+export function relativeTime(timestamp: number | string): string {
+  const diff = Date.now() - new Date(timestamp).getTime();
+  const s = Math.floor(diff / 1000);
+  if (s < 60) return `${s}s ago`;
+  const m = Math.floor(s / 60);
+  if (m < 60) return `${m}m ago`;
+  const h = Math.floor(m / 60);
+  if (h < 24) return `${h}h ago`;
+  const d = Math.floor(h / 24);
+  if (d < 30) return `${d}d ago`;
+  return new Date(timestamp).toLocaleDateString();
+}
+
+/**
+ * Clamp a number between min and max (inclusive).
+ */
+export function clamp(value: number, min: number, max: number): number {
+  return Math.min(max, Math.max(min, value));
+}
+
+/**
+ * Convert STX to microSTX.
+ */
+export function stxToMicro(stx: number): number {
+  return Math.round(stx * 1_000_000);
+}
