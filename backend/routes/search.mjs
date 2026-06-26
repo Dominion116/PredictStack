@@ -28,6 +28,27 @@ function scoreMarket(market, queryTokens) {
 
 export function createSearchRoutes({ store }) {
   return {
+    /**
+     * @swagger
+     * /api/markets/search:
+     *   get:
+     *     summary: Full-text search across markets
+     *     tags: [Search]
+     *     parameters:
+     *       - in: query
+     *         name: q
+     *         required: true
+     *         schema: { type: string }
+     *         description: Search query
+     *       - in: query
+     *         name: limit
+     *         schema: { type: integer, default: 20, maximum: 50 }
+     *     responses:
+     *       200:
+     *         description: Scored list of matching markets
+     *       400:
+     *         description: q parameter is required
+     */
     search(req, res, searchParams) {
       const q = (searchParams.get('q') ?? '').trim();
       if (!q) return sendJson(res, 400, { error: 'q query parameter is required' });
@@ -46,6 +67,21 @@ export function createSearchRoutes({ store }) {
       return sendJson(res, 200, { markets: scored, query: q });
     },
 
+    /**
+     * @swagger
+     * /api/markets/suggest:
+     *   get:
+     *     summary: Autocomplete market titles
+     *     tags: [Search]
+     *     parameters:
+     *       - in: query
+     *         name: q
+     *         required: true
+     *         schema: { type: string, minLength: 2 }
+     *     responses:
+     *       200:
+     *         description: Up to 5 matching market title suggestions
+     */
     suggest(req, res, searchParams) {
       const q = (searchParams.get('q') ?? '').trim().toLowerCase();
       if (!q || q.length < 2) return sendJson(res, 200, { suggestions: [] });
