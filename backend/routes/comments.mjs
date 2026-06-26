@@ -1,4 +1,5 @@
 import { sendJson, readBody, sanitizeAddress } from '../middleware/http.mjs';
+import { requireAddress, rejectInvalid } from '../middleware/validate.mjs';
 import {
   listComments,
   createComment,
@@ -58,8 +59,8 @@ export function createCommentRoutes({ config }) {
 
     async create(req, res, marketId) {
       const body = await readBody(req);
+      if (rejectInvalid(res, requireAddress(body.authorAddress, 'authorAddress'))) return;
       const authorAddress = sanitizeAddress(body.authorAddress);
-      if (!authorAddress) return sendJson(res, 400, { error: 'authorAddress is required' });
 
       try {
         const comment = await createComment(marketId, authorAddress, body.body, body.parentId ?? null);
@@ -71,8 +72,8 @@ export function createCommentRoutes({ config }) {
 
     async remove(req, res, marketId, commentId) {
       const body = await readBody(req);
+      if (rejectInvalid(res, requireAddress(body.requestingAddress, 'requestingAddress'))) return;
       const requestingAddress = sanitizeAddress(body.requestingAddress);
-      if (!requestingAddress) return sendJson(res, 400, { error: 'requestingAddress is required' });
 
       const result = await deleteComment(commentId, requestingAddress, adminAddresses);
       if (!result.ok) {
