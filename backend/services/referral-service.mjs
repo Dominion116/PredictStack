@@ -49,3 +49,21 @@ export async function findByCode(code) {
   if (!_col) return null;
   return _col.findOne({ code: String(code).toUpperCase() });
 }
+
+/**
+ * Referral leaderboard — top referrers sorted by totalRewardsMicro descending.
+ */
+export async function getReferralLeaderboard(limit = 15) {
+  if (!_col) return [];
+  const docs = await _col
+    .find({})
+    .sort({ totalRewardsMicro: -1 })
+    .limit(limit)
+    .toArray();
+
+  return docs.map(d => ({
+    referrerAddress: d.referrerAddress,
+    referredCount: d.referredAddresses?.length ?? 0,
+    totalRewardsMicro: d.totalRewardsMicro ?? 0,
+  }));
+}

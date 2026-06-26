@@ -73,5 +73,26 @@ export function createReferralRoutes() {
         totalRewardsMicro: referral.totalRewardsMicro ?? 0,
       });
     },
+
+    /**
+     * @swagger
+     * /api/referrals/leaderboard:
+     *   get:
+     *     summary: Top referrers sorted by referred count
+     *     tags: [Referrals]
+     *     parameters:
+     *       - in: query
+     *         name: limit
+     *         schema: { type: integer, default: 15 }
+     *     responses:
+     *       200:
+     *         description: Top referrer list
+     */
+    async leaderboard(req, res, searchParams) {
+      const { getReferralLeaderboard } = await import('../services/referral-service.mjs');
+      const limit = Math.min(Number(searchParams.get('limit') || 15), 50);
+      const entries = await getReferralLeaderboard(limit);
+      return sendJson(res, 200, { entries });
+    },
   };
 }
