@@ -4,9 +4,27 @@ import { getOrCreateReferral, getReferralStats } from '../services/referral-serv
 export function createReferralRoutes() {
   return {
     /**
-     * POST /api/referrals/generate
-     * Body: { address }
-     * Returns existing or newly created referral code for the address.
+     * @swagger
+     * /api/referrals/generate:
+     *   post:
+     *     summary: Get or create a referral code for an address
+     *     tags: [Referrals]
+     *     requestBody:
+     *       required: true
+     *       content:
+     *         application/json:
+     *           schema:
+     *             type: object
+     *             required: [address]
+     *             properties:
+     *               address: { type: string }
+     *     responses:
+     *       200:
+     *         description: Referral stats including code
+     *         content:
+     *           application/json:
+     *             schema:
+     *               $ref: '#/components/schemas/ReferralStats'
      */
     async generate(req, res) {
       const body = await readBody(req);
@@ -25,7 +43,25 @@ export function createReferralRoutes() {
     },
 
     /**
-     * GET /api/referrals/:address/stats
+     * @swagger
+     * /api/referrals/{address}/stats:
+     *   get:
+     *     summary: Get referral stats for an address
+     *     tags: [Referrals]
+     *     parameters:
+     *       - in: path
+     *         name: address
+     *         required: true
+     *         schema: { type: string }
+     *     responses:
+     *       200:
+     *         description: Referral stats
+     *         content:
+     *           application/json:
+     *             schema:
+     *               $ref: '#/components/schemas/ReferralStats'
+     *       404:
+     *         description: No referral found for this address
      */
     async stats(req, res, address) {
       const referral = await getReferralStats(sanitizeAddress(address));
