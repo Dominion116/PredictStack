@@ -9,8 +9,34 @@ export function initPriceHistoryService(col) {
 export function createPriceHistoryRoutes() {
   return {
     /**
-     * GET /api/markets/:id/price-history
-     * Query: range = '1h' | '6h' | '24h' | 'all' (default 'all')
+     * @swagger
+     * /api/markets/{id}/price-history:
+     *   get:
+     *     summary: Get YES/NO odds history for a market
+     *     tags: [Markets]
+     *     parameters:
+     *       - in: path
+     *         name: id
+     *         required: true
+     *         schema: { type: integer }
+     *       - in: query
+     *         name: range
+     *         schema:
+     *           type: string
+     *           enum: ['1h', '6h', '24h', 'all']
+     *           default: 'all'
+     *     responses:
+     *       200:
+     *         description: Array of price snapshots
+     *         content:
+     *           application/json:
+     *             schema:
+     *               type: object
+     *               properties:
+     *                 history:
+     *                   type: array
+     *                   items:
+     *                     $ref: '#/components/schemas/PriceSnapshot'
      */
     async list(req, res, marketId, searchParams) {
       if (!_col) return sendJson(res, 200, { history: [] });
