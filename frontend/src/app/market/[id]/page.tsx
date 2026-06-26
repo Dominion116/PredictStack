@@ -31,6 +31,7 @@ import { userSession, getContractConfig, isUserSignedIn, getUserAddress, NETWORK
 import Link from 'next/link';
 import { CommentThread } from '@/components/CommentThread';
 import { PriceHistoryChart } from '@/components/PriceHistoryChart';
+import { CreatorBadge } from '@/components/CreatorBadge';
 
 const MIN_BET_STX  = 0.02;
 const MAX_BET_STX  = 0.1;
@@ -262,6 +263,7 @@ export default function MarketPage() {
     const question   = market.question || 'Unknown Market';
     const imageUrl   = market['image-url'] ?? market.imageUrl;
     const category   = market.category   || 'General';
+    const createdBy  = market.createdBy  ?? market.creator ?? null;
     const status     = market.status     || 'active';
     const isActive   = status === 'active';
     const isResolved = status === 'resolved';
@@ -387,6 +389,12 @@ export default function MarketPage() {
                                 <span className="flex items-center gap-1">
                                     <Users className="h-3 w-3" />{totalBets} bets
                                 </span>
+                                {createdBy && (
+                                    <>
+                                        <span className="text-border">·</span>
+                                        <CreatorBadge address={createdBy} />
+                                    </>
+                                )}
                                 {market.marketRef && (
                                     <>
                                         <span className="text-border">·</span>
