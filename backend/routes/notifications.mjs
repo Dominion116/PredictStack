@@ -3,6 +3,33 @@ import { listNotifications, markRead, markAllRead } from '../services/notificati
 
 export function createNotificationRoutes() {
   return {
+    /**
+     * @swagger
+     * /api/notifications/{address}:
+     *   get:
+     *     summary: List notifications for a user
+     *     tags: [Notifications]
+     *     parameters:
+     *       - in: path
+     *         name: address
+     *         required: true
+     *         schema: { type: string }
+     *       - in: query
+     *         name: page
+     *         schema: { type: integer, default: 1 }
+     *       - in: query
+     *         name: limit
+     *         schema: { type: integer, default: 20 }
+     *     responses:
+     *       200:
+     *         description: Paginated notifications with unread count
+     *   post:
+     *     summary: Mark all notifications as read
+     *     tags: [Notifications]
+     *     responses:
+     *       200:
+     *         description: All notifications marked read
+     */
     async list(req, res, address, searchParams) {
       const page = Number(searchParams.get('page') || 1);
       const limit = Number(searchParams.get('limit') || 20);
