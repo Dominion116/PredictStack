@@ -1,4 +1,5 @@
 import { sendJson, readBody, sanitizeAddress } from '../middleware/http.mjs';
+import { requireAddress, rejectInvalid } from '../middleware/validate.mjs';
 import { getOrCreateReferral, getReferralStats } from '../services/referral-service.mjs';
 
 export function createReferralRoutes() {
@@ -28,8 +29,8 @@ export function createReferralRoutes() {
      */
     async generate(req, res) {
       const body = await readBody(req);
+      if (rejectInvalid(res, requireAddress(body.address))) return;
       const address = sanitizeAddress(body.address);
-      if (!address) return sendJson(res, 400, { error: 'address is required' });
       try {
         const referral = await getOrCreateReferral(address);
         return sendJson(res, 200, {
