@@ -27,6 +27,7 @@ import { useBnsName } from '@/hooks/use-bns-name';
 import { useProfile } from '@/hooks/use-profile';
 import { useExport } from '@/hooks/use-export';
 import { Download } from 'lucide-react';
+import { ReferralCard } from '@/components/ReferralCard';
 
 export default function DashboardPage() {
     const [mounted, setMounted] = useState(false);
@@ -292,6 +293,13 @@ function DashboardContent() {
                     </Tabs>
                 </motion.div>
             </div>
+
+            {/* Referral card */}
+            {connectedAddress && (
+                <div className="container max-w-sm py-8">
+                    <ReferralCard address={connectedAddress} />
+                </div>
+            )}
 
             <Footer />
         </main>
