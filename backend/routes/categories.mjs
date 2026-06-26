@@ -4,8 +4,23 @@ import { CATEGORIES } from '../models/category.mjs';
 export function createCategoryRoutes({ store }) {
   return {
     /**
-     * GET /api/categories
-     * Returns the canonical category list with market counts.
+     * @swagger
+     * /api/categories:
+     *   get:
+     *     summary: List all canonical market categories with counts
+     *     tags: [Markets]
+     *     responses:
+     *       200:
+     *         description: Array of categories with market count
+     *         content:
+     *           application/json:
+     *             schema:
+     *               type: object
+     *               properties:
+     *                 categories:
+     *                   type: array
+     *                   items:
+     *                     $ref: '#/components/schemas/Category'
      */
     list(req, res) {
       const markets = Object.values(store.getState().markets ?? {});
