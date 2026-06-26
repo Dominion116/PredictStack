@@ -6,7 +6,8 @@ import { fadeInUp, staggerContainer, defaultTransition } from '@/lib/animations'
 import { Navbar } from "@/components/navbar";
 import { Badge } from '@/components/ui/badge';
 import { Button } from '@/components/ui/button';
-import { Trophy, Medal, Award, ChevronLeft, ChevronRight, RefreshCcw, Users } from 'lucide-react';
+import { Trophy, Medal, Award, ChevronLeft, ChevronRight, RefreshCcw, Users, Gift } from 'lucide-react';
+import { LeaderboardReferralTab } from '@/components/LeaderboardReferralTab';
 import { Footer } from "@/components/footer";
 import { getLeaderboardData } from '@/lib/stacks-api';
 import { useBnsNames } from '@/hooks/use-bns-name';
@@ -356,6 +357,15 @@ export default function LeaderboardPage() {
                 <p className="text-[11px] font-mono text-muted-foreground text-center">
                     Ranked by total profit · minimum 1 bet required · data synced from on-chain events
                 </p>
+            </section>
+
+            {/* Referral leaderboard */}
+            <section className="container max-w-3xl py-10 space-y-4">
+                <div className="flex items-center gap-2">
+                    <Gift className="h-4 w-4 text-primary" />
+                    <h2 className="text-sm font-semibold uppercase tracking-widest text-muted-foreground">Top Referrers</h2>
+                </div>
+                <LeaderboardReferralTab />
             </section>
 
             <Footer />
