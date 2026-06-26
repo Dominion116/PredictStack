@@ -1,5 +1,6 @@
 import { sendJson, readBody, sanitizeAddress } from '../middleware/http.mjs';
 import { requireAddress, rejectInvalid } from '../middleware/validate.mjs';
+import { writeLimiter } from '../middleware/rate-limit.mjs';
 import {
   listComments,
   createComment,
@@ -61,6 +62,9 @@ export function createCommentRoutes({ config }) {
       const body = await readBody(req);
       if (rejectInvalid(res, requireAddress(body.authorAddress, 'authorAddress'))) return;
       const authorAddress = sanitizeAddress(body.authorAddress);
+      if (!writeLimiter.allow(authorAddress)) {
+        return sendJson(res, 429, { error: 'Too many comments — please slow down' });
+      }
 
       try {
         const comment = await createComment(marketId, authorAddress, body.body, body.parentId ?? null);
