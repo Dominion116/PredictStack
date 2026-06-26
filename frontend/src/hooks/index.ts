@@ -13,3 +13,5 @@ export * from './use-theme';
 export * from './use-stx-balance';
 export * from './use-transactions';
 export * from './use-export';
+export * from './use-poll';
+export * from './use-async';
