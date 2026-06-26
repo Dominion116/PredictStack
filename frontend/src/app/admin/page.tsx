@@ -23,6 +23,7 @@ import {
 import { AdminStatsCard } from '@/components/AdminStatsCard';
 import { AuditLogTable } from '@/components/AuditLogTable';
 import { useAdminStats, useAuditLog } from '@/hooks/use-admin-stats';
+import { TagInput } from '@/components/TagInput';
 import { Footer } from "@/components/footer";
 import { toast } from 'sonner';
 
@@ -138,6 +139,7 @@ function AdminDashboard() {
     const [description, setDescription] = useState('');
     const [resolveDate, setResolveDate] = useState('');
     const [category,    setCategory]    = useState('Crypto');
+    const [tags,        setTags]        = useState<string[]>([]);
     const [imageUrl,    setImageUrl]    = useState('');
     const [isUploading, setIsUploading] = useState(false);
     const [previewUrl,  setPreviewUrl]  = useState<string | null>(null);
@@ -261,7 +263,7 @@ function AdminDashboard() {
                 anchorMode: AnchorMode.Any,
                 onFinish: async (data) => {
                     await createMarketRecord({
-                        question, description, category, imageUrl,
+                        question, description, category, tags, imageUrl,
                         resolveDate, resolveBlock: estimatedBlock,
                         createdBy,
                         txId: data.txId,
@@ -466,7 +468,11 @@ function AdminDashboard() {
                                             <option value="Crypto">Crypto</option>
                                             <option value="Politics">Politics</option>
                                             <option value="Sports">Sports</option>
-                                            <option value="General">General</option>
+                                            <option value="Science">Science</option>
+                                            <option value="Entertainment">Entertainment</option>
+                                            <option value="Technology">Technology</option>
+                                            <option value="Finance">Finance</option>
+                                            <option value="Other">Other</option>
                                         </select>
                                     </Field>
                                     <Field
@@ -488,6 +494,11 @@ function AdminDashboard() {
                                         />
                                     </Field>
                                 </div>
+
+                                {/* Tags */}
+                                <Field label="Tags" hint="Optional — up to 10">
+                                    <TagInput tags={tags} onChange={setTags} />
+                                </Field>
 
                                 {/* Image upload */}
                                 <Field label="Market Image" hint="Max 2 MB · uploaded to IPFS">
