@@ -5,9 +5,9 @@ authors = []
 telemetry = true
 cache_dir = "./.cache"
 
-# Main Prediction Market Contract (v3 - enhanced features)
-[contracts.predictstacksv3]
-path = "contracts/predictstacksv3.clar"
+# Main Prediction Market Contract (v4 - increased gas costs for admin functions)
+[contracts.predictstacksv4]
+path = "contracts/predictstacksv4.clar"
 clarity_version = 2
 epoch = 2.1
 
