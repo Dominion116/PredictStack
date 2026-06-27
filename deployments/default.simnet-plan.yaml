@@ -65,8 +65,8 @@ plan:
   - id: 0
     transactions:
     - transaction-type: emulated-contract-publish
-      contract-name: predictstacksv2
+      contract-name: predictstacksv3
       emulated-sender: ST1PQHQKV0RJXZFY1DGX8MNSNYVE3VGZJSRTPGZGM
-      path: contracts/predictstacksv2.clar
+      path: contracts/predictstacksv3.clar
       clarity-version: 2
     epoch: '2.1'
