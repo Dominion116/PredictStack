@@ -34,7 +34,6 @@ frontend/out/
 frontend/build/
 
 # IDEs
-.vscode/
 .idea/
 *.swp
 *.swo
@@ -53,7 +52,6 @@ transactions.json
 
 # Secrets
 *.env
-.env.production
 dist/
 config.bat
 
