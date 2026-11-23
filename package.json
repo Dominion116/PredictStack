@@ -7,7 +7,7 @@
   "scripts": {
     "backend": "node backend/server.mjs",
     "frontend": "cd frontend && npm run dev",
-    "dev": "concurrently \"npm run backend\" \"npm run frontend\"",
+    "dev": "node init && concurrently \"npm run backend\" \"npm run frontend\"",
     "test": "vitest run",
     "test:coverage": "vitest run --coverage",
     "test:report": "vitest run -- --coverage --costs",
